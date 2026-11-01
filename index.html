@@ -179,8 +179,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Шаардлагатай ширхэг:</label>
-                    <input type="number" id="oilQty" value="1" min="0" oninput="calculateTotal()">
+                    <label>Санал болгох литр / Савлагааны дүн (Автомат):</label>
+                    <input type="number" id="oilQty" value="1" min="1" oninput="calculateTotal()">
                 </div>
 
                 <div class="flex-grid" style="margin-bottom: 12px;">
@@ -206,7 +206,7 @@
                 </div>
 
                 <!-- Summary Box -->
-                <div style="background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border); margin-top: 15px; space-y: 6px;">
+                <div style="background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border); margin-top: 15px;">
                     <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
                         <span>Тосны үндсэн үнэ:</span>
                         <strong id="subTotalOil">0 ₮</strong>
@@ -375,21 +375,25 @@
                 document.getElementById("carCapacity").textContent = car.capacity + " л";
                 
                 let cap = car.capacity;
-                let c4 = Math.floor(cap / 4);
-                let remainder = cap % 4;
-                let c1 = remainder > 0 ? Math.ceil(remainder) : 0;
-                
-                document.getElementById("smartRec").style.display = "block";
-                document.getElementById("recText").textContent = `4L савлагаатай ${c4}ш, 1L савлагаатай ${c1}ш (Нийт: ${c4*4 + c1}л)`;
-                
-                if (c4 > 0) {
-                    document.getElementById("oilSelect").value = "M100 (0W20) 4L";
-                    document.getElementById("oilQty").value = c4;
+                // Smart rounding: if capacity > 4, round up to nearest whole or standard bucket (e.g. 4.3 -> 5L or 8L depending on selection)
+                // Let's automatically calculate rounded liters (e.g., 4.3 -> 5 or 8)
+                let recommendedLiters = Math.ceil(cap);
+                if (recommendedLiters === 5 || recommendedLiters === 6) {
+                    // For typical 4.x or 5.x cars, if using 4L container, recommendation ensures no short fill
+                    document.getElementById("smartRec").style.display = "block";
+                    document.getElementById("recText").textContent = `Ягштал хэмжээ ${cap}л тул дор хаяж ${recommendedLiters}л (эсвэл бүтэн савлагаатай) тос сонгоно уу.`;
+                } else {
+                    document.getElementById("smartRec").style.display = "block";
+                    document.getElementById("recText").textContent = `Ягштал хэмжээ ${cap}л.`;
                 }
+
+                // Set default qty based on rounded liters or standard container
+                document.getElementById("oilQty").value = recommendedLiters;
             } else {
                 document.getElementById("carEngine").textContent = "-";
                 document.getElementById("carCapacity").textContent = "0.0 л";
                 document.getElementById("smartRec").style.display = "none";
+                document.getElementById("oilQty").value = 1;
             }
             calculateTotal();
         }
@@ -398,6 +402,8 @@
             let selectedOil = document.getElementById("oilSelect").value;
             let qty = parseFloat(document.getElementById("oilQty").value) || 0;
             let unitPrice = oilPrices[selectedOil] || 0;
+            
+            // Direct multiplication with chosen quantity/liters
             let subTotal = unitPrice * qty;
 
             let discount = parseFloat(document.getElementById("discount").value) || 0;
