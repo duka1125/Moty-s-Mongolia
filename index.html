@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moty's Lubricants Mongolia - POS & Inventory System</title>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* DARK THEME (DEFAULT) */
+            --bg-main: #050507;
+            --bg-card: rgba(18, 18, 22, 0.85);
+            --moty-red: #e61924;
+            --moty-red-glow: rgba(230, 25, 36, 0.35);
+            --moty-red-hover: #ff1f2d;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(230, 25, 36, 0.5);
+            --accent-blue: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --table-th-bg: rgba(255, 255, 255, 0.02);
+            --modal-bg: #0c0d12;
+        }
+
+        body.light-theme {
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-hover: rgba(230, 25, 36, 0.6);
+            --input-bg: #f8fafc;
+            --table-th-bg: #f1f5f9;
+            --modal-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding: 14px 20px; min-height: 100vh; }
+        
+        /* LOGIN OVERLAY */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(5, 5, 7, 0.7) 0%, rgba(5, 5, 7, 0.95) 100%), url('_MG_9800.jpg') center/cover no-repeat fixed; display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .glass-card { background: rgba(12, 12, 15, 0.85); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); width: 90%; max-width: 420px; padding: 40px 32px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), 0 0 40px var(--moty-red-glow); color: #ffffff; text-align: center; }
+        .login-logo-img { max-width: 220px; height: auto; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 0 12px var(--moty-red-glow)); }
+        .glass-card p.subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 24px; letter-spacing: 0.5px; }
+        .glass-input-wrapper { position: relative; margin-bottom: 20px; text-align: left; }
+        .glass-input-wrapper input { width: 100%; padding: 14px 44px 14px 18px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff; font-size: 1.1rem; letter-spacing: 4px; outline: none; transition: all 0.3s ease; }
+        .glass-input-wrapper input:focus { background: rgba(255, 255, 255, 0.1); border-color: var(--moty-red); box-shadow: 0 0 20px var(--moty-red-glow); }
+        .glass-input-wrapper i { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .btn-glass-submit { width: 100%; padding: 14px; background: var(--moty-red); border: none; border-radius: 12px; color: #ffffff; font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 25px var(--moty-red-glow); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-glass-submit:hover { background: var(--moty-red-hover); transform: translateY(-2px); box-shadow: 0 15px 35px rgba(230, 25, 36, 0.6); }
+
+        /* HEADER */
+        header { display: flex; align-items: center; justify-content: space-between; max-width: 1500px; margin: 0 auto 16px; background: var(--bg-card); backdrop-filter: blur(20px); padding: 6px 24px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; height: 60px; overflow: visible; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .header-logo-img { height: 160px; width: auto; object-fit: contain; margin-top: -10px; filter: drop-shadow(0 0 15px var(--moty-red-glow)); position: relative; z-index: 10; }
+        header h1 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); border-left: 1px solid var(--border); padding-left: 14px; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px; }
+        header h1 span { font-size: 0.7rem; color: var(--text-muted); font-weight: 400; font-family: 'Plus Jakarta Sans', sans-serif; display: block; margin-top: 1px; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+        .theme-toggle-btn { background: var(--input-bg); border: 1px solid var(--border); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; }
+        .theme-toggle-btn:hover { border-color: var(--moty-red); color: var(--moty-red); }
+        .user-info-badge { background: var(--input-bg); padding: 6px 16px; border-radius: 30px; font-size: 0.82rem; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
+
+        .container { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; max-width: 1500px; margin: 0 auto; }
+        .card { background: var(--bg-card); backdrop-filter: blur(20px); padding: 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); margin-bottom: 18px; transition: border-color 0.3s; }
+        .card:hover { border-color: var(--border-hover); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        h2 { font-size: 0.98rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px; }
+        h2 i { color: var(--moty-red); }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], input[type="file"], textarea, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: var(--input-bg); color: var(--text-main); transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--moty-red); box-shadow: 0 0 10px var(--moty-red-glow); }
+        select option { background: var(--bg-card); color: var(--text-main); }
+
+        button { border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        button:active { transform: translateY(1px); }
+        .btn-brand { background: var(--moty-red); color: white; box-shadow: 0 4px 15px var(--moty-red-glow); }
+        .btn-brand:hover { background: var(--moty-red-hover); }
+        .btn-primary { background: var(--accent-blue); color: #000; font-weight: 700; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-excel { background: #10b981; color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 6px; }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 8px; font-size: 0.85rem; }
+        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 700; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
+        .flex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: var(--modal-bg); width: 90%; max-width: 600px; padding: 26px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--border); color: var(--text-main); max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--border); }
+
+        /* PRINT STYLES - PROPORTIONAL ENLARGED LOGO */
+        #a4Invoice { display: none; }
+        #receipt { display: none; }
+
+        @media print {
+            body * { visibility: hidden !important; }
+            
+            /* PRINT THERMAL RECEIPT ONLY */
+            body.print-receipt-mode #receipt, body.print-receipt-mode #receipt * { visibility: visible !important; }
+            body.print-receipt-mode #receipt { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; font-family: 'Inter', sans-serif; font-size: 11px; padding: 10px; color: #000; background: #fff; }
+            body.print-receipt-mode .receipt-logo-img { max-height: 80px !important; width: auto !important; height: auto !important; display: block; margin: 0 auto 6px; object-fit: contain; }
+
+            /* PRINT A4 INVOICE ONLY */
+            body.print-a4-mode #a4Invoice, body.print-a4-mode #a4Invoice * { visibility: visible !important; }
+            body.print-a4-mode #a4Invoice { display: block !important; position: absolute; left: 0; top: 0; width: 210mm; min-height: 297mm; padding: 15mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000; background: #fff; }
+            
+            .inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid #e61924; padding-bottom: 15px; margin-bottom: 20px; }
+            .inv-logo-img { max-width: 250px !important; max-height: 110px !important; width: auto !important; height: auto !important; object-fit: contain; }
+            .inv-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .inv-table th, .inv-table td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; color: #000; }
+            .inv-table th { background: #f8fafc; font-weight: bold; }
+            .inv-totals { margin-top: 20px; text-align: right; font-size: 13px; }
+            .inv-footer { margin-top: 40px; display: flex; justify-content: space-between; text-align: center; font-size: 12px; }
+            .paid-stamp { border: 3px solid #10b981; color: #10b981; font-weight: 900; padding: 6px 16px; border-radius: 8px; font-size: 16px; display: inline-block; text-transform: uppercase; transform: rotate(-5deg); margin-bottom: 10px; }
+        }
+    </style>
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <!-- LOGIN OVERLAY -->
+    <div class="login-overlay" id="loginModal">
+        <div class="glass-card">
+            <img src="Moty's_logo.webp" alt="Moty's Logo" class="login-logo-img">
+            <p class="subtitle">Welcome back, please login to access system</p>
+            <div class="glass-input-wrapper">
+                <input type="password" id="loginPin" placeholder="Enter PIN code" maxlength="4" autocomplete="off">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <button type="button" id="loginBtn" class="btn-glass-submit">
+                Login <i class="fa-solid fa-arrow-right-long"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo-container">
+            <img src="Moty's_logo.webp" alt="Moty's Logo" class="header-logo-img">
+            <h1>
+                <span id="hdrStoreName">Runs Automotive Mongolia</span>
+                <span>Official Authorized Distributor & Service POS System</span>
+            </h1>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn" title="Сэдэв солих (Хар/Цагаан)">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            <div class="user-info-badge">
+                <span><i class="fa-solid fa-user-shield" style="color:var(--moty-red);"></i> <b id="currentUserRole">Нэвтрээгүй</b></span>
+                <button class="btn-sm" style="background:rgba(255,255,255,0.08); color:var(--text-main);" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- ЗҮҮН БАГАНО -->
+        <div>
+            <!-- 1. PACKING LIST & ОРЛОГОДОХ (MANAGER ONLY) -->
+            <div class="card admin-only" style="display:none;">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-truck-ramp-box"></i> Орлогын Парти / Packing List</h2>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="btn-sm btn-primary" onclick="openNewPackingListModal()"><i class="fa-solid fa-plus"></i> Шинэ Парти</button>
+                        <button class="btn-sm" style="background:#8b5cf6; color:white;" onclick="openCategoryManager()"><i class="fa-solid fa-layer-group"></i> Ангилал</button>
+                        <button class="btn-sm" style="background:#06b6d4; color:white;" onclick="openPaymentMethodManager()"><i class="fa-solid fa-credit-card"></i> Төлбөрийн Төрөл</button>
+                        <button class="btn-sm" style="background:#f59e0b; color:white;" onclick="openReceiptSettingsModal()"><i class="fa-solid fa-gear"></i> Баримтын Тохиргоо</button>
+                        <button class="btn-sm btn-danger" onclick="openResetDataModal()"><i class="fa-solid fa-trash-can"></i> Цэвэрлэх</button>
+                    </div>
+                </div>
+
+                <form id="stockInForm">
+                    <div class="form-group">
+                        <label style="color:var(--accent-blue);">1. Сонгох Packing List / Парти (ЗААВАЛ):</label>
+                        <select id="selectPackingList" required></select>
+                    </div>
+
+                    <div class="flex-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>2. Орлогодох Бараа Сонгох:</label>
+                            <select id="selectProductForStock" required onchange="autoFillCurrentPrice()"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>3. Ирсэн тоо (+):</label>
+                            <input type="number" id="stockInQty" min="1" required placeholder="100">
+                        </div>
+                        <div class="form-group">
+                            <label>4. Зарах үнэ (₮):</label>
+                            <input type="number" id="stockInPrice" min="0" required placeholder="180000">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-brand" style="width: 100%; margin-top: 6px;">
+                        <i class="fa-solid fa-circle-arrow-down"></i> Барааны Орлого Хадгалах (Үлдэгдэл Нэмэх)
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. ХАРИЛЦАГЧ БҮРТГЭХ -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-id-card"></i> Байнгын Харилцагч Бүртгэх</h2>
+                </div>
+                <form id="customerForm">
+                    <div class="flex-grid">
+                        <div class="form-group">
+                            <label>Төрөл</label>
+                            <select id="custType">
+                                <option value="Хувь хүн">Хувь хүн</option>
+                                <option value="Байгууллага">Байгууллага</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Нэр / Байгууллага</label>
+                            <input type="text" id="custName" required placeholder="Бат эсвэл ТТ-Компани">
+                        </div>
+                        <div class="form-group">
+                            <label>Утас / РД</label>
+                            <input type="text" id="custPhone" required placeholder="99112233">
+                        </div>
+                        <div class="form-group">
+                            <label>Машины №</label>
+                            <input type="text" id="custCarNo" required placeholder="1234 УБН">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Нэмэлт тэмдэглэл (Дотоод хэрэгцээнд):</label>
+                            <textarea id="custNotes" rows="2" placeholder="Жишээ: Тоосны хаалт засах, дараа ирэхдээ фильтр солих..."></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:100%; margin-top:4px;">
+                        <i class="fa-solid fa-user-plus"></i> Харилцагч Хадгалах
+                    </button>
+                </form>
+            </div>
+
+            <!-- 3. БАРААНЫ ҮЛДЭГДЭЛ БОЛОН ТООЛЛОГА -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-warehouse"></i> Барааны Үлдэгдэл & Тооллого (A-Z)</h2>
+                    <button class="btn-excel btn-sm admin-only" style="display:none;" onclick="exportInventoryToExcel()">
+                        <i class="fa-solid fa-file-excel"></i> Excel татах
+                    </button>
+                </div>
+                
+                <div class="flex-grid" style="margin-bottom: 12px;">
+                    <input type="text" id="searchBar" placeholder="🔍 Бараа нэрээр хайх..." onkeyup="renderInventory()">
+                    <select id="filterCategory" onchange="renderInventory()">
+                        <option value="Бүгд">-- Бүх ангилал --</option>
+                    </select>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ангилал / Нэр</th>
+                            <th>Сүүлийн Парти / Файл</th>
+                            <th>Үнэ</th>
+                            <th>Үлдэгдэл</th>
+                            <th style="width: 100px; text-align:right;">Үйлдэл</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- БАРУУН БАГАНО -->
+        <div>
+            <!-- 4. КАСС / САГС -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-receipt"></i> Касс / Сагс</h2>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Бараа</th>
+                            <th>Үнэ</th>
+                            <th>Тоо</th>
+                            <th>Хөнгөлөлт %</th>
+                            <th>Нийт</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartList"></tbody>
+                </table>
+
+                <div style="margin-top: 14px; text-align: right; font-size: 0.85rem; color: var(--text-muted);">
+                    Нийт Дүн: <span id="subTotal">0</span> ₮ | Хөнгөлөлт: <span id="discountAmount" style="color:var(--warning);">0</span> ₮
+                </div>
+                <div style="text-align: right; font-size: 1.5rem; font-weight: 800; margin-top:2px; color: var(--moty-red); font-family:'Space Grotesk', sans-serif;">
+                    Төлөх: <span id="cartTotal">0</span> ₮
+                </div>
+                
+                <button class="btn-brand" style="width: 100%; padding: 12px; margin-top: 12px; font-size: 0.95rem;" onclick="openCheckoutModal()">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Борлуулах & Мэдээлэл Бөглөх
+                </button>
+            </div>
+
+            <!-- 5. ЗЭЭЛИЙН АВЛАГЫН ХЯНАЛТ -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-hand-holding-dollar" style="color:var(--warning);"></i> Зээлийн Авлагын Хяналт</h2>
+                </div>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Харилцагч / Хугацаа</th>
+                                <th>Авлага</th>
+                                <th>Үйлдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody id="creditSalesList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 6. БОРЛУУЛАЛТЫН ТАЙЛАН -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Борлуулалтын Тайлан</h2>
+                    <button class="btn-excel btn-sm admin-only" style="display:none;" onclick="exportSalesToExcel()">
+                        <i class="fa-solid fa-file-excel"></i> Excel татах
+                    </button>
+                </div>
+                <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('yesterday')">Өчигдөр</button>
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('today')">Өнөөдөр</button>
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('month')">Энэ сар</button>
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('year')">12 сар (Жил)</button>
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('all')">Бүгд</button>
+                </div>
+                <div style="margin-bottom: 10px; font-weight: 700; color: var(--success); font-size: 1rem; font-family:'Space Grotesk', sans-serif;">
+                    Нийт Борлуулалт: <span id="totalRevenue">0</span> ₮
+                </div>
+                <div style="max-height: 220px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Огноо / Хэлбэр</th>
+                                <th>Харилцагч / Тэмдэглэл</th>
+                                <th>Дүн</th>
+                                <th>Үйлдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesHistory"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: БАРИМТЫН ТОХИРГОО (SETTINGS) -->
+    <div class="modal-overlay" id="receiptSettingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-gear" style="color:var(--warning);"></i> БАРИМТЫН ТОХИРГОО & ТЕКСТ</h2>
+                <button onclick="closeReceiptSettingsModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <form id="receiptSettingsForm">
+                <div class="form-group">
+                    <label>Дэлгүүр / Брендийн нэр:</label>
+                    <input type="text" id="cfgStoreName" required placeholder="Runs Automotive Mongolia">
+                </div>
+                <div class="form-group">
+                    <label>Албан ёсны Компанийн нэр:</label>
+                    <input type="text" id="cfgCompanyName" required placeholder="Эвримоторс ХХК">
+                </div>
+                <div class="flex-grid">
+                    <div class="form-group">
+                        <label>Утасны дугаар:</label>
+                        <input type="text" id="cfgPhone" required placeholder="75751595">
+                    </div>
+                    <div class="form-group">
+                        <label>И-мэйл хаяг:</label>
+                        <input type="text" id="cfgEmail" placeholder="info@runs.mn">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Хаяг байршил:</label>
+                    <input type="text" id="cfgAddress" placeholder="Улаанбаатар хот, UG Palace...">
+                </div>
+                <div class="form-group">
+                    <label>Логоны зураг URL / Линк:</label>
+                    <input type="text" id="cfgLogoUrl" placeholder="Moty's_logo.webp эсвэл веб линк">
+                </div>
+                <div class="form-group">
+                    <label>А4 Баримтын Банкны Данснууд:</label>
+                    <textarea id="cfgBankInfo" rows="3" placeholder="Хаан Банк: 5000000000..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>80mm Жижиг Чекний доод Талархал / Сануулга текст:</label>
+                    <textarea id="cfgThermalFooter" rows="2" placeholder="Moty's брендийг сонгосонд баярлалаа! Барааг 7 хоногийн дотор баримттай солиулна."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>А4 Баримтын доод Анхааруулга & Нөхцөл текст:</label>
+                    <textarea id="cfgA4Footer" rows="2" placeholder="Гүйлгээний утга дээр нэхэмжлэхийн дугаар болон утасны дугаараа заавал бичнэ үү."></textarea>
+                </div>
+
+                <button type="submit" class="btn-brand" style="width:100%; padding:12px; margin-top:8px;">
+                    <i class="fa-solid fa-floppy-disk"></i> Тохиргоог Хадгалах
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ШИНЭ PACKING LIST ҮҮСГЭХ -->
+    <div class="modal-overlay" id="newPackingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-circle-plus"></i> Шинэ Packing List / Парти Үүсгэх</h2>
+                <button onclick="closeNewPackingListModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <form id="newPackingForm">
+                <div class="form-group">
+                    <label>Парти Код / Дугаар:</label>
+                    <input type="text" id="packingCode" required placeholder="жишээ: PL-2026-01 (KIC Korea Container)">
+                </div>
+                <div class="form-group">
+                    <label>Ирсэн огноо:</label>
+                    <input type="date" id="packingDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Packing List Файл (PDF эсвэл JPG):</label>
+                    <input type="file" id="packingFile" accept=".pdf, image/jpeg, image/png, image/webp">
+                </div>
+                <div class="form-group">
+                    <label>Тэмдэглэл:</label>
+                    <input type="text" id="packingNotes" placeholder="жишээ: 1-р улирлын 500L моторын тосны орлого">
+                </div>
+                <button type="submit" class="btn-brand" style="width:100%; margin-top:10px;">
+                    <i class="fa-solid fa-save"></i> Packing List Хадгалах
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: БАРААНЫ АНГИЛАЛ УДИРДАХ -->
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-layer-group"></i> Барааны Ангилал Удирдах</h2>
+                <button onclick="closeCategoryManager()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Шинэ ангилал нэмэх:</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="newCatInput" placeholder="жишээ: Тоормосны шингэн">
+                    <button class="btn-brand" onclick="addNewCategory()"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </div>
+            <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+            <div style="max-height: 220px; overflow-y: auto;" id="categoryManageList"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: ТӨЛБӨРИЙН ТӨРӨЛ УДИРДАХ -->
+    <div class="modal-overlay" id="paymentMethodModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-credit-card"></i> Төлбөрийн Хэлбэр Удирдах</h2>
+                <button onclick="closePaymentMethodManager()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Шинэ төлбөрийн хэлбэр нэмэх:</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="newPayMethodInput" placeholder="жишээ: StorePay, Pocket, Barter">
+                    <button class="btn-brand" onclick="addNewPaymentMethod()"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </div>
+            <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+            <div style="max-height: 220px; overflow-y: auto;" id="paymentMethodManageList"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: ДАТА ЦЭВЭРЛЭХ (112520) -->
+    <div class="modal-overlay" id="resetDataModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-triangle-exclamation" style="color:var(--moty-red)"></i> ДАТА ЦЭВЭРЛЭХ</h2>
+                <button onclick="closeResetDataModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">⚠️ Бүх Packing List, Барааны үлдэгдэл болон Борлуулалтын дата БҮРМӨСӨН устгагдана.</p>
+            <div class="form-group">
+                <label style="color:var(--moty-red);">Баталгаажуулах НУУЦ КОД (112520):</label>
+                <input type="password" id="resetPinInput" placeholder="6 оронтой нууц код" maxlength="6" style="text-align:center; font-size:1.2rem; letter-spacing:4px;">
+            </div>
+            <button class="btn-danger" style="width:100%; padding:12px; margin-top:8px;" onclick="confirmResetDataWithPin()">
+                <i class="fa-solid fa-trash-can"></i> Бүх Дата Устгах
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: ЗЭЭЛИЙН ТӨЛБӨР ГҮЙЦЭЭЖ ТӨЛӨХ -->
+    <div class="modal-overlay" id="payCreditModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-money-bill-wave" style="color:var(--success);"></i> Зээлийн Төлбөр Хаах / Гүйцээх</h2>
+                <button onclick="closePayCreditModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <input type="hidden" id="payCreditSaleId">
+            <div id="creditPaySummary" style="margin-bottom:12px; background:var(--input-bg); padding:10px; border-radius:8px; font-size:0.85rem;"></div>
+            <div class="form-group">
+                <label>Одоо Төлж буй Дүн (₮):</label>
+                <input type="number" id="payCreditAmountInput" required>
+            </div>
+            <div class="form-group">
+                <label>Төлсөн Хэлбэр:</label>
+                <select id="payCreditMethodSelect"></select>
+            </div>
+            <button class="btn-brand" style="width:100%; padding:12px; margin-top:10px;" onclick="confirmPayCredit()">
+                <i class="fa-solid fa-check"></i> Төлбөр Хадгалах & Баримтах
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: БАРААНЫ МЭДЭЭЛЭЛ ЗАСАХ -->
+    <div class="modal-overlay" id="editProductModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-pen-to-square"></i> Барааны Мэдээлэл Засах</h2>
+                <button onclick="closeEditProductModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <input type="hidden" id="editProdId">
+            <div class="form-group">
+                <label>Барааны нэр:</label>
+                <input type="text" id="editProdName" required>
+            </div>
+            <div class="form-group">
+                <label>Ангилал:</label>
+                <select id="editProdCat"></select>
+            </div>
+            <div class="form-group">
+                <label>Зарах нэгж үнэ (₮):</label>
+                <input type="number" id="editProdPrice" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>Үлдэгдэл тоо хэмжээ:</label>
+                <input type="number" id="editProdStock" min="0" required>
+            </div>
+            <button class="btn-brand" style="width:100%; padding:12px; margin-top:10px;" onclick="saveProductEdits()">
+                <i class="fa-solid fa-check"></i> Өөрчлөлтийг Хадгалах
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: БОРЛУУЛАЛТ БУЦААХ -->
+    <div class="modal-overlay" id="returnModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-rotate-left" style="color:var(--moty-red)"></i> Борлуулалт Буцаах</h2>
+                <button onclick="closeReturnModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <input type="hidden" id="returnSaleId">
+            <div id="returnSummaryInfo" style="margin-bottom:12px; font-size:0.85rem; background:var(--input-bg); padding:10px; border-radius:8px;"></div>
+            <div class="form-group">
+                <label style="color:var(--moty-red);">Буцаах Шалтгаан (Заавал бичнэ үү):</label>
+                <textarea id="returnReasonInput" rows="3" required placeholder="Жишээ: Үйлчлүүлэгч буруу тос авсан тул солиулж буцаав..."></textarea>
+            </div>
+            <button class="btn-danger" style="width:100%; padding:12px; margin-top:6px;" onclick="processReturnSaleConfirm()">
+                <i class="fa-solid fa-check-double"></i> Зөвшөөрч Буцаалт Хийх & Үлдэгдэл Нэмэх
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: ҮЙЛЧЛҮҮЛЭГЧИЙН МЭДЭЭЛЭЛ & ТӨЛБӨР -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-invoice-dollar"></i> Үйлчлүүлэгч & Төлбөр</h2>
+                <button onclick="closeCheckoutModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label style="color:var(--moty-red); font-weight:bold;">Төлбөрийн хэлбэр:</label>
+                <select id="paymentMethod" onchange="toggleCreditOptions()" style="font-weight: bold; color: var(--accent-blue);"></select>
+            </div>
+
+            <!-- БАРИМТЫН ХЭМЖЭЭ СОНГОХ -->
+            <div class="form-group" style="background:var(--input-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                <label style="color:var(--accent-blue);">Хэвлэх Баримтын Төрөл:</label>
+                <select id="docTypeSelect" style="font-weight:bold;">
+                    <option value="THERMAL">🧾 80mm Жижиг кассын чек (Хувь хүн / Энгийн)</option>
+                    <option value="A4_PAID">✅ А4 Төлбөрийн Баримт (Байгууллага 100% Төлсөн)</option>
+                    <option value="A4_INVOICE">📄 А4 Нэхэмжлэх (Зээлээр / Ширээр төлөх)</option>
+                </select>
+            </div>
+
+            <!-- ЗЭЭЛЭЭР АВАХ ҮЕД ХАРАГДАХ СЕКЦ -->
+            <div id="creditOptionsSection" style="display:none; background:rgba(245, 158, 11, 0.1); padding:12px; border-radius:10px; border:1px solid var(--warning); margin-bottom:12px;">
+                <div class="form-group">
+                    <label style="color:var(--warning);">Урьдчилгаа Төлбөр (₮):</label>
+                    <input type="number" id="creditAdvanceInput" value="0" min="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label style="color:var(--warning);">Төлөх Эцсийн Огноо (Due Date):</label>
+                    <input type="date" id="creditDueDateInput">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Байнгын харилцагч сонгох (Сонголттой):</label>
+                <select id="modalCustomerSelect" onchange="autoFillCustomerInfo()">
+                    <option value="">-- Шинэ / Энгийн үйлчлүүлэгч --</option>
+                </select>
+            </div>
+            
+            <hr style="margin: 12px 0; border: none; border-top: 1px dashed var(--border);">
+
+            <div class="form-group">
+                <label>Үйлчлүүлэгчийн нэр / Байгууллага:</label>
+                <input type="text" id="modalCustName" placeholder="жишээ: Бат эсвэл Энгийн" value="Энгийн үйлчлүүлэгч">
+            </div>
+            <div class="form-group">
+                <label>Утасны дугаар:</label>
+                <input type="text" id="modalCustPhone" placeholder="жишээ: 99112233">
+            </div>
+            <div class="flex-grid">
+                <div class="form-group">
+                    <label>Машины №:</label>
+                    <input type="text" id="modalCarNo" placeholder="1234 УБН">
+                </div>
+                <div class="form-group">
+                    <label>КМ заалт:</label>
+                    <input type="number" id="modalKm" placeholder="125000">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="color: var(--warning);">Нэмэлт дотоод тэмдэглэл:</label>
+                <textarea id="modalNotes" rows="2" placeholder="Дотоод хэрэгцээнд зориулсан тэмдэглэл..."></textarea>
+            </div>
+
+            <div style="margin-top: 14px; background:var(--input-bg); padding:14px; border-radius:12px; text-align:right; border:1px solid var(--border);">
+                <span style="font-size:0.82rem; color:var(--text-muted);">Эцсийн төлөх дүн:</span>
+                <div style="font-size:1.5rem; font-weight:900; color:var(--moty-red); font-family:'Space Grotesk', sans-serif;" id="modalFinalTotal">0 ₮</div>
+            </div>
+
+            <button class="btn-brand" style="width:100%; padding:12px; margin-top:14px; font-size:0.95rem;" onclick="confirmCheckoutAndPrint()">
+                <i class="fa-solid fa-print"></i> Хадгалах & Баримталж Хэвлэх
+            </button>
+        </div>
+    </div>
+
+    <!-- A4 FORMAL INVOICE / PAID RECEIPT PRINT TEMPLATE -->
+    <div id="a4Invoice">
+        <div class="inv-header">
+            <div>
+                <img id="invLogoImg" class="inv-logo-img" src="Moty's_logo.webp" alt="Logo">
+                <div style="font-size:11px; color:#555; margin-top:6px;">
+                    <strong>Албан ёсны дистрибьютор: <span id="invStoreName">Runs Automotive Mongolia</span></strong><br>
+                    Компани: <span id="invCompName">Эвримоторс ХХК</span><br>
+                    Утас: <span id="invPhone">75751595</span> | И-мэйл: <span id="invEmail">info@runs.mn</span><br>
+                    Хаяг: <span id="invAddress">Улаанбаатар хот</span>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <h2 id="invTitleHeader" style="color:#e61924; font-size:22px;">НЭХЭМЖЛЭХ</h2>
+                <div id="invPaidStamp" class="paid-stamp" style="display:none;">✅ 100% ТӨЛӨГДСӨН</div>
+                <div style="font-size:12px; margin-top:4px;">
+                    <strong>Дугаар:</strong> <span id="invNum">INV-000000</span><br>
+                    <strong>Огноо:</strong> <span id="invDate">2026-11-01</span><br>
+                    <span id="invDueDateRow"><strong>Төлөх Огноо:</strong> <span id="invDueDate">2026-11-15</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:12px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0;">
+            <div>
+                <strong>Харилцагч Байгууллага / Иргэн:</strong><br>
+                Нэр: <span id="invCustName">-</span><br>
+                Утас: <span id="invCustPhone">-</span>
+            </div>
+            <div>
+                <strong>Тээврийн хэрэгсэл:</strong><br>
+                Улсын №: <span id="invCustCar">-</span><br>
+                Гүйж явсан КМ: <span id="invCustKm">-</span>
+            </div>
+        </div>
+
+        <table class="inv-table">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Барааны Нэр / Төрөл</th>
+                    <th style="text-align:center;">Тоо</th>
+                    <th style="text-align:right;">Нэгж Үнэ (₮)</th>
+                    <th style="text-align:right;">Хөнгөлөлт (%)</th>
+                    <th style="text-align:right;">Нийт Дүн (₮)</th>
+                </tr>
+            </thead>
+            <tbody id="invItemsList"></tbody>
+        </table>
+
+        <div class="inv-totals">
+            <p>Нийт дүн: <span id="invSubTotal">0</span> ₮</p>
+            <p>Хөнгөлөлт: -<span id="invDiscount">0</span> ₮</p>
+            <p id="invAdvanceRow">Төлсөн Урьдчилгаа: -<span id="invAdvance">0</span> ₮</p>
+            <p style="font-size:16px; font-weight:bold; color:#e61924; margin-top:6px;">ЭЦСИЙН ТӨЛӨХ / ТӨЛСӨН ДҮН: <span id="invFinalTotal">0</span> ₮</p>
+        </div>
+
+        <div style="margin-top:20px; font-size:11px; background:#fff7ed; padding:10px; border-radius:6px; border:1px solid #fdba74;">
+            <strong>Төлбөр хүлээн авах Данснууд & Анхааруулга:</strong><br>
+            <div id="invBankInfoDisplay" style="white-space: pre-line; margin-top:4px;"></div>
+            <div id="invFooterNoteDisplay" style="font-style:italic; margin-top:4px; color:#555;"></div>
+        </div>
+
+        <div class="inv-footer">
+            <div>
+                <p>Нэхэмжилсэн / Хүлээлгэн өгсөн:</p><br><br>
+                <p>____________________ / <span id="invSignStore">Runs Automotive</span> /</p>
+            </div>
+            <div>
+                <p>Хүлээн авсан (Гарын үсэг, тэмдэг):</p><br><br>
+                <p>____________________ / <span id="invSignCust">-</span> /</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECEIPT THERMAL PRINT (80mm) -->
+    <div id="receipt">
+        <div style="text-align:center; margin-bottom:6px;">
+            <img id="rcptLogoImg" class="receipt-logo-img" src="Moty's_logo.webp" alt="Logo" style="max-height:60px; width:auto; height:auto; object-fit:contain; display:block; margin:0 auto;">
+        </div>
+        <p style="font-weight:bold; font-size:11px; text-align:center; letter-spacing:1px;" id="rcptStoreText">Runs Automotive Mongolia</p>
+        <div class="receipt-desc" style="margin-top:2px; text-align:center;" id="rcptContactText"> Утас: 75751595 </div>
+        <div class="line" style="border-top:1px dashed #000; margin:6px 0;"></div>
+        <p id="receiptDate" style="text-align:left;"></p>
+        <p id="receiptCustomer" style="text-align:left;"></p>
+        <p id="receiptCar" style="text-align:left;"></p>
+        <p id="receiptKm" style="text-align:left;"></p>
+        <div class="line" style="border-top:1px dashed #000; margin:6px 0;"></div>
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr><th style="text-align:left; font-size:10px;">Бараа</th><th style="text-align:center; font-size:10px;">Тоо</th><th style="text-align:right; font-size:10px;">Дүн</th></tr>
+            </thead>
+            <tbody id="receiptItems"></tbody>
+        </table>
+        <div class="line" style="border-top:1px dashed #000; margin:6px 0;"></div>
+        <p id="receiptSubtotal" style="text-align:right;"></p>
+        <p id="receiptDiscount" style="text-align:right;"></p>
+        <p style="text-align:right; font-weight:bold; font-size: 13px;" id="receiptTotal"></p>
+        <div class="line" style="border-top:1px dashed #000; margin:6px 0;"></div>
+        <p style="text-align:center;" id="rcptFooterText">Moty's брендийг сонгосонд баярлалаа!</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmXOVgAXPqwCjLJ1YKNu0RwV_XH1iNEJs",
+            authDomain: "moty-s-mongolia.firebaseapp.com",
+            projectId: "moty-s-mongolia",
+            storageBucket: "moty-s-mongolia.firebasestorage.app",
+            messagingSenderId: "737644728583",
+            appId: "1:737644728583:web:15b20a7c208db1856a75a2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentUserRole = null;
+        let inventory = [];
+        let customers = [];
+        let salesData = [];
+        let categories = [];
+        let paymentMethods = [];
+        let packingLists = [];
+        let cart = [];
+        let receiptConfig = {};
+
+        document.getElementById('packingDate').valueAsDate = new Date();
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const themeBtn = document.getElementById('themeBtn');
+            if (document.body.classList.contains('light-theme')) {
+                themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
+            } else {
+                themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('themeBtn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+        }
+
+        function handleLogin() {
+            var pinInput = document.getElementById('loginPin');
+            var pin = pinInput ? pinInput.value.trim() : '';
+
+            if (pin === "9963") {
+                currentUserRole = "admin";
+                document.getElementById('currentUserRole').innerText = "Менежер / Админ";
+                var adminEls = document.querySelectorAll('.admin-only');
+                for (var i = 0; i < adminEls.length; i++) { adminEls[i].style.display = 'block'; }
+                document.getElementById('loginModal').style.display = 'none';
+                pinInput.value = '';
+            } else if (pin === "1595") {
+                currentUserRole = "cashier";
+                document.getElementById('currentUserRole').innerText = "Кассчин";
+                var adminEls = document.querySelectorAll('.admin-only');
+                for (var i = 0; i < adminEls.length; i++) { adminEls[i].style.display = 'none'; }
+                document.getElementById('loginModal').style.display = 'none';
+                pinInput.value = '';
+            } else {
+                alert('Нэвтрэх PIN код буруу байна!');
+                pinInput.value = '';
+                pinInput.focus();
+            }
+        }
+
+        window.onload = function() {
+            var loginBtn = document.getElementById('loginBtn');
+            var loginPin = document.getElementById('loginPin');
+
+            if (loginBtn) loginBtn.onclick = handleLogin;
+            if (loginPin) {
+                loginPin.focus();
+                loginPin.onkeyup = function(e) { if (e.key === 'Enter') handleLogin(); };
+            }
+        };
+
+        function logout() { location.reload(); }
+
+        // FIRESTORE LISTENERS
+        db.collection("settings").doc("receiptConfig").onSnapshot(doc => {
+            if (doc.exists) {
+                receiptConfig = doc.data();
+            } else {
+                receiptConfig = {
+                    storeName: "Runs Automotive Mongolia",
+                    companyName: "Эвримоторс ХХК",
+                    phone: "75751595",
+                    email: "info@runs.mn",
+                    address: "Улаанбаатар хот, UG Palace авто худалдааны төв",
+                    logoUrl: "Moty's_logo.webp",
+                    bankInfo: "• Хаан Банк: 5000000000 (Runs Automotive ХХК)\n• Голомт Банк: 1100000000 (Runs Automotive ХХК)",
+                    thermalFooter: "Moty's брендийг сонгосонд баярлалаа! Барааг 7 хоногийн дотор баримттай нь солиулна.",
+                    a4Footer: "Гүйлгээний утга дээр нэхэмжлэхийн дугаар болон утасны дугаараа заавал бичнэ үү."
+                };
+                db.collection("settings").doc("receiptConfig").set(receiptConfig);
+            }
+            applyReceiptSettingsUI();
+        });
+
+        db.collection("categories").onSnapshot(snapshot => {
+            categories = [];
+            snapshot.forEach(doc => categories.push({ id: doc.id, ...doc.data() }));
+            if (categories.length === 0) {
+                ["Моторын тос", "Кроп / Трансмисс", "Шүүрт / Фильтр", "Нэмэлт бодис", "Үйлчилгээ"].forEach(c => db.collection("categories").add({ name: c }));
+            } else {
+                renderCategoriesSelect();
+                renderCategoryManageList();
+            }
+        });
+
+        db.collection("paymentMethods").onSnapshot(snapshot => {
+            paymentMethods = [];
+            snapshot.forEach(doc => paymentMethods.push({ id: doc.id, ...doc.data() }));
+            if (paymentMethods.length === 0) {
+                ["Дансаар (Шилжүүлэг)", "Бэлнээр", "Картаар (POS)", "Зээлээр (Нэхэмжлэх)"].forEach(m => db.collection("paymentMethods").add({ name: m }));
+            } else {
+                renderPaymentMethodsSelect();
+                renderPaymentMethodManageList();
+            }
+        });
+
+        db.collection("packingLists").onSnapshot(snapshot => {
+            packingLists = [];
+            snapshot.forEach(doc => packingLists.push({ id: doc.id, ...doc.data() }));
+            renderPackingListsSelect();
+        });
+
+        db.collection("inventory").onSnapshot(snapshot => {
+            inventory = [];
+            snapshot.forEach(doc => inventory.push({ id: doc.id, ...doc.data() }));
+            inventory.sort((a, b) => a.name.localeCompare(b.name, 'mn'));
+            renderInventory();
+            renderProductStockSelect();
+        });
+
+        db.collection("customers").onSnapshot(snapshot => {
+            customers = [];
+            snapshot.forEach(doc => customers.push({ id: doc.id, ...doc.data() }));
+            renderCustomersModal();
+        });
+
+        db.collection("sales").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+            salesData = [];
+            snapshot.forEach(doc => salesData.push({ id: doc.id, ...doc.data() }));
+            filterSales('all');
+            renderCreditSalesList();
+        });
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // RECEIPT SETTINGS
+        function openReceiptSettingsModal() {
+            document.getElementById('cfgStoreName').value = receiptConfig.storeName || '';
+            document.getElementById('cfgCompanyName').value = receiptConfig.companyName || '';
+            document.getElementById('cfgPhone').value = receiptConfig.phone || '';
+            document.getElementById('cfgEmail').value = receiptConfig.email || '';
+            document.getElementById('cfgAddress').value = receiptConfig.address || '';
+            document.getElementById('cfgLogoUrl').value = receiptConfig.logoUrl || '';
+            document.getElementById('cfgBankInfo').value = receiptConfig.bankInfo || '';
+            document.getElementById('cfgThermalFooter').value = receiptConfig.thermalFooter || '';
+            document.getElementById('cfgA4Footer').value = receiptConfig.a4Footer || '';
+
+            document.getElementById('receiptSettingsModal').style.display = 'flex';
+        }
+        function closeReceiptSettingsModal() { document.getElementById('receiptSettingsModal').style.display = 'none'; }
+
+        document.getElementById('receiptSettingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newConfig = {
+                storeName: document.getElementById('cfgStoreName').value.trim(),
+                companyName: document.getElementById('cfgCompanyName').value.trim(),
+                phone: document.getElementById('cfgPhone').value.trim(),
+                email: document.getElementById('cfgEmail').value.trim(),
+                address: document.getElementById('cfgAddress').value.trim(),
+                logoUrl: document.getElementById('cfgLogoUrl').value.trim(),
+                bankInfo: document.getElementById('cfgBankInfo').value.trim(),
+                thermalFooter: document.getElementById('cfgThermalFooter').value.trim(),
+                a4Footer: document.getElementById('cfgA4Footer').value.trim()
+            };
+            await db.collection("settings").doc("receiptConfig").set(newConfig);
+            alert('Баримтын тохиргоо хадгалагдлаа!');
+            closeReceiptSettingsModal();
+        });
+
+        function applyReceiptSettingsUI() {
+            if (!receiptConfig) return;
+            document.getElementById('hdrStoreName').innerText = receiptConfig.storeName || 'Runs Automotive Mongolia';
+            document.getElementById('invStoreName').innerText = receiptConfig.storeName || '';
+            document.getElementById('invCompName').innerText = receiptConfig.companyName || '';
+            document.getElementById('invPhone').innerText = receiptConfig.phone || '';
+            document.getElementById('invEmail').innerText = receiptConfig.email || '';
+            document.getElementById('invAddress').innerText = receiptConfig.address || '';
+            document.getElementById('invBankInfoDisplay').innerText = receiptConfig.bankInfo || '';
+            document.getElementById('invFooterNoteDisplay').innerText = receiptConfig.a4Footer || '';
+            document.getElementById('invSignStore').innerText = receiptConfig.storeName || '';
+
+            if (receiptConfig.logoUrl) {
+                document.getElementById('invLogoImg').src = receiptConfig.logoUrl;
+                document.getElementById('rcptLogoImg').src = receiptConfig.logoUrl;
+            }
+
+            document.getElementById('rcptStoreText').innerText = receiptConfig.storeName || '';
+            document.getElementById('rcptContactText').innerText = `${receiptConfig.address || ''} | Утас: ${receiptConfig.phone || ''}`;
+            document.getElementById('rcptFooterText').innerText = receiptConfig.thermalFooter || 'Баярлалаа!';
+        }
+
+        // CATEGORY & PAYMENT MANAGERS
+        function openCategoryManager() { document.getElementById('categoryModal').style.display = 'flex'; }
+        function closeCategoryManager() { document.getElementById('categoryModal').style.display = 'none'; }
+        
+        function renderCategoryManageList() {
+            const list = document.getElementById('categoryManageList');
+            if (!list) return;
+            list.innerHTML = '';
+            categories.forEach(c => {
+                list.innerHTML += `<div class="cat-item"><span><strong>${c.name}</strong></span><div><button class="btn-sm" style="background:#f59e0b; color:white; margin-right:4px;" onclick="editCategory('${c.id}', '${c.name}')"><i class="fa-solid fa-pen"></i></button><button class="btn-danger btn-sm" onclick="deleteCategory('${c.id}')"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            });
+        }
+        async function addNewCategory() {
+            const input = document.getElementById('newCatInput');
+            if (input.value.trim()) { await db.collection("categories").add({ name: input.value.trim() }); input.value = ''; }
+        }
+        async function editCategory(id, oldName) {
+            const newName = prompt('Ангилалын нэр засах:', oldName);
+            if (newName && newName.trim() !== '') await db.collection("categories").doc(id).update({ name: newName.trim() });
+        }
+        async function deleteCategory(id) { if (confirm('Устгах уу?')) await db.collection("categories").doc(id).delete(); }
+
+        function openPaymentMethodManager() { document.getElementById('paymentMethodModal').style.display = 'flex'; }
+        function closePaymentMethodManager() { document.getElementById('paymentMethodModal').style.display = 'none'; }
+
+        function renderPaymentMethodManageList() {
+            const list = document.getElementById('paymentMethodManageList');
+            if (!list) return;
+            list.innerHTML = '';
+            paymentMethods.forEach(m => {
+                list.innerHTML += `<div class="cat-item"><span><strong>${m.name}</strong></span><div><button class="btn-sm" style="background:#f59e0b; color:white; margin-right:4px;" onclick="editPaymentMethod('${m.id}', '${m.name}')"><i class="fa-solid fa-pen"></i></button><button class="btn-danger btn-sm" onclick="deletePaymentMethod('${m.id}')"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            });
+        }
+        async function addNewPaymentMethod() {
+            const input = document.getElementById('newPayMethodInput');
+            if (input.value.trim()) { await db.collection("paymentMethods").add({ name: input.value.trim() }); input.value = ''; }
+        }
+        async function editPaymentMethod(id, oldName) {
+            const newName = prompt('Төлбөрийн хэлбэрийн нэр засах:', oldName);
+            if (newName && newName.trim() !== '') await db.collection("paymentMethods").doc(id).update({ name: newName.trim() });
+        }
+        async function deletePaymentMethod(id) { if (confirm('Устгах уу?')) await db.collection("paymentMethods").doc(id).delete(); }
+
+        function openNewPackingListModal() { document.getElementById('newPackingModal').style.display = 'flex'; }
+        function closeNewPackingListModal() { document.getElementById('newPackingModal').style.display = 'none'; }
+
+        document.getElementById('newPackingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const code = document.getElementById('packingCode').value.trim();
+            const date = document.getElementById('packingDate').value;
+            const notes = document.getElementById('packingNotes').value || '';
+            const fileInput = document.getElementById('packingFile');
+            let fileData = null;
+            if (fileInput.files.length > 0) fileData = await fileToBase64(fileInput.files[0]);
+
+            await db.collection("packingLists").add({ code, date, notes, file: fileData });
+            alert('Шинэ Packing List үүслээ!');
+            this.reset();
+            closeNewPackingListModal();
+        });
+
+        function renderPackingListsSelect() {
+            const select = document.getElementById('selectPackingList');
+            select.innerHTML = '<option value="">-- PACKING LIST СОНГОХ (ЗААВАЛ) --</option>';
+            packingLists.forEach(pl => { select.innerHTML += `<option value="${pl.id}">${pl.code} (${pl.date || ''})</option>`; });
+        }
+
+        function renderProductStockSelect() {
+            const select = document.getElementById('selectProductForStock');
+            select.innerHTML = '<option value="">-- Бараа сонгох (эсвэл шинээр нэмэх) --</option>';
+            select.innerHTML += '<option value="NEW" style="color:var(--accent-blue); font-weight:bold;">+ Шинэ бараа анх удаа бүртгэх</option>';
+            inventory.forEach(p => { select.innerHTML += `<option value="${p.id}">${p.name} (Үлдэгдэл: ${p.stock})</option>`; });
+        }
+
+        async function autoFillCurrentPrice() {
+            const select = document.getElementById('selectProductForStock');
+            const val = select.value;
+            if (val === "NEW") {
+                const newName = prompt("Шинэ барааны нэр:");
+                if (!newName) { select.value = ""; return; }
+                const newPrice = prompt("Зарах үнэ (₮):");
+                const newCat = prompt("Ангилал:", "Моторын тос");
+
+                await db.collection("inventory").add({
+                    name: newName.trim(),
+                    price: parseFloat(newPrice) || 0,
+                    category: newCat || "Моторын тос",
+                    stock: 0
+                });
+                document.getElementById('stockInPrice').value = parseFloat(newPrice) || 0;
+            } else if (val !== "") {
+                const p = inventory.find(i => i.id === val);
+                if (p) document.getElementById('stockInPrice').value = p.price;
+            }
+        }
+
+        document.getElementById('stockInForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const plId = document.getElementById('selectPackingList').value;
+            const prodId = document.getElementById('selectProductForStock').value;
+            const inQty = parseInt(document.getElementById('stockInQty').value);
+            const inPrice = parseFloat(document.getElementById('stockInPrice').value);
+
+            if (!plId) return alert('АНХААРУУЛГА: Орлого авахын тулд заавал Packing List сонгох ёстой!');
+            if (!prodId || prodId === 'NEW') return alert('Бараагаа сонгоно уу!');
+
+            const selectedPL = packingLists.find(pl => pl.id === plId);
+            const product = inventory.find(p => p.id === prodId);
+
+            if (!selectedPL || !product) return alert('Мэдээлэл олдсонгүй!');
+            const updatedStock = (product.stock || 0) + inQty;
+
+            await db.collection("inventory").doc(prodId).update({
+                stock: updatedStock,
+                price: inPrice,
+                lastPackingCode: selectedPL.code || '',
+                lastPackingDate: selectedPL.date || '',
+                lastPackingFile: selectedPL.file || null
+            });
+
+            alert(`Амжилттай орлогогдлоо!\n${product.name}: +${inQty} ш`);
+            document.getElementById('stockInQty').value = '';
+        });
+
+        function renderInventory() {
+            const list = document.getElementById('inventoryList');
+            const searchVal = document.getElementById('searchBar').value.toLowerCase();
+            const filterCat = document.getElementById('filterCategory').value;
+
+            list.innerHTML = '';
+            inventory.filter(item => {
+                const matchName = item.name.toLowerCase().includes(searchVal);
+                const matchCat = filterCat === "Бүгд" || (item.category || "Моторын тос") === filterCat;
+                return matchName && matchCat;
+            }).forEach(item => {
+                const fileButton = item.lastPackingFile 
+                    ? `<a href="${item.lastPackingFile}" target="_blank" class="btn-sm btn-primary" style="text-decoration:none; display:inline-block; margin-top:2px;"><i class="fa-solid fa-file-pdf"></i> Файл харах</a>`
+                    : '<small style="color:var(--text-muted)">Файлгүй</small>';
+
+                list.innerHTML += `
+                    <tr>
+                        <td><small style="color:var(--text-muted); font-size:0.72rem;">${item.category || 'Моторын тос'}</small><br><strong>${item.name}</strong></td>
+                        <td><small style="color:var(--accent-blue); font-weight:bold;">${item.lastPackingCode || 'Эхний үлдэгдэл'}</small><br>${fileButton}</td>
+                        <td>${item.price.toLocaleString()}₮</td>
+                        <td><span style="background:var(--input-bg); padding:3px 10px; border-radius:10px; font-weight:bold;">${item.stock}</span></td>
+                        <td style="text-align:right;">
+                            <button class="btn-brand btn-sm" onclick="addToCart('${item.id}')"><i class="fa-solid fa-plus"></i></button>
+                            ${currentUserRole === 'admin' ? `<button class="btn-sm" style="background:#f59e0b; color:white; margin-left:4px;" onclick="openEditProductModal('${item.id}')"><i class="fa-solid fa-pen"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderCategoriesSelect() {
+            const filterCatSelect = document.getElementById('filterCategory');
+            filterCatSelect.innerHTML = '<option value="Бүгд">-- Бүх ангилал --</option>';
+            categories.forEach(c => filterCatSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`);
+        }
+
+        function renderPaymentMethodsSelect() {
+            const select = document.getElementById('paymentMethod');
+            select.innerHTML = '';
+            paymentMethods.forEach(m => select.innerHTML += `<option value="${m.name}">${m.name}</option>`);
+
+            const payCreditSelect = document.getElementById('payCreditMethodSelect');
+            if (payCreditSelect) {
+                payCreditSelect.innerHTML = '';
+                paymentMethods.filter(m => !m.name.includes('Зээл')).forEach(m => payCreditSelect.innerHTML += `<option value="${m.name}">${m.name}</option>`);
+            }
+        }
+
+        function openEditProductModal(id) {
+            if (currentUserRole !== 'admin') return alert('Зөвхөн Менежерт засах эрх байна!');
+            const product = inventory.find(p => p.id === id);
+            if (!product) return;
+
+            document.getElementById('editProdId').value = product.id;
+            document.getElementById('editProdName').value = product.name;
+            document.getElementById('editProdPrice').value = product.price;
+            document.getElementById('editProdStock').value = product.stock;
+
+            const catSelect = document.getElementById('editProdCat');
+            catSelect.innerHTML = '';
+            categories.forEach(c => {
+                const isSelected = c.name === product.category ? 'selected' : '';
+                catSelect.innerHTML += `<option value="${c.name}" ${isSelected}>${c.name}</option>`;
+            });
+            document.getElementById('editProductModal').style.display = 'flex';
+        }
+        function closeEditProductModal() { document.getElementById('editProductModal').style.display = 'none'; }
+
+        async function saveProductEdits() {
+            const id = document.getElementById('editProdId').value;
+            const name = document.getElementById('editProdName').value.trim();
+            const cat = document.getElementById('editProdCat').value;
+            const price = parseFloat(document.getElementById('editProdPrice').value);
+            const stock = parseInt(document.getElementById('editProdStock').value);
+
+            if (!name) return alert('Барааны нэрийг оруулна уу!');
+            await db.collection("inventory").doc(id).update({ name, category: cat, price, stock });
+            alert('Шинэчлэгдлээ.');
+            closeEditProductModal();
+        }
+
+        function openResetDataModal() { document.getElementById('resetDataModal').style.display = 'flex'; }
+        function closeResetDataModal() { document.getElementById('resetDataModal').style.display = 'none'; }
+
+        async function confirmResetDataWithPin() {
+            const pin = document.getElementById('resetPinInput').value.trim();
+            if (pin !== "112520") return alert('Нууц код буруу байна!');
+            if (!confirm('Бүх дата устах болно!')) return;
+
+            const batch = db.batch();
+            salesData.forEach(s => batch.delete(db.collection("sales").doc(s.id)));
+            inventory.forEach(i => batch.delete(db.collection("inventory").doc(i.id)));
+            packingLists.forEach(pl => batch.delete(db.collection("packingLists").doc(pl.id)));
+
+            await batch.commit();
+            alert('Дата цэвэрлэгдлээ.');
+            document.getElementById('resetPinInput').value = '';
+            closeResetDataModal();
+        }
+
+        document.getElementById('customerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const type = document.getElementById('custType').value;
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            const carNo = document.getElementById('custCarNo').value.toUpperCase();
+            const notes = document.getElementById('custNotes').value || '';
+            
+            await db.collection("customers").add({ type, name, phone, carNo, notes });
+            alert('Харилцагч бүртгэгдлээ.');
+            this.reset();
+        });
+
+        function renderCustomersModal() {
+            const select = document.getElementById('modalCustomerSelect');
+            select.innerHTML = '<option value="">-- Шинэ / Энгийн үйлчлүүлэгч --</option>';
+            customers.forEach(c => {
+                const typeTag = c.type.includes('Байгууллага') ? ' 🏢 [Байгууллага]' : '';
+                select.innerHTML += `<option value="${c.id}" data-name="${c.name}" data-type="${c.type}" data-car="${c.carNo}" data-phone="${c.phone}" data-notes="${c.notes || ''}">${c.carNo} - ${c.name} (${c.phone})${typeTag}</option>`;
+            });
+        }
+
+        function autoFillCustomerInfo() {
+            const select = document.getElementById('modalCustomerSelect');
+            const selectedOpt = select.options[select.selectedIndex];
+            
+            if (select.value === "") {
+                document.getElementById('modalCustName').value = "Энгийн үйлчлүүлэгч";
+                document.getElementById('modalCustPhone').value = "";
+                document.getElementById('modalCarNo').value = "";
+                document.getElementById('modalNotes').value = "";
+                document.getElementById('docTypeSelect').value = "THERMAL";
+            } else {
+                document.getElementById('modalCustName').value = selectedOpt.getAttribute('data-name');
+                document.getElementById('modalCustPhone').value = selectedOpt.getAttribute('data-phone');
+                document.getElementById('modalCarNo').value = selectedOpt.getAttribute('data-car');
+                document.getElementById('modalNotes').value = selectedOpt.getAttribute('data-notes');
+                
+                const isCompany = selectedOpt.getAttribute('data-type').includes('Байгууллага');
+                if (isCompany) document.getElementById('docTypeSelect').value = "A4_PAID";
+            }
+        }
+
+        // CART & ITEM-WISE DISCOUNT LOGIC
+        function addToCart(id) {
+            const product = inventory.find(p => p.id === id);
+            if (!product || product.stock <= 0) return alert('Үлдэгдэл хүрэлцэхгүй!');
+
+            const cartItem = cart.find(c => c.id === id);
+            if (cartItem) {
+                if (cartItem.qty + 1 > product.stock) return alert('Үлдэгдэл хүрэлцэхгүй!');
+                cartItem.qty += 1;
+            } else {
+                cart.push({ id: product.id, name: product.name, price: product.price, qty: 1, discountPercent: 0 });
+            }
+            renderCart();
+        }
+
+        function changeCartQty(index, change) {
+            const item = cart[index];
+            const product = inventory.find(p => p.id === item.id);
+            if (change > 0 && item.qty + 1 > product.stock) return alert('Үлдэгдэл хүрэлцэхгүй!');
+            item.qty += change;
+            if (item.qty <= 0) cart.splice(index, 1);
+            renderCart();
+        }
+
+        function updateItemDiscount(index, val) {
+            let disc = parseFloat(val);
+            if (isNaN(disc) || disc < 0) disc = 0;
+            if (disc > 100) disc = 100;
+            cart[index].discountPercent = disc;
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartList');
+            list.innerHTML = '';
+            
+            let subTotal = 0;
+            let totalDiscountAmount = 0;
+
+            cart.forEach((item, index) => {
+                const itemBaseTotal = item.price * item.qty;
+                const itemDiscAmount = (itemBaseTotal * (item.discountPercent || 0)) / 100;
+                const itemFinalTotal = itemBaseTotal - itemDiscAmount;
+
+                subTotal += itemBaseTotal;
+                totalDiscountAmount += itemDiscAmount;
+
+                list.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.price.toLocaleString()}₮</td>
+                        <td>
+                            <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main);" onclick="changeCartQty(${index}, -1)">-</button>
+                            ${item.qty}
+                            <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main);" onclick="changeCartQty(${index}, 1)">+</button>
+                        </td>
+                        <td>
+                            <input type="number" min="0" max="100" value="${item.discountPercent || 0}" style="width:65px; padding:4px; text-align:center;" onchange="updateItemDiscount(${index}, this.value)"> %
+                        </td>
+                        <td>${itemFinalTotal.toLocaleString()}₮</td>
+                        <td><button class="btn-danger btn-sm" onclick="cart.splice(${index},1); renderCart();">x</button></td>
+                    </tr>
+                `;
+            });
+
+            const finalTotal = subTotal - totalDiscountAmount;
+
+            document.getElementById('subTotal').innerText = subTotal.toLocaleString();
+            document.getElementById('discountAmount').innerText = totalDiscountAmount.toLocaleString();
+            document.getElementById('cartTotal').innerText = finalTotal.toLocaleString();
+        }
+
+        function toggleCreditOptions() {
+            const method = document.getElementById('paymentMethod').value;
+            const sec = document.getElementById('creditOptionsSection');
+            const docSel = document.getElementById('docTypeSelect');
+
+            if (method.includes('Зээл')) {
+                sec.style.display = 'block';
+                docSel.value = 'A4_INVOICE';
+                const d = new Date();
+                d.setDate(d.getDate() + 14);
+                document.getElementById('creditDueDateInput').valueAsDate = d;
+            } else {
+                sec.style.display = 'none';
+            }
+        }
+
+        function openCheckoutModal() {
+            if (cart.length === 0) return alert('Сагс хоосон байна!');
+            document.getElementById('modalFinalTotal').innerText = document.getElementById('cartTotal').innerText + " ₮";
+            toggleCreditOptions();
+            document.getElementById('checkoutModal').style.display = 'flex';
+        }
+        function closeCheckoutModal() { document.getElementById('checkoutModal').style.display = 'none'; }
+
+        async function confirmCheckoutAndPrint() {
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const docType = document.getElementById('docTypeSelect').value;
+            const custName = document.getElementById('modalCustName').value || 'Энгийн үйлчлүүлэгч';
+            const phone = document.getElementById('modalCustPhone').value || '';
+            const carNo = document.getElementById('modalCarNo').value.toUpperCase() || 'Бүртгэлгүй';
+            const currentKm = document.getElementById('modalKm').value || 'Бичигдээгүй';
+            const notes = document.getElementById('modalNotes').value || '';
+
+            const subTotal = parseFloat(document.getElementById('subTotal').innerText.replace(/,/g, ''));
+            const discountAmount = parseFloat(document.getElementById('discountAmount').innerText.replace(/,/g, ''));
+            const finalTotal = parseFloat(document.getElementById('cartTotal').innerText.replace(/,/g, ''));
+            const dateStr = new Date().toLocaleString('mn-MN');
+
+            const isCredit = paymentMethod.includes('Зээл') || docType === 'A4_INVOICE';
+            let advancePaid = 0;
+            let dueDate = '';
+            let creditRemaining = 0;
+
+            if (isCredit) {
+                advancePaid = parseFloat(document.getElementById('creditAdvanceInput').value) || 0;
+                dueDate = document.getElementById('creditDueDateInput').value || '';
+                creditRemaining = finalTotal - advancePaid;
+            }
+
+            const invNum = "INV-" + Date.now().toString().slice(-6);
+
+            const batch = db.batch();
+            cart.forEach(cartItem => {
+                const product = inventory.find(p => p.id === cartItem.id);
+                if (product) batch.update(db.collection("inventory").doc(product.id), { stock: product.stock - cartItem.qty });
+            });
+
+            const saleRef = db.collection("sales").doc();
+            batch.set(saleRef, {
+                invoiceNum: invNum,
+                date: dateStr,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                paymentMethod: paymentMethod,
+                docType: docType,
+                customer: custName,
+                phone: phone,
+                carNo: carNo,
+                km: currentKm,
+                notes: notes,
+                items: cart,
+                subTotal: subTotal,
+                discount: discountAmount,
+                total: finalTotal,
+                isCredit: isCredit,
+                advancePaid: advancePaid,
+                creditRemaining: creditRemaining,
+                dueDate: dueDate,
+                status: isCredit ? (creditRemaining <= 0 ? 'completed' : 'credit_unpaid') : 'completed'
+            });
+
+            await batch.commit();
+            closeCheckoutModal();
+
+            if (docType === 'THERMAL') {
+                printThermalReceipt(dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, finalTotal);
+            } else {
+                const isPaidFull = docType === 'A4_PAID';
+                printA4Document(invNum, dateStr, dueDate, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, isPaidFull ? finalTotal : creditRemaining, isPaidFull);
+            }
+
+            cart = [];
+            document.getElementById('modalKm').value = '';
+            document.getElementById('modalNotes').value = '';
+            renderCart();
+        }
+
+        function printThermalReceipt(dateStr, custName, phone, carNo, currentKm, items, subTotal, discountAmount, finalTotal) {
+            document.body.classList.remove('print-a4-mode');
+            document.body.classList.add('print-receipt-mode');
+
+            document.getElementById('receiptDate').innerText = "Огноо: " + dateStr;
+            document.getElementById('receiptCustomer').innerText = "Харилцагч: " + custName + " " + phone;
+            document.getElementById('receiptCar').innerText = "Машины №: " + carNo;
+            document.getElementById('receiptKm').innerText = "Гүйж явсан КМ: " + currentKm + " km";
+            
+            const receiptItems = document.getElementById('receiptItems');
+            receiptItems.innerHTML = '';
+            items.forEach(item => {
+                const itemTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
+                receiptItems.innerHTML += `<tr><td style="font-size:10px;">${item.name}</td><td style="text-align:center; font-size:10px;">${item.qty}</td><td style="text-align:right; font-size:10px;">${itemTotal.toLocaleString()}₮</td></tr>`;
+            });
+
+            document.getElementById('receiptSubtotal').innerText = `Дүн: ${subTotal.toLocaleString()}₮`;
+            document.getElementById('receiptDiscount').innerText = `Хөнгөлөлт: -${discountAmount.toLocaleString()}₮`;
+            document.getElementById('receiptTotal').innerText = `НИЙТ ТӨЛСӨН: ${finalTotal.toLocaleString()}₮`;
+
+            window.print();
+        }
+
+        function printA4Document(invNum, dateStr, dueDate, custName, phone, carNo, currentKm, items, subTotal, discountAmount, advancePaid, finalTotalDisplay, isPaidFull) {
+            document.body.classList.remove('print-receipt-mode');
+            document.body.classList.add('print-a4-mode');
+
+            document.getElementById('invTitleHeader').innerText = isPaidFull ? "ТӨЛБӨРИЙН БАРИМТ" : "НЭХЭМЖЛЭХ";
+            document.getElementById('invPaidStamp').style.display = isPaidFull ? "inline-block" : "none";
+            document.getElementById('invDueDateRow').style.display = isPaidFull ? "none" : "inline";
+
+            document.getElementById('invNum').innerText = invNum;
+            document.getElementById('invDate').innerText = dateStr.slice(0, 10);
+            document.getElementById('invDueDate').innerText = dueDate || '-';
+            document.getElementById('invCustName').innerText = custName;
+            document.getElementById('invCustPhone').innerText = phone;
+            document.getElementById('invCustCar').innerText = carNo;
+            document.getElementById('invCustKm').innerText = currentKm + " km";
+            document.getElementById('invSignCust').innerText = custName;
+
+            const list = document.getElementById('invItemsList');
+            list.innerHTML = '';
+            items.forEach((item, idx) => {
+                const rowTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
+                list.innerHTML += `<tr><td>${idx + 1}</td><td>${item.name}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;">${item.price.toLocaleString()}₮</td><td style="text-align:right;">${item.discountPercent || 0}%</td><td style="text-align:right;">${rowTotal.toLocaleString()}₮</td></tr>`;
+            });
+
+            document.getElementById('invSubTotal').innerText = subTotal.toLocaleString();
+            document.getElementById('invDiscount').innerText = discountAmount.toLocaleString();
+            document.getElementById('invAdvance').innerText = advancePaid.toLocaleString();
+            
+            document.getElementById('invAdvanceRow').style.display = isPaidFull ? "none" : "block";
+            document.getElementById('invFinalTotal').innerText = finalTotalDisplay.toLocaleString();
+
+            window.print();
+        }
+
+        function renderCreditSalesList() {
+            const list = document.getElementById('creditSalesList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            const activeCredits = salesData.filter(s => s.isCredit && s.status === 'credit_unpaid');
+            activeCredits.forEach(s => {
+                const isOverdue = new Date(s.dueDate) < new Date();
+                const dueTag = isOverdue ? `<span style="color:#ef4444; font-weight:bold;">Хугацаа хэтэрсэн (${s.dueDate})</span>` : `<span style="color:var(--warning);">${s.dueDate || '-'}</span>`;
+
+                list.innerHTML += `
+                    <tr>
+                        <td><strong>${s.customer}</strong> (${s.carNo})<br><small>Төлөх: ${dueTag}</small></td>
+                        <td><strong style="color:var(--moty-red);">${s.creditRemaining.toLocaleString()}₮</strong><br><small style="color:var(--text-muted)">Урьдчилгаа: ${s.advancePaid.toLocaleString()}₮</small></td>
+                        <td>
+                            <button class="btn-sm btn-excel" onclick="openPayCreditModal('${s.id}')"><i class="fa-solid fa-hand-holding-dollar"></i> Төлөх</button>
+                            <button class="btn-sm btn-primary" style="margin-left:2px;" onclick="reprintA4Document('${s.id}')"><i class="fa-solid fa-file-invoice"></i> А4</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            if (activeCredits.length === 0) {
+                list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Идэвхтэй зээлийн авлагагүй байна.</td></tr>';
+            }
+        }
+
+        function openPayCreditModal(saleId) {
+            const sale = salesData.find(s => s.id === saleId);
+            if (!sale) return;
+
+            document.getElementById('payCreditSaleId').value = saleId;
+            document.getElementById('payCreditAmountInput').value = sale.creditRemaining;
+            document.getElementById('creditPaySummary').innerHTML = `
+                <strong>Харилцагч:</strong> ${sale.customer} (${sale.carNo})<br>
+                <strong>Үндсэн Дүн:</strong> ${sale.total.toLocaleString()}₮ | <strong>Урьдчилгаа:</strong> ${sale.advancePaid.toLocaleString()}₮<br>
+                <span style="color:var(--moty-red);"><strong>Үлдсэн Авлага:</strong> ${sale.creditRemaining.toLocaleString()}₮</span>
+            `;
+            document.getElementById('payCreditModal').style.display = 'flex';
+        }
+        function closePayCreditModal() { document.getElementById('payCreditModal').style.display = 'none'; }
+
+        async function confirmPayCredit() {
+            const saleId = document.getElementById('payCreditSaleId').value;
+            const payAmount = parseFloat(document.getElementById('payCreditAmountInput').value);
+            const payMethod = document.getElementById('payCreditMethodSelect').value;
+
+            const sale = salesData.find(s => s.id === saleId);
+            if (!sale || payAmount <= 0) return alert('Дүн буруу байна!');
+
+            const newRemaining = sale.creditRemaining - payAmount;
+            const newAdvancePaid = sale.advancePaid + payAmount;
+            const newStatus = newRemaining <= 0 ? 'completed' : 'credit_unpaid';
+
+            await db.collection("sales").doc(saleId).update({
+                advancePaid: newAdvancePaid,
+                creditRemaining: newRemaining < 0 ? 0 : newRemaining,
+                status: newStatus,
+                lastPayMethod: payMethod,
+                lastPayDate: new Date().toLocaleString('mn-MN')
+            });
+
+            alert('Зээлийн төлбөр амжилттай бүртгэгдлээ!');
+            closePayCreditModal();
+        }
+
+        function reprintA4Document(saleId) {
+            const s = salesData.find(item => item.id === saleId);
+            if (s) {
+                const isPaid = s.status === 'completed' && !s.creditRemaining;
+                printA4Document(s.invoiceNum || 'INV-000', s.date, s.dueDate, s.customer, s.phone, s.carNo, s.km, s.items, s.subTotal, s.discount, s.advancePaid, isPaid ? s.total : s.creditRemaining, isPaid);
+            }
+        }
+
+        function openReturnModal(saleId) {
+            if (currentUserRole !== 'admin') return alert('Зөвхөн Менежерт эрх байна!');
+            const sale = salesData.find(s => s.id === saleId);
+            if (!sale) return;
+
+            const fee = sale.total * 0.10;
+            const refundAmount = sale.total - fee;
+            const itemsSummary = sale.items.map(i => `${i.name} (${i.qty}ш)`).join(', ');
+
+            document.getElementById('returnSaleId').value = saleId;
+            document.getElementById('returnReasonInput').value = '';
+            document.getElementById('returnSummaryInfo').innerHTML = `
+                <strong>Харилцагч:</strong> ${sale.customer} (${sale.carNo})<br>
+                <strong>Бараа:</strong> ${itemsSummary}<br>
+                <strong>Борлуулалт:</strong> ${sale.total.toLocaleString()}₮<br>
+                <span style="color:var(--warning);"><strong>10% Суутгал:</strong> -${fee.toLocaleString()}₮</span> | 
+                <span style="color:var(--success);"><strong>Буцаан олгох:</strong> ${refundAmount.toLocaleString()}₮</span>
+            `;
+            document.getElementById('returnModal').style.display = 'flex';
+        }
+        function closeReturnModal() { document.getElementById('returnModal').style.display = 'none'; }
+
+        async function processReturnSaleConfirm() {
+            const saleId = document.getElementById('returnSaleId').value;
+            const returnReason = document.getElementById('returnReasonInput').value.trim();
+            if (!returnReason) return alert('Шалтгаанаа бичнэ үү!');
+            
+            const sale = salesData.find(s => s.id === saleId);
+            if (!sale) return;
+
+            if (!confirm('Буцаалт хийх үү?')) return;
+
+            const batch = db.batch();
+            sale.items.forEach(item => {
+                const product = inventory.find(p => p.id === item.id);
+                if (product) batch.update(db.collection("inventory").doc(product.id), { stock: product.stock + item.qty });
+            });
+
+            batch.update(db.collection("sales").doc(saleId), {
+                status: 'returned',
+                returnReason: returnReason,
+                total: 0,
+                creditRemaining: 0
+            });
+
+            await batch.commit();
+            alert('Буцаагдлаа.');
+            closeReturnModal();
+        }
+
+        function filterSales(type) {
+            const list = document.getElementById('salesHistory');
+            list.innerHTML = '';
+            let totalRev = 0;
+
+            const now = new Date();
+            const filtered = salesData.filter(s => {
+                if (!s.timestamp) return true;
+                const sDate = s.timestamp.toDate();
+                
+                if (type === 'yesterday') {
+                    const yest = new Date();
+                    yest.setDate(now.getDate() - 1);
+                    return sDate.toDateString() === yest.toDateString();
+                }
+                if (type === 'today') {
+                    return sDate.toDateString() === now.toDateString();
+                }
+                if (type === 'month') {
+                    return sDate.getMonth() === now.getMonth() && sDate.getFullYear() === now.getFullYear();
+                }
+                if (type === 'year') {
+                    return sDate.getFullYear() === now.getFullYear();
+                }
+                return true; // 'all'
+            });
+
+            filtered.forEach(sale => {
+                totalRev += (sale.total || 0);
+                const isReturned = sale.status === 'returned';
+                const isCreditUnpaid = sale.status === 'credit_unpaid';
+                const statusTag = isReturned ? '<small style="color:#ef4444; font-weight:bold;">Буцаагдсан</small>' : (isCreditUnpaid ? '<small style="color:var(--warning); font-weight:bold;">Зээл (Төлөгдөөгүй)</small>' : '<small style="color:var(--success); font-weight:bold;">Төлөгдсөн</small>');
+
+                list.innerHTML += `
+                    <tr style="${isReturned ? 'background:rgba(239, 68, 68, 0.1); opacity:0.75;' : ''}">
+                        <td style="font-size:0.75rem;">${sale.date}<br><small style="color:var(--accent-blue); font-weight:bold;">${sale.paymentMethod || 'Дансаар'}</small></td>
+                        <td><strong>${sale.carNo || ''}</strong> (${sale.customer})<br>${statusTag}</td>
+                        <td><strong>${sale.total.toLocaleString()}₮</strong></td>
+                        <td>
+                            <button class="btn-sm btn-primary" onclick="reprintA4Document('${sale.id}')"><i class="fa-solid fa-file-invoice"></i> A4</button>
+                            ${!isReturned && currentUserRole === 'admin' ? `<button class="btn-danger btn-sm" onclick="openReturnModal('${sale.id}')"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('totalRevenue').innerText = totalRev.toLocaleString();
+        }
+
+        function exportInventoryToExcel() {
+            if (inventory.length === 0) return alert('Үлдэгдэл хоосон байна!');
+            const rows = inventory.map((i, index) => ({
+                "№": index + 1,
+                "Барааны Нэр": i.name,
+                "Ангилал": i.category || 'Моторын тос',
+                "Үлдэгдэл Тоо": i.stock,
+                "Зарах Нэгж Үнэ (₮)": i.price,
+                "Нийт Үнийн Дүн (₮)": i.stock * i.price,
+                "Сүүлд Авсан Packing List Код": i.lastPackingCode || '-',
+                "Сүүлд Ирсэн Огноо": i.lastPackingDate || '-'
+            }));
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory_Stock");
+            XLSX.writeFile(workbook, `Motys_Toollogo_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        function exportSalesToExcel() {
+            if (salesData.length === 0) return alert('Дата хоосон байна!');
+            const excelRows = salesData.map(s => ({
+                "Нэхэмжлэх №": s.invoiceNum || '-',
+                "Огноо": s.date,
+                "Төлбөрийн Хэлбэр": s.paymentMethod || 'Дансаар',
+                "Статус": s.status,
+                "Харилцагч": s.customer,
+                "Утас": s.phone || '',
+                "Машины дугаар": s.carNo || '',
+                "Нийт Дүн (₮)": s.total,
+                "Урьдчилгаа (₮)": s.advancePaid || 0,
+                "Үлдсэн Авлага (₮)": s.creditRemaining || 0
+            }));
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Sales_Report");
+            XLSX.writeFile(workbook, `Motys_Borluulalt_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+    </script>
+</body>
+</html>
