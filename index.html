@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runs Automotive Mongolia - POS & Inventory System</title>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #050507;
+            --bg-card: rgba(18, 18, 22, 0.85);
+            --moty-red: #e61924;
+            --moty-red-glow: rgba(230, 25, 36, 0.35);
+            --moty-red-hover: #ff1f2d;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(230, 25, 36, 0.5);
+            --accent-blue: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --table-th-bg: rgba(255, 255, 255, 0.02);
+            --modal-bg: #0c0d12;
+        }
+
+        body.light-theme {
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-hover: rgba(230, 25, 36, 0.6);
+            --input-bg: #f8fafc;
+            --table-th-bg: #f1f5f9;
+            --modal-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding: 14px 20px; min-height: 100vh; }
+        
+        /* LOGIN OVERLAY */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(5, 5, 7, 0.7) 0%, rgba(5, 5, 7, 0.95) 100%), url('Moty_s_logo.webp') center/cover no-repeat fixed; display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .glass-card { background: rgba(12, 12, 15, 0.9); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); width: 90%; max-width: 440px; padding: 40px 32px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), 0 0 40px var(--moty-red-glow); color: #ffffff; text-align: center; }
+        .login-logo-img { max-width: 200px; height: auto; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 0 12px var(--moty-red-glow)); }
+        .glass-card p.subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 24px; letter-spacing: 0.5px; }
+        .glass-input-wrapper { position: relative; margin-bottom: 16px; text-align: left; }
+        .glass-input-wrapper input { width: 100%; padding: 14px 44px 14px 18px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff; font-size: 1.1rem; letter-spacing: 4px; outline: none; transition: all 0.3s ease; }
+        .glass-input-wrapper input:focus { background: rgba(255, 255, 255, 0.1); border-color: var(--moty-red); box-shadow: 0 0 20px var(--moty-red-glow); }
+        .glass-input-wrapper i { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .btn-glass-submit { width: 100%; padding: 14px; background: var(--moty-red); border: none; border-radius: 12px; color: #ffffff; font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 25px var(--moty-red-glow); display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .btn-glass-submit:hover { background: var(--moty-red-hover); transform: translateY(-2px); box-shadow: 0 15px 35px rgba(230, 25, 36, 0.6); }
+
+        /* HEADER */
+        header { display: flex; align-items: center; justify-content: space-between; max-width: 1500px; margin: 0 auto 16px; background: var(--bg-card); backdrop-filter: blur(20px); padding: 6px 24px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; height: 60px; overflow: visible; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .header-logo-img { height: 140px; width: auto; object-fit: contain; margin-top: -10px; filter: drop-shadow(0 0 15px var(--moty-red-glow)); position: relative; z-index: 10; }
+        header h1 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); border-left: 1px solid var(--border); padding-left: 14px; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px; }
+        header h1 span { font-size: 0.7rem; color: var(--text-muted); font-weight: 400; font-family: 'Plus Jakarta Sans', sans-serif; display: block; margin-top: 1px; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+        .theme-toggle-btn { background: var(--input-bg); border: 1px solid var(--border); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; }
+        .theme-toggle-btn:hover { border-color: var(--moty-red); color: var(--moty-red); }
+        .user-info-badge { background: var(--input-bg); padding: 6px 16px; border-radius: 30px; font-size: 0.82rem; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
+
+        .container { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; max-width: 1500px; margin: 0 auto; }
+        .card { background: var(--bg-card); backdrop-filter: blur(20px); padding: 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); margin-bottom: 18px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        h2 { font-size: 0.98rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px; }
+        h2 i { color: var(--moty-red); }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: var(--input-bg); color: var(--text-main); transition: all 0.2s; }
+        input:focus, select:focus { outline: none; border-color: var(--moty-red); box-shadow: 0 0 10px var(--moty-red-glow); }
+        select option { background: var(--bg-card); color: var(--text-main); }
+
+        button { border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-brand { background: var(--moty-red); color: white; box-shadow: 0 4px 15px var(--moty-red-glow); }
+        .btn-brand:hover { background: var(--moty-red-hover); }
+        .btn-primary { background: var(--accent-blue); color: #000; font-weight: 700; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 6px; }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 8px; font-size: 0.85rem; }
+        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 700; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; font-size: 0.72rem; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
+        .flex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <!-- LOGIN OVERLAY WITH DIRECT CALCULATOR ACCESS -->
+    <div class="login-overlay" id="loginModal">
+        <div class="glass-card">
+            <img src="Moty's_logo.webp" alt="Moty's Logo" class="login-logo-img">
+            <p class="subtitle">Welcome back, please login or open calculator</p>
+            <div class="glass-input-wrapper">
+                <input type="password" id="loginPin" placeholder="Enter PIN code" maxlength="4" autocomplete="off">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <button type="button" id="loginBtn" class="btn-glass-submit">
+                Login <i class="fa-solid fa-arrow-right-long"></i>
+            </button>
+            <button type="button" onclick="document.getElementById('loginModal').style.display='none';" class="btn-glass-submit" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); margin-top: 4px;">
+                <i class="fa-solid fa-calculator"></i> Тосны тооцоолуур руу шууд орох
+            </button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo-container">
+            <img src="Moty's_logo.webp" alt="Moty's Logo" class="header-logo-img">
+            <h1>
+                <span id="hdrStoreName">Runs Automotive Mongolia</span>
+                <span>Official Authorized Distributor & Service POS System</span>
+            </h1>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn" title="Сэдэв солих">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            <div class="user-info-badge">
+                <span><i class="fa-solid fa-user-shield" style="color:var(--moty-red);"></i> <b id="currentUserRole">Зочин / Тооцоолуур</b></span>
+                <button class="btn-sm" style="background:rgba(255,255,255,0.08); color:var(--text-main);" onclick="location.reload()"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- ЗҮҮН БАГАНА: ТОСНЫ УХААЛАГ ТООЦООЛУУР -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-calculator"></i> Тосны Ухаалаг Тооцоолуур</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label>Машины марк / загвар сонгох:</label>
+                    <select id="carSelect" onchange="onCarChange()">
+                        <option value="">-- Машинаа сонгоно уу --</option>
+                    </select>
+                </div>
+
+                <div class="flex-grid" style="margin-bottom: 12px;">
+                    <div style="background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Хөдөлгүүр:</span>
+                        <strong id="carEngine" style="font-size:0.88rem;">-</strong>
+                    </div>
+                    <div style="background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Тосны ягштал хэмжээ:</span>
+                        <strong id="carCapacity" style="font-size:0.88rem; color:var(--moty-red);">0.0 л</strong>
+                    </div>
+                </div>
+
+                <!-- Smart Recommendation -->
+                <div id="smartRec" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 12px; display: none;">
+                    💡 <b>Зөвлөмж (Дутуу тос орохгүйгээр):</b> <span id="recText"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Тосны бүтээгдэхүүн (Савлагаа):</label>
+                    <select id="oilSelect" onchange="calculateTotal()">
+                        <option value="">-- Тос сонгох --</option>
+                        <option value="M100 (0W20) 1L">M100 (0W20) 1L - 54,900₮</option>
+                        <option value="M100 (0W20) 4L">M100 (0W20) 4L - 219,600₮</option>
+                        <option value="M100 (5W30) 1L">M100 (5W30) 1L - 54,900₮</option>
+                        <option value="M100 (5W30) 4L">M100 (5W30) 4L - 219,600₮</option>
+                        <option value="M100 (5W40) 4L">M100 (5W40) 4L - 235,600₮</option>
+                        <option value="M103 (10W40) 4L">M103 (10W40) 4L - 239,600₮</option>
+                        <option value="M110 (50) 4L">M110 (50) 4L - 259,600₮</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Шаардлагатай ширхэг:</label>
+                    <input type="number" id="oilQty" value="1" min="0" oninput="calculateTotal()">
+                </div>
+
+                <div class="flex-grid" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label>Шүүлтүүр авах эсэх:</label>
+                        <select id="filterCheck" onchange="calculateTotal()">
+                            <option value="yes">Тийм (18,000₮)</option>
+                            <option value="no">Үгүй (0₮)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Хөнгөлөлт (%):</label>
+                        <select id="discount" onchange="calculateTotal()">
+                            <option value="0">0% (Хөнгөлөлтгүй)</option>
+                            <option value="5">5%</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                            <option value="20">20%</option>
+                            <option value="30">30%</option>
+                            <option value="50">50%</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Summary Box -->
+                <div style="background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border); margin-top: 15px; space-y: 6px;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                        <span>Тосны үндсэн үнэ:</span>
+                        <strong id="subTotalOil">0 ₮</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                        <span>Хөнгөлөгдсөн тосны үнэ:</span>
+                        <strong id="discountedOil" style="color:var(--warning);">0 ₮</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                        <span>Шүүлтүүрийн үнэ:</span>
+                        <strong id="filterPrice">18,000 ₮</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:8px;">
+                        <span>Тос солих ажлын хөлс:</span>
+                        <strong style="color:var(--success);">ҮНЭГҮЙ (0 ₮)</strong>
+                    </div>
+                    <div style="border-top:1px solid var(--border); padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem; font-weight:700;">ҮЙЛЧЛҮҮЛЭГЧИД ХЭЛЭХ ДҮН:</span>
+                        <strong id="finalTotal" style="font-size:1.2rem; color:var(--moty-red);">0 ₮</strong>
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px; text-align: right;">
+                    <button class="btn-brand btn-sm" onclick="resetCalculator()">🧹 Цэвэрлэх</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- БАРУУН БАГАНА: БАРААНЫ ҮЛДЭГДЭЛ & КАСС -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-warehouse"></i> Барааны Үлдэгдэл</h2>
+                </div>
+                <div class="flex-grid" style="margin-bottom: 12px;">
+                    <input type="text" id="searchBar" placeholder="🔍 Бараа хайх..." onkeyup="renderInventory()">
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Нэр</th>
+                            <th>Үнэ</th>
+                            <th>Үлдэгдэл</th>
+                            <th style="width: 70px; text-align:right;">Сагс</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryList"></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-receipt"></i> Борлуулалтын Сагс</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Бараа</th>
+                            <th>Үнэ</th>
+                            <th>Тоо</th>
+                            <th>Дүн</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartList"></tbody>
+                </table>
+                <div style="text-align: right; font-size: 1.2rem; font-weight: 800; margin-top: 12px; color: var(--moty-red);">
+                    Нийт Төлөх: <span id="cartTotal">0</span> ₮
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmXOVgAXPqwCjLJ1YKNu0RwV_XH1iNEJs",
+            authDomain: "moty-s-mongolia.firebaseapp.com",
+            projectId: "moty-s-mongolia",
+            storageBucket: "moty-s-mongolia.firebasestorage.app",
+            messagingSenderId: "737644728583",
+            appId: "1:737644728583:web:15b20a7c208db1856a75a2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Car Capacity Database
+        const cars = [
+            {name: "Toyota Alphard (2.4 AHCQW)", engine: "2400 AHCQW", capacity: 4.3},
+            {name: "Toyota Alphard (2.5 AGH30/35)", engine: "2500 AGH30W, AGH35W", capacity: 4.4},
+            {name: "Toyota Alphard (3.5 GGH30/35)", engine: "3500 GGH30W, GGH35W", capacity: 5.6},
+            {name: "Toyota Camry (2.4 ACV40)", engine: "2400 ACV40, ACV45", capacity: 4.3},
+            {name: "Toyota Camry (2.5 AXVH70 Hybrid)", engine: "2500 AXVH70", capacity: 4.5},
+            {name: "Toyota Chaser / Mark II", engine: "2500 JZX100", capacity: 5.4},
+            {name: "Toyota Crown (ARS220)", engine: "2000 ARS220", capacity: 4.6},
+            {name: "Toyota Land Cruiser 200", engine: "4600 URJ202W", capacity: 7.5},
+            {name: "Toyota Land Cruiser 300", engine: "3500 V3A30W", capacity: 7.3},
+            {name: "Toyota Prius 30", engine: "1800 ZVW30, ZVW35", capacity: 4.2},
+            {name: "Toyota Prius 40", engine: "1800 ZVW40W, ZVW41W", capacity: 4.2},
+            {name: "Toyota RAV4", engine: "2000 MXA52A, MXA54A", capacity: 4.3},
+            {name: "Lexus RX350 (GGL10)", engine: "3500 GGL10W", capacity: 6.1},
+            {name: "Lexus LX600", engine: "3500 VJA310W", capacity: 7.3}
+        ];
+
+        // Oil Prices Map
+        const oilPrices = {
+            "M100 (0W20) 1L": 54900,
+            "M100 (0W20) 4L": 219600,
+            "M100 (5W30) 1L": 54900,
+            "M100 (5W30) 4L": 219600,
+            "M100 (5W40) 4L": 235600,
+            "M103 (10W40) 4L": 239600,
+            "M110 (50) 4L": 259600
+        };
+
+        let inventory = [];
+        let cart = [];
+
+        window.onload = function() {
+            // Populate car dropdown
+            const carSelect = document.getElementById("carSelect");
+            cars.forEach(car => {
+                let opt = document.createElement("option");
+                opt.value = car.name;
+                opt.textContent = car.name;
+                carSelect.appendChild(opt);
+            });
+
+            // Login handling
+            var loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.onclick = function() {
+                    var pin = document.getElementById('loginPin').value.trim();
+                    if (pin === "9963" || pin === "1595") {
+                        document.getElementById('currentUserRole').innerText = pin === "9963" ? "Менежер" : "Кассчин";
+                        document.getElementById('loginModal').style.display = 'none';
+                    } else {
+                        alert('PIN код буруу байна! (Эсвэл "Тосны тооцоолуур руу шууд орох" товчийг дарна уу)');
+                    }
+                };
+            }
+        };
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const themeBtn = document.getElementById('themeBtn');
+            if (document.body.classList.contains('light-theme')) {
+                themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
+            } else {
+                themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('themeBtn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+        }
+
+        function onCarChange() {
+            const selectedName = document.getElementById("carSelect").value;
+            const car = cars.find(c => c.name === selectedName);
+            if (car) {
+                document.getElementById("carEngine").textContent = car.engine;
+                document.getElementById("carCapacity").textContent = car.capacity + " л";
+                
+                let cap = car.capacity;
+                let c4 = Math.floor(cap / 4);
+                let remainder = cap % 4;
+                let c1 = remainder > 0 ? Math.ceil(remainder) : 0;
+                
+                document.getElementById("smartRec").style.display = "block";
+                document.getElementById("recText").textContent = `4L савлагаатай ${c4}ш, 1L савлагаатай ${c1}ш (Нийт: ${c4*4 + c1}л)`;
+                
+                if (c4 > 0) {
+                    document.getElementById("oilSelect").value = "M100 (0W20) 4L";
+                    document.getElementById("oilQty").value = c4;
+                }
+            } else {
+                document.getElementById("carEngine").textContent = "-";
+                document.getElementById("carCapacity").textContent = "0.0 л";
+                document.getElementById("smartRec").style.display = "none";
+            }
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            let selectedOil = document.getElementById("oilSelect").value;
+            let qty = parseFloat(document.getElementById("oilQty").value) || 0;
+            let unitPrice = oilPrices[selectedOil] || 0;
+            let subTotal = unitPrice * qty;
+
+            let discount = parseFloat(document.getElementById("discount").value) || 0;
+            let discountedOil = subTotal * (1 - discount / 100);
+
+            let filterVal = document.getElementById("filterCheck").value;
+            let filterPrice = filterVal === "yes" ? 18000 : 0;
+
+            let finalTotal = discountedOil + filterPrice;
+
+            document.getElementById("subTotalOil").textContent = subTotal.toLocaleString() + " ₮";
+            document.getElementById("discountedOil").textContent = discountedOil.toLocaleString() + " ₮";
+            document.getElementById("filterPrice").textContent = filterPrice.toLocaleString() + " ₮";
+            document.getElementById("finalTotal").textContent = finalTotal.toLocaleString() + " ₮";
+        }
+
+        function resetCalculator() {
+            document.getElementById("carSelect").value = "";
+            document.getElementById("carEngine").textContent = "-";
+            document.getElementById("carCapacity").textContent = "0.0 л";
+            document.getElementById("smartRec").style.display = "none";
+            document.getElementById("oilSelect").value = "";
+            document.getElementById("oilQty").value = 1;
+            document.getElementById("filterCheck").value = "yes";
+            document.getElementById("discount").value = "0";
+            calculateTotal();
+        }
+
+        // Firebase Inventory
+        db.collection("inventory").onSnapshot(snapshot => {
+            inventory = [];
+            snapshot.forEach(doc => inventory.push({ id: doc.id, ...doc.data() }));
+            renderInventory();
+        });
+
+        function renderInventory() {
+            const list = document.getElementById('inventoryList');
+            const searchVal = document.getElementById('searchBar').value.toLowerCase();
+            list.innerHTML = '';
+            inventory.filter(i => i.name.toLowerCase().includes(searchVal)).forEach(item => {
+                list.innerHTML += `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${(item.price || 0).toLocaleString()}₮</td>
+                        <td>${item.stock || 0}</td>
+                        <td style="text-align:right;"><button class="btn-brand btn-sm" onclick="addToCart('${item.id}')">+</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addToCart(id) {
+            const product = inventory.find(p => p.id === id);
+            if (!product) return;
+            const item = cart.find(c => c.id === id);
+            if (item) item.qty += 1;
+            else cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartList');
+            list.innerHTML = '';
+            let total = 0;
+            cart.forEach((item, idx) => {
+                let sum = item.price * item.qty;
+                total += sum;
+                list.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.price.toLocaleString()}₮</td>
+                        <td>${item.qty}</td>
+                        <td>${sum.toLocaleString()}₮</td>
+                        <td><button class="btn-danger btn-sm" onclick="cart.splice(${idx},1); renderCart();">x</button></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('cartTotal').innerText = total.toLocaleString();
+        }
+    </script>
+</body>
+</html>
