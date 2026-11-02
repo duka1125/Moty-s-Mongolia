@@ -43,8 +43,8 @@
         body { background-color: var(--bg-main); color: var(--text-main); padding: 14px 20px; min-height: 100vh; }
         
         /* LOGIN OVERLAY */
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(5, 5, 7, 0.7) 0%, rgba(5, 5, 7, 0.95) 100%), url('Moty_s_logo.webp') center/cover no-repeat fixed; display: flex; justify-content: center; align-items: center; z-index: 2000; }
-        .glass-card { background: rgba(12, 12, 15, 0.9); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); width: 90%; max-width: 440px; padding: 40px 32px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), 0 0 40px var(--moty-red-glow); color: #ffffff; text-align: center; }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(5, 5, 7, 0.85) 0%, rgba(5, 5, 7, 0.98) 100%), url('Moty_s_logo.webp') center/cover no-repeat fixed; display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .glass-card { background: rgba(12, 12, 15, 0.95); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); width: 90%; max-width: 440px; padding: 40px 32px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), 0 0 40px var(--moty-red-glow); color: #ffffff; text-align: center; }
         .login-logo-img { max-width: 200px; height: auto; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 0 12px var(--moty-red-glow)); }
         .glass-card p.subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 24px; letter-spacing: 0.5px; }
         .glass-input-wrapper { position: relative; margin-bottom: 16px; text-align: left; }
@@ -55,9 +55,9 @@
         .btn-glass-submit:hover { background: var(--moty-red-hover); transform: translateY(-2px); box-shadow: 0 15px 35px rgba(230, 25, 36, 0.6); }
 
         /* HEADER */
-        header { display: flex; align-items: center; justify-content: space-between; max-width: 1500px; margin: 0 auto 16px; background: var(--bg-card); backdrop-filter: blur(20px); padding: 6px 24px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; min-height: 60px; flex-wrap: wrap; gap: 10px; }
+        header { display: flex; align-items: center; justify-content: space-between; max-width: 1500px; margin: 0 auto 16px; background: var(--bg-card); backdrop-filter: blur(20px); padding: 6px 24px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; height: 60px; overflow: visible; }
         .logo-container { display: flex; align-items: center; gap: 15px; }
-        .header-logo-img { height: 70px; width: auto; object-fit: contain; filter: drop-shadow(0 0 15px var(--moty-red-glow)); }
+        .header-logo-img { height: 140px; width: auto; object-fit: contain; margin-top: -10px; filter: drop-shadow(0 0 15px var(--moty-red-glow)); position: relative; z-index: 10; }
         header h1 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); border-left: 1px solid var(--border); padding-left: 14px; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px; }
         header h1 span { font-size: 0.7rem; color: var(--text-muted); font-weight: 400; font-family: 'Plus Jakarta Sans', sans-serif; display: block; margin-top: 1px; }
         .header-actions { display: flex; align-items: center; gap: 10px; }
@@ -65,42 +65,70 @@
         .theme-toggle-btn:hover { border-color: var(--moty-red); color: var(--moty-red); }
         .user-info-badge { background: var(--input-bg); padding: 6px 16px; border-radius: 30px; font-size: 0.82rem; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
 
-        /* RESPONSIVE GRID LAYOUT */
+        /* OPTIMAL 2-COLUMN GRID FOR POS SYSTEM */
         .container { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 1500px; margin: 0 auto; }
-        @media (max-width: 1024px) {
-            .container { grid-template-columns: 1fr; }
-        }
-
-        .card { background: var(--bg-card); backdrop-filter: blur(20px); padding: 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); margin-bottom: 18px; }
+        .card { background: var(--bg-card); backdrop-filter: blur(20px); padding: 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); margin-bottom: 18px; transition: border-color 0.3s; }
+        .card:hover { border-color: var(--border-hover); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         h2 { font-size: 0.98rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px; }
         h2 i { color: var(--moty-red); }
         
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: var(--input-bg); color: var(--text-main); transition: all 0.2s; }
-        input:focus, select:focus { outline: none; border-color: var(--moty-red); box-shadow: 0 0 10px var(--moty-red-glow); }
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], input[type="file"], textarea, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: var(--input-bg); color: var(--text-main); transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--moty-red); box-shadow: 0 0 10px var(--moty-red-glow); }
         select option { background: var(--bg-card); color: var(--text-main); }
 
         button { border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        button:active { transform: translateY(1px); }
         .btn-brand { background: var(--moty-red); color: white; box-shadow: 0 4px 15px var(--moty-red-glow); }
         .btn-brand:hover { background: var(--moty-red-hover); }
         .btn-primary { background: var(--accent-blue); color: #000; font-weight: 700; }
         .btn-danger { background: #ef4444; color: white; }
+        .btn-excel { background: #10b981; color: white; }
         .btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 6px; }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 8px; font-size: 0.85rem; }
-        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 700; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; font-size: 0.72rem; }
+        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 700; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
         .flex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+
+        /* MODAL STYLES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: var(--modal-bg); width: 90%; max-width: 540px; padding: 26px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--border); color: var(--text-main); max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--border); }
+
+        /* PRINT STYLES */
+        #a4Invoice { display: none; }
+        #receipt { display: none; }
+
+        @media print {
+            body * { visibility: hidden !important; }
+            body.print-receipt-mode #receipt, body.print-receipt-mode #receipt * { visibility: visible !important; }
+            body.print-receipt-mode #receipt { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; font-family: 'Inter', sans-serif; font-size: 11px; padding: 10px; color: #000; background: #fff; }
+            body.print-receipt-mode .receipt-logo-img { max-height: 80px !important; width: auto !important; height: auto !important; display: block; margin: 0 auto 6px; object-fit: contain; }
+
+            body.print-a4-mode #a4Invoice, body.print-a4-mode #a4Invoice * { visibility: visible !important; }
+            body.print-a4-mode #a4Invoice { display: block !important; position: absolute; left: 0; top: 0; width: 210mm; min-height: 297mm; padding: 15mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000; background: #fff; }
+            .inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid #e61924; padding-bottom: 15px; margin-bottom: 20px; }
+            .inv-logo-img { max-width: 250px !important; max-height: 110px !important; width: auto !important; height: auto !important; object-fit: contain; }
+            .inv-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .inv-table th, .inv-table td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; color: #000; }
+            .inv-table th { background: #f8fafc; font-weight: bold; }
+            .inv-totals { margin-top: 20px; text-align: right; font-size: 13px; }
+            .inv-footer { margin-top: 40px; display: flex; justify-content: space-between; text-align: center; font-size: 12px; }
+            .paid-stamp { border: 3px solid #10b981; color: #10b981; font-weight: 900; padding: 6px 16px; border-radius: 8px; font-size: 16px; display: inline-block; text-transform: uppercase; transform: rotate(-5deg); margin-bottom: 10px; }
+        }
     </style>
 
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-    <!-- LOGIN OVERLAY -->
+    <!-- LOGIN OVERLAY WITH DIRECT CALCULATOR ACCESS -->
     <div class="login-overlay" id="loginModal">
         <div class="glass-card">
             <img src="Moty's_logo.webp" alt="Moty's Logo" class="login-logo-img">
@@ -112,13 +140,13 @@
             <button type="button" id="loginBtn" class="btn-glass-submit">
                 Login <i class="fa-solid fa-arrow-right-long"></i>
             </button>
-            <button type="button" onclick="document.getElementById('loginModal').style.display='none';" class="btn-glass-submit" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); margin-top: 4px;">
-                <i class="fa-solid fa-calculator"></i> Тосны тооцоолуур руу шууд орох
+            <button type="button" onclick="openOilCalculatorModalFromLogin()" class="btn-glass-submit" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); margin-top: 6px;">
+                <i class="fa-solid fa-calculator"></i> Тосны тооцоолуур руу орох
             </button>
         </div>
     </div>
 
-    <!-- HEADER -->
+    <!-- HEADER WITH CALCULATOR TOGGLE BUTTON -->
     <header>
         <div class="logo-container">
             <img src="Moty's_logo.webp" alt="Moty's Logo" class="header-logo-img">
@@ -128,35 +156,1394 @@
             </h1>
         </div>
         <div class="header-actions">
-            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn" title="Сэдэв солих">
+            <!-- CALCULATOR BUTTON -->
+            <button class="btn-brand btn-sm" onclick="openOilCalculatorModal()" style="background:var(--moty-red); font-weight:bold;">
+                <i class="fa-solid fa-calculator"></i> Тосны Тооцоолуур
+            </button>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn" title="Сэдэв солих (Хар/Цагаан)">
                 <i class="fa-solid fa-sun"></i>
             </button>
             <div class="user-info-badge">
-                <span><i class="fa-solid fa-user-shield" style="color:var(--moty-red);"></i> <b id="currentUserRole">Зочин / Тооцоолуур</b></span>
-                <button class="btn-sm" style="background:rgba(255,255,255,0.08); color:var(--text-main);" onclick="location.reload()"><i class="fa-solid fa-right-from-bracket"></i></button>
+                <span><i class="fa-solid fa-user-shield" style="color:var(--moty-red);"></i> <b id="currentUserRole">Нэвтрээгүй</b></span>
+                <button class="btn-sm" style="background:rgba(255,255,255,0.08); color:var(--text-main);" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
         </div>
     </header>
 
+    <!-- OPTIMAL 2-COLUMN MAIN LAYOUT -->
     <div class="container">
-        <!-- ЗҮҮН БАГАНА: ТОСНЫ УХААЛАГ ТООЦООЛУУР -->
+        <!-- ЗҮҮН БАГАНА: БАРААНЫ ҮЛДЭГДЭЛ & ХАРИЛЦАГЧ -->
         <div>
+            <!-- 1. БАРААНЫ ҮЛДЭГДЭЛ & ТООЛЛОГА -->
             <div class="card">
                 <div class="card-header">
-                    <h2><i class="fa-solid fa-calculator"></i> Тосны Ухаалаг Тооцоолуур</h2>
+                    <h2><i class="fa-solid fa-warehouse"></i> Барааны Үлдэгдэл & Касс (A-Z)</h2>
+                    <button class="btn-excel btn-sm admin-only" style="display:none;" onclick="exportInventoryToExcel()">
+                        <i class="fa-solid fa-file-excel"></i> Excel татах
+                    </button>
                 </div>
                 
-                <div class="form-group">
-                    <label>Машины марк / загвар сонгох:</label>
-                    <select id="carSelect" onchange="onCarChange()">
-                        <option value="">-- Машинаа сонгоно уу --</option>
+                <div class="flex-grid" style="margin-bottom: 12px;">
+                    <input type="text" id="searchBar" placeholder="🔍 Бараа нэрээр хайх..." onkeyup="renderInventory()">
+                    <select id="filterCategory" onchange="renderInventory()">
+                        <option value="Бүгд">-- Бүх ангилал --</option>
                     </select>
                 </div>
 
-                <div class="flex-grid" style="margin-bottom: 12px;">
-                    <div style="background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
-                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Хөдөлгүүр:</span>
-                        <strong id="carEngine" style="font-size:0.88rem;">-</strong>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ангилал / Нэр</th>
+                            <th>Парти</th>
+                            <th>Үнэ</th>
+                            <th>Үлдэгдэл</th>
+                            <th style="width: 80px; text-align:right;">Сагслах</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryList"></tbody>
+                </table>
+            </div>
+
+            <!-- 2. ХАРИЛЦАГЧ БҮРТГЭХ -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-id-card"></i> Байнгын Харилцагч Бүртгэх</h2>
+                </div>
+                <form id="customerForm">
+                    <div class="flex-grid">
+                        <div class="form-group">
+                            <label>Төрөл</label>
+                            <select id="custType">
+                                <option value="Хувь хүн">Хувь хүн</option>
+                                <option value="Байгууллага">Байгууллага</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Нэр / Байгууллага</label>
+                            <input type="text" id="custName" required placeholder="Бат">
+                        </div>
+                        <div class="form-group">
+                            <label>Утас / РД</label>
+                            <input type="text" id="custPhone" required placeholder="99112233">
+                        </div>
+                        <div class="form-group">
+                            <label>Машины №</label>
+                            <input type="text" id="custCarNo" required placeholder="1234 УБН">
+                        </div>
                     </div>
-                    <div style="background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
-                        <span style="font-size:0.75rem;
+                    <button type="submit" class="btn-primary" style="width:100%; margin-top:4px;">
+                        <i class="fa-solid fa-user-plus"></i> Харилцагч Хадгалах
+                    </button>
+                </form>
+            </div>
+
+            <!-- 3. ОРЛОГОДОХ ПАРТИ (MANAGER ONLY) -->
+            <div class="card admin-only" style="display:none;">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-truck-ramp-box"></i> Орлогын Парти / Packing List</h2>
+                    <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                        <button class="btn-sm btn-primary" onclick="openNewPackingListModal()"><i class="fa-solid fa-plus"></i> Шинэ</button>
+                        <button class="btn-sm" style="background:#8b5cf6; color:white;" onclick="openCategoryManager()"><i class="fa-solid fa-layer-group"></i> Ангилал</button>
+                        <button class="btn-sm" style="background:#06b6d4; color:white;" onclick="openPaymentMethodManager()"><i class="fa-solid fa-credit-card"></i> Төлбөр</button>
+                        <button class="btn-sm" style="background:#f59e0b; color:white;" onclick="openReceiptSettingsModal()"><i class="fa-solid fa-gear"></i> Тохиргоо</button>
+                        <button class="btn-sm btn-danger" onclick="openResetDataModal()"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                <form id="stockInForm">
+                    <div class="form-group">
+                        <select id="selectPackingList" required></select>
+                    </div>
+                    <div class="flex-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <select id="selectProductForStock" required onchange="autoFillCurrentPrice()"></select>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" id="stockInQty" min="1" required placeholder="Тоо (+)">
+                        </div>
+                        <div class="form-group">
+                            <input type="number" id="stockInPrice" min="0" required placeholder="Үнэ (₮)">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-brand" style="width: 100%;">Барааны Орлого нэмэх</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- БАРУУН БАГАНА: КАСС / САГС & ТАЙЛАН -->
+        <div>
+            <!-- 4. КАСС / САГС -->
+            <div class="card" style="border: 2px solid var(--moty-red);">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-receipt"></i> Борлуулалтын Сагс & Касс</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Бараа</th>
+                            <th>Үнэ</th>
+                            <th>Тоо</th>
+                            <th>Хөнгөлөлт %</th>
+                            <th>Нийт</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartList"></tbody>
+                </table>
+                <div style="margin-top: 14px; text-align: right; font-size: 0.85rem; color: var(--text-muted);">
+                    Нийт Дүн: <span id="subTotal">0</span> ₮ | Хөнгөлөлт: <span id="discountAmount" style="color:var(--warning);">0</span> ₮
+                </div>
+                <div style="text-align: right; font-size: 1.6rem; font-weight: 900; margin-top:2px; color: var(--moty-red); font-family:'Space Grotesk', sans-serif;">
+                    Төлөх Дүн: <span id="cartTotal">0</span> ₮
+                </div>
+                <button class="btn-brand" style="width: 100%; padding: 14px; margin-top: 12px; font-size: 1rem;" onclick="openCheckoutModal()">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Төлбөр Төлөх & Баримт Хэвлэх
+                </button>
+            </div>
+
+            <!-- 5. ЗЭЭЛИЙН АВЛАГЫН ХЯНАЛТ -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-hand-holding-dollar" style="color:var(--warning);"></i> Зээлийн Авлагын Хяналт</h2>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Харилцагч / Машин</th>
+                                <th>Үлдэгдэл Авлага</th>
+                                <th>Үйлдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody id="creditSalesList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 6. БОРЛУУЛАЛТЫН ТАЙЛАН -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Борлуулалтын Тайлан</h2>
+                    <button class="btn-excel btn-sm admin-only" style="display:none;" onclick="exportSalesToExcel()">
+                        <i class="fa-solid fa-file-excel"></i> Excel татах
+                    </button>
+                </div>
+                <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('yesterday')">Өчигдөр</button>
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('today')">Өнөөдөр</button>
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('month')">Энэ сар</button>
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('year')">Жил</button>
+                    <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('all')">Бүгд</button>
+                </div>
+                <div style="margin-bottom: 8px; font-weight: 700; color: var(--success); font-size: 1.05rem; font-family:'Space Grotesk', sans-serif;">
+                    Нийт Борлуулалт: <span id="totalRevenue">0</span> ₮
+                </div>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Огноо / Хэлбэр</th>
+                                <th>Машин / Харилцагч</th>
+                                <th>Дүн</th>
+                                <th>Үйлдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesHistory"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ТОСНЫ УХААЛАГ ТООЦООЛУУР (POPUP) -->
+    <div class="modal-overlay" id="oilCalculatorModal">
+        <div class="modal" style="max-width: 580px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-calculator" style="color:var(--moty-red);"></i> Тосны Ухаалаг Тооцоолуур</h2>
+                <button onclick="closeOilCalculatorModal()" style="background:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Машины марк / загвар сонгох:</label>
+                <select id="carSelect" onchange="onCarChange()">
+                    <option value="">-- Машинаа сонгоно уу --</option>
+                </select>
+            </div>
+
+            <div class="flex-grid" style="margin-bottom: 12px;">
+                <div style="background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                    <span style="font-size:0.72rem; color:var(--text-muted); display:block;">Хөдөлгүүр:</span>
+                    <strong id="carEngine" style="font-size:0.85rem;">-</strong>
+                </div>
+                <div style="background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                    <span style="font-size:0.72rem; color:var(--text-muted); display:block;">Тосны ягштал хэмжээ:</span>
+                    <strong id="carCapacity" style="font-size:0.85rem; color:var(--moty-red);">0.0 л</strong>
+                </div>
+            </div>
+
+            <!-- Smart Recommendation -->
+            <div id="smartRec" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 12px; display: none;">
+                💡 <b>Зөвлөмж:</b> <span id="recText"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Тосны бүтээгдэхүүн (Савлагаа):</label>
+                <select id="oilSelect" onchange="calculateOilCalcTotal()">
+                    <option value="">-- Тос сонгох --</option>
+                    <option value="M100 (0W20) 1L" data-price="54900">M100 (0W20) 1L - 54,900₮</option>
+                    <option value="M100 (0W20) 4L" data-price="219600">M100 (0W20) 4L - 219,600₮</option>
+                    <option value="M100 (5W30) 1L" data-price="54900">M100 (5W30) 1L - 54,900₮</option>
+                    <option value="M100 (5W30) 4L" data-price="219600">M100 (5W30) 4L - 219,600₮</option>
+                    <option value="M100 (5W40) 4L" data-price="235600">M100 (5W40) 4L - 235,600₮</option>
+                    <option value="M103 (10W40) 4L" data-price="239600">M103 (10W40) 4L - 239,600₮</option>
+                    <option value="M110 (50) 4L" data-price="259600">M110 (50) 4L - 259,600₮</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Литр / Савлагааны тоо (Автомат дугуйрсан):</label>
+                <input type="number" id="oilQty" value="1" min="1" oninput="calculateOilCalcTotal()">
+            </div>
+
+            <div class="flex-grid" style="margin-bottom: 12px;">
+                <div class="form-group">
+                    <label>Шүүлтүүр авах эсэх:</label>
+                    <select id="calcFilterCheck" onchange="calculateOilCalcTotal()">
+                        <option value="yes">Тийм (18,000₮)</option>
+                        <option value="no">Үгүй (0₮)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Хөнгөлөлт (%):</label>
+                    <select id="calcDiscount" onchange="calculateOilCalcTotal()">
+                        <option value="0">0%</option>
+                        <option value="5">5%</option>
+                        <option value="10">10%</option>
+                        <option value="15">15%</option>
+                        <option value="20">20%</option>
+                        <option value="30">30%</option>
+                        <option value="50">50%</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Summary Box -->
+            <div style="background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border); margin-top: 15px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                    <span>Тосны үндсэн үнэ:</span>
+                    <strong id="calcSubTotal">0 ₮</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                    <span>Шүүлтүүрийн үнэ:</span>
+                    <strong id="calcFilterPrice">18,000 ₮</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:8px;">
+                    <span>Тос солих ажлын хөлс:</span>
+                    <strong style="color:var(--success);">ҮНЭГҮЙ (0 ₮)</strong>
+                </div>
+                <div style="border-top:1px solid var(--border); padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.85rem; font-weight:700;">ҮЙЛЧЛҮҮЛЭГЧИД ХЭЛЭХ ДҮН:</span>
+                    <strong id="calcFinalTotal" style="font-size:1.3rem; color:var(--moty-red);">0 ₮</strong>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px; display: flex; gap: 10px;">
+                <button class="btn-brand" style="flex: 1; padding: 12px;" onclick="closeOilCalculatorModal()">Хаах / Буцах</button>
+                <button class="btn-primary" style="flex: 1; padding: 12px;" onclick="resetOilCalculator()">🧹 Цэвэрлэх</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTHER MODALS -->
+    <!-- RECEIPT SETTINGS -->
+    <div class="modal-overlay" id="receiptSettingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-gear" style="color:var(--warning);"></i> БАРИМТЫН ТОХИРГОО</h2>
+                <button onclick="closeReceiptSettingsModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <form id="receiptSettingsForm">
+                <div class="form-group"><label>Дэлгүүрийн нэр:</label><input type="text" id="cfgStoreName" required></div>
+                <div class="form-group"><label>Компанийн нэр:</label><input type="text" id="cfgCompanyName" required></div>
+                <div class="flex-grid">
+                    <div class="form-group"><label>Утас:</label><input type="text" id="cfgPhone" required></div>
+                    <div class="form-group"><label>И-мэйл:</label><input type="text" id="cfgEmail"></div>
+                </div>
+                <div class="form-group"><label>Хаяг:</label><input type="text" id="cfgAddress"></div>
+                <div class="form-group"><label>Лого URL:</label><input type="text" id="cfgLogoUrl"></div>
+                <div class="form-group"><label>Банкны мэдээлэл:</label><textarea id="cfgBankInfo" rows="3"></textarea></div>
+                <div class="form-group"><label>Чекийн доод текст:</label><textarea id="cfgThermalFooter" rows="2"></textarea></div>
+                <button type="submit" class="btn-brand" style="width:100%; padding:12px; margin-top:8px;">Хадгалах</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW PACKING -->
+    <div class="modal-overlay" id="newPackingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-circle-plus"></i> Шинэ Парти</h2>
+                <button onclick="closeNewPackingListModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <form id="newPackingForm">
+                <div class="form-group"><label>Парти Код:</label><input type="text" id="packingCode" required></div>
+                <div class="form-group"><label>Огноо:</label><input type="date" id="packingDate" required></div>
+                <div class="form-group"><label>Файл:</label><input type="file" id="packingFile" accept=".pdf, image/*"></div>
+                <div class="form-group"><label>Тэмдэглэл:</label><input type="text" id="packingNotes"></div>
+                <button type="submit" class="btn-brand" style="width:100%; margin-top:10px;">Хадгалах</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CATEGORY -->
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-layer-group"></i> Ангилал Удирдах</h2>
+                <button onclick="closeCategoryManager()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Шинэ ангилал:</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="newCatInput" placeholder="Нэр">
+                    <button class="btn-brand" onclick="addNewCategory()">+</button>
+                </div>
+            </div>
+            <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+            <div style="max-height: 200px; overflow-y: auto;" id="categoryManageList"></div>
+        </div>
+    </div>
+
+    <!-- PAYMENT METHOD -->
+    <div class="modal-overlay" id="paymentMethodModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-credit-card"></i> Төлбөрийн Хэлбэр</h2>
+                <button onclick="closePaymentMethodManager()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Шинэ хэлбэр:</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="newPayMethodInput" placeholder="Нэр">
+                    <button class="btn-brand" onclick="addNewPaymentMethod()">+</button>
+                </div>
+            </div>
+            <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+            <div style="max-height: 200px; overflow-y: auto;" id="paymentMethodManageList"></div>
+        </div>
+    </div>
+
+    <!-- RESET DATA -->
+    <div class="modal-overlay" id="resetDataModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-triangle-exclamation" style="color:var(--moty-red)"></i> Дата Цэвэрлэх</h2>
+                <button onclick="closeResetDataModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-group">
+                <label style="color:var(--moty-red);">Нууц код (112520):</label>
+                <input type="password" id="resetPinInput" maxlength="6" style="text-align:center; font-size:1.2rem; letter-spacing:4px;">
+            </div>
+            <button class="btn-danger" style="width:100%; padding:12px; margin-top:8px;" onclick="confirmResetDataWithPin()">Устгах</button>
+        </div>
+    </div>
+
+    <!-- PAY CREDIT -->
+    <div class="modal-overlay" id="payCreditModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-money-bill-wave"></i> Зээл Төлөх</h2>
+                <button onclick="closePayCreditModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <input type="hidden" id="payCreditSaleId">
+            <div id="creditPaySummary" style="margin-bottom:12px; background:var(--input-bg); padding:10px; border-radius:8px; font-size:0.85rem;"></div>
+            <div class="form-group"><label>Төлөх Дүн:</label><input type="number" id="payCreditAmountInput" required></div>
+            <div class="form-group"><label>Төлсөн Хэлбэр:</label><select id="payCreditMethodSelect"></select></div>
+            <button class="btn-brand" style="width:100%; padding:12px; margin-top:10px;" onclick="confirmPayCredit()">Хадгалах</button>
+        </div>
+    </div>
+
+    <!-- EDIT PRODUCT -->
+    <div class="modal-overlay" id="editProductModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-pen-to-square"></i> Бараа Засах</h2>
+                <button onclick="closeEditProductModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <input type="hidden" id="editProdId">
+            <div class="form-group"><label>Нэр:</label><input type="text" id="editProdName" required></div>
+            <div class="form-group"><label>Ангилал:</label><select id="editProdCat"></select></div>
+            <div class="form-group"><label>Үнэ:</label><input type="number" id="editProdPrice" required></div>
+            <div class="form-group"><label>Үлдэгдэл:</label><input type="number" id="editProdStock" required></div>
+            <button class="btn-brand" style="width:100%; padding:12px; margin-top:10px;" onclick="saveProductEdits()">Хадгалах</button>
+        </div>
+    </div>
+
+    <!-- RETURN -->
+    <div class="modal-overlay" id="returnModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-rotate-left"></i> Буцаалт</h2>
+                <button onclick="closeReturnModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <input type="hidden" id="returnSaleId">
+            <div id="returnSummaryInfo" style="margin-bottom:12px; font-size:0.85rem; background:var(--input-bg); padding:10px; border-radius:8px;"></div>
+            <div class="form-group"><label>Шалтгаан:</label><textarea id="returnReasonInput" rows="3" required></textarea></div>
+            <button class="btn-danger" style="width:100%; padding:12px; margin-top:6px;" onclick="processReturnSaleConfirm()">Буцаах</button>
+        </div>
+    </div>
+
+    <!-- CHECKOUT -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-invoice-dollar"></i> Төлбөр & Баримт</h2>
+                <button onclick="closeCheckoutModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-group"><label>Төлбөрийн хэлбэр:</label><select id="paymentMethod" onchange="toggleCreditOptions()"></select></div>
+            <div class="form-group" style="background:var(--input-bg); padding:10px; border-radius:8px;">
+                <label>Баримтын Төрөл:</label>
+                <select id="docTypeSelect">
+                    <option value="THERMAL">🧾 80mm Чех</option>
+                    <option value="A4_PAID">✅ А4 Төлбөрийн Баримт</option>
+                    <option value="A4_INVOICE">📄 А4 Нэхэмжлэх (Зээл)</option>
+                </select>
+            </div>
+            <div id="creditOptionsSection" style="display:none; background:rgba(245, 158, 11, 0.1); padding:12px; border-radius:10px; border:1px solid var(--warning); margin-bottom:12px;">
+                <div class="form-group"><label>Урьдчилгаа:</label><input type="number" id="creditAdvanceInput" value="0" min="0"></div>
+                <div class="form-group"><label>Төлөх Огноо:</label><input type="date" id="creditDueDateInput"></div>
+            </div>
+            <div class="form-group"><label>Харилцагч сонгох:</label><select id="modalCustomerSelect" onchange="autoFillCustomerInfo()"></select></div>
+            <div class="form-group"><label>Нэр:</label><input type="text" id="modalCustName" value="Энгийн үйлчлүүлэгч"></div>
+            <div class="form-group"><label>Утас:</label><input type="text" id="modalCustPhone"></div>
+            <div class="flex-grid">
+                <div class="form-group"><label>Машины №:</label><input type="text" id="modalCarNo"></div>
+                <div class="form-group"><label>КМ:</label><input type="number" id="modalKm"></div>
+            </div>
+            <div class="form-group"><label>Тэмдэглэл:</label><textarea id="modalNotes" rows="2"></textarea></div>
+            <div style="margin-top: 14px; background:var(--input-bg); padding:14px; border-radius:12px; text-align:right;">
+                <span style="font-size:0.82rem; color:var(--text-muted);">Эцсийн дүн:</span>
+                <div style="font-size:1.5rem; font-weight:900; color:var(--moty-red);" id="modalFinalTotal">0 ₮</div>
+            </div>
+            <button class="btn-brand" style="width:100%; padding:12px; margin-top:14px;" onclick="confirmCheckoutAndPrint()">Хэвлэх & Хадгалах</button>
+        </div>
+    </div>
+
+    <!-- A4 & THERMAL TEMPLATES -->
+    <div id="a4Invoice">
+        <div class="inv-header">
+            <div>
+                <img id="invLogoImg" class="inv-logo-img" src="Moty's_logo.webp" alt="Logo">
+                <div style="font-size:11px; color:#555; margin-top:6px;">
+                    <strong>Дистрибьютор: <span id="invStoreName">Runs Automotive</span></strong><br>
+                    Компани: <span id="invCompName">Эвримоторс ХХК</span><br>
+                    Утас: <span id="invPhone">75751595</span> | Хаяг: <span id="invAddress">Улаанбаатар</span>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <h2 id="invTitleHeader" style="color:#e61924; font-size:22px;">НЭХЭМЖЛЭХ</h2>
+                <div id="invPaidStamp" class="paid-stamp" style="display:none;">✅ ТӨЛӨГДСӨН</div>
+                <div style="font-size:12px; margin-top:4px;">
+                    <strong>Дугаар:</strong> <span id="invNum">INV-000</span><br>
+                    <strong>Огноо:</strong> <span id="invDate">2026-11-02</span><br>
+                    <span id="invDueDateRow"><strong>Төлөх Огноо:</strong> <span id="invDueDate">-</span></span>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0;">
+            <div>Харилцагч: <span id="invCustName">-</span> (<span id="invCustPhone">-</span>)</div>
+            <div>Машин: <span id="invCustCar">-</span> | КМ: <span id="invCustKm">-</span></div>
+        </div>
+        <table class="inv-table">
+            <thead>
+                <tr><th>№</th><th>Бараа</th><th style="text-align:center;">Тоо</th><th style="text-align:right;">Үнэ</th><th style="text-align:right;">Хөнгөлөлт</th><th style="text-align:right;">Дүн</th></tr>
+            </thead>
+            <tbody id="invItemsList"></tbody>
+        </table>
+        <div class="inv-totals">
+            <p>Дүн: <span id="invSubTotal">0</span> ₮</p>
+            <p>Хөнгөлөлт: -<span id="invDiscount">0</span> ₮</p>
+            <p id="invAdvanceRow">Урьдчилгаа: -<span id="invAdvance">0</span> ₮</p>
+            <p style="font-size:16px; font-weight:bold; color:#e61924; margin-top:6px;">ЭЦСИЙН ДҮН: <span id="invFinalTotal">0</span> ₮</p>
+        </div>
+        <div style="margin-top:20px; font-size:11px; background:#fff7ed; padding:10px; border-radius:6px; border:1px solid #fdba74;">
+            <div id="invBankInfoDisplay" style="white-space: pre-line;"></div>
+            <div id="invFooterNoteDisplay" style="font-style:italic; margin-top:4px;"></div>
+        </div>
+        <div class="inv-footer">
+            <div>Хүлээлгэн өгсөн: <br><br>____________________ / <span id="invSignStore">Runs</span> /</div>
+            <div>Хүлээн авсан: <br><br>____________________ / <span id="invSignCust">-</span> /</div>
+        </div>
+    </div>
+
+    <div id="receipt">
+        <div style="text-align:center; margin-bottom:6px;">
+            <img id="rcptLogoImg" class="receipt-logo-img" src="Moty's_logo.webp" alt="Logo" style="max-height:60px; width:auto; display:block; margin:0 auto;">
+        </div>
+        <p style="font-weight:bold; font-size:11px; text-align:center;" id="rcptStoreText">Runs Automotive</p>
+        <div style="font-size:10px; text-align:center;" id="rcptContactText">Утас: 75751595</div>
+        <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+        <p id="receiptDate" style="text-align:left;"></p>
+        <p id="receiptCustomer" style="text-align:left;"></p>
+        <p id="receiptCar" style="text-align:left;"></p>
+        <p id="receiptKm" style="text-align:left;"></p>
+        <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+        <table style="width:100%; border-collapse:collapse;">
+            <thead><tr><th style="text-align:left; font-size:10px;">Бараа</th><th style="text-align:center; font-size:10px;">Тоо</th><th style="text-align:right; font-size:10px;">Дүн</th></tr></thead>
+            <tbody id="receiptItems"></tbody>
+        </table>
+        <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+        <p id="receiptSubtotal" style="text-align:right;"></p>
+        <p id="receiptDiscount" style="text-align:right;"></p>
+        <p style="text-align:right; font-weight:bold; font-size:13px;" id="receiptTotal"></p>
+        <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+        <p style="text-align:center; font-size:10px;" id="rcptFooterText">Баярлалаа!</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmXOVgAXPqwCjLJ1YKNu0RwV_XH1iNEJs",
+            authDomain: "moty-s-mongolia.firebaseapp.com",
+            projectId: "moty-s-mongolia",
+            storageBucket: "moty-s-mongolia.firebasestorage.app",
+            messagingSenderId: "737644728583",
+            appId: "1:737644728583:web:15b20a7c208db1856a75a2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentUserRole = null;
+        let inventory = [];
+        let customers = [];
+        let salesData = [];
+        let categories = [];
+        let paymentMethods = [];
+        let packingLists = [];
+        let cart = [];
+        let receiptConfig = {};
+
+        // Car Database
+        const cars = [
+            {name: "Toyota Alphard (2.4 AHCQW)", engine: "2400 AHCQW", capacity: 4.3},
+            {name: "Toyota Alphard (2.5 AGH30/35)", engine: "2500 AGH30W, AGH35W", capacity: 4.4},
+            {name: "Toyota Alphard (3.5 GGH30/35)", engine: "3500 GGH30W, GGH35W", capacity: 5.6},
+            {name: "Toyota Camry (2.4 ACV40)", engine: "2400 ACV40, ACV45", capacity: 4.3},
+            {name: "Toyota Camry (2.5 AXVH70 Hybrid)", engine: "2500 AXVH70", capacity: 4.5},
+            {name: "Toyota Chaser / Mark II", engine: "2500 JZX100", capacity: 5.4},
+            {name: "Toyota Crown (ARS220)", engine: "2000 ARS220", capacity: 4.6},
+            {name: "Toyota Land Cruiser 200", engine: "4600 URJ202W", capacity: 7.5},
+            {name: "Toyota Land Cruiser 300", engine: "3500 V3A30W", capacity: 7.3},
+            {name: "Toyota Prius 30", engine: "1800 ZVW30, ZVW35", capacity: 4.2},
+            {name: "Toyota Prius 40", engine: "1800 ZVW40W, ZVW41W", capacity: 4.2},
+            {name: "Toyota RAV4", engine: "2000 MXA52A, MXA54A", capacity: 4.3},
+            {name: "Lexus RX350 (GGL10)", engine: "3500 GGL10W", capacity: 6.1},
+            {name: "Lexus LX600", engine: "3500 VJA310W", capacity: 7.3}
+        ];
+
+        document.getElementById('packingDate').valueAsDate = new Date();
+
+        window.onload = function() {
+            const carSelect = document.getElementById("carSelect");
+            cars.forEach(car => {
+                let opt = document.createElement("option");
+                opt.value = car.name;
+                opt.textContent = car.name;
+                carSelect.appendChild(opt);
+            });
+
+            var loginBtn = document.getElementById('loginBtn');
+            var loginPin = document.getElementById('loginPin');
+            if (loginBtn) loginBtn.onclick = handleLogin;
+            if (loginPin) {
+                loginPin.focus();
+                loginPin.onkeyup = function(e) { if (e.key === 'Enter') handleLogin(); };
+            }
+            calculateOilCalcTotal();
+        };
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const themeBtn = document.getElementById('themeBtn');
+            if (document.body.classList.contains('light-theme')) {
+                themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
+            } else {
+                themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('themeBtn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+        }
+
+        function handleLogin() {
+            var pinInput = document.getElementById('loginPin');
+            var pin = pinInput ? pinInput.value.trim() : '';
+
+            if (pin === "9963") {
+                currentUserRole = "admin";
+                document.getElementById('currentUserRole').innerText = "Менежер / Админ";
+                var adminEls = document.querySelectorAll('.admin-only');
+                for (var i = 0; i < adminEls.length; i++) { adminEls[i].style.display = 'block'; }
+                document.getElementById('loginModal').style.display = 'none';
+                pinInput.value = '';
+            } else if (pin === "1595") {
+                currentUserRole = "cashier";
+                document.getElementById('currentUserRole').innerText = "Кассчин";
+                var adminEls = document.querySelectorAll('.admin-only');
+                for (var i = 0; i < adminEls.length; i++) { adminEls[i].style.display = 'none'; }
+                document.getElementById('loginModal').style.display = 'none';
+                pinInput.value = '';
+            } else {
+                alert('Нэвтрэх PIN код буруу байна!');
+                pinInput.value = '';
+                pinInput.focus();
+            }
+        }
+
+        function logout() { location.reload(); }
+
+        // Modal Controls for Oil Calculator
+        let isCalculatorOpenedFromLogin = false;
+
+        function openOilCalculatorModalFromLogin() {
+            isCalculatorOpenedFromLogin = true;
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('oilCalculatorModal').style.display = 'flex';
+        }
+
+        function openOilCalculatorModal() {
+            isCalculatorOpenedFromLogin = false;
+            document.getElementById('oilCalculatorModal').style.display = 'flex';
+        }
+
+        function closeOilCalculatorModal() {
+            document.getElementById('oilCalculatorModal').style.display = 'none';
+            if (isCalculatorOpenedFromLogin && !currentUserRole) {
+                // Хэрэв нэвтрээгүй байхдаа тооцоолуур руу орсон бол хаахад буцаад нэвтрэх цонх гарна
+                document.getElementById('loginModal').style.display = 'flex';
+            }
+        }
+
+        function onCarChange() {
+            const selectedName = document.getElementById("carSelect").value;
+            const car = cars.find(c => c.name === selectedName);
+            if (car) {
+                document.getElementById("carEngine").textContent = car.engine;
+                document.getElementById("carCapacity").textContent = car.capacity + " л";
+                
+                let cap = car.capacity;
+                let recommendedLiters = Math.ceil(cap);
+                document.getElementById("smartRec").style.display = "block";
+                document.getElementById("recText").textContent = `Ягштал хэмжээ ${cap}л тул хамгийн ойрын бүтэн савлагаа (${recommendedLiters}л)-аар тооцлоо.`;
+                document.getElementById("oilQty").value = recommendedLiters;
+            } else {
+                document.getElementById("carEngine").textContent = "-";
+                document.getElementById("carCapacity").textContent = "0.0 л";
+                document.getElementById("smartRec").style.display = "none";
+                document.getElementById("oilQty").value = 1;
+            }
+            calculateOilCalcTotal();
+        }
+
+        function calculateOilCalcTotal() {
+            const oilSelect = document.getElementById("oilSelect");
+            const selectedOpt = oilSelect.options[oilSelect.selectedIndex];
+            const unitPrice = selectedOpt ? parseFloat(selectedOpt.getAttribute('data-price')) || 0 : 0;
+            const qty = parseFloat(document.getElementById("oilQty").value) || 0;
+            
+            let subTotal = unitPrice * qty;
+            let discount = parseFloat(document.getElementById("calcDiscount").value) || 0;
+            let discountedOil = subTotal * (1 - discount / 100);
+
+            let filterVal = document.getElementById("calcFilterCheck").value;
+            let filterPrice = filterVal === "yes" ? 18000 : 0;
+
+            let finalTotal = discountedOil + filterPrice;
+
+            document.getElementById("calcSubTotal").textContent = subTotal.toLocaleString() + " ₮";
+            document.getElementById("calcFilterPrice").textContent = filterPrice.toLocaleString() + " ₮";
+            document.getElementById("calcFinalTotal").textContent = finalTotal.toLocaleString() + " ₮";
+        }
+
+        function resetOilCalculator() {
+            document.getElementById("carSelect").selectedIndex = 0;
+            document.getElementById("carEngine").textContent = "-";
+            document.getElementById("carCapacity").textContent = "0.0 л";
+            document.getElementById("smartRec").style.display = "none";
+            document.getElementById("oilSelect").selectedIndex = 0;
+            document.getElementById("oilQty").value = 1;
+            document.getElementById("calcFilterCheck").value = "yes";
+            document.getElementById("calcDiscount").value = "0";
+            calculateOilCalcTotal();
+        }
+
+        // FIRESTORE LISTENERS
+        db.collection("settings").doc("receiptConfig").onSnapshot(doc => {
+            if (doc.exists) {
+                receiptConfig = doc.data();
+            } else {
+                receiptConfig = {
+                    storeName: "Runs Automotive Mongolia",
+                    companyName: "Эвримоторс ХХК",
+                    phone: "75751595",
+                    email: "info@runs.mn",
+                    address: "Улаанбаатар хот, UG Palace",
+                    logoUrl: "Moty's_logo.webp",
+                    bankInfo: "Хаан Банк: 5000000000",
+                    thermalFooter: "Баярлалаа!",
+                    a4Footer: "Гүйлгээний утга дээр нэхэмжлэхийн дугаараа бичнэ үү."
+                };
+                db.collection("settings").doc("receiptConfig").set(receiptConfig);
+            }
+            applyReceiptSettingsUI();
+        });
+
+        db.collection("categories").onSnapshot(snapshot => {
+            categories = [];
+            snapshot.forEach(doc => categories.push({ id: doc.id, ...doc.data() }));
+            if (categories.length === 0) {
+                ["Моторын тос", "Кроп / Трансмисс", "Шүүрт / Фильтр", "Нэмэлт бодис", "Үйлчилгээ"].forEach(c => db.collection("categories").add({ name: c }));
+            } else {
+                renderCategoriesSelect();
+                renderCategoryManageList();
+            }
+        });
+
+        db.collection("paymentMethods").onSnapshot(snapshot => {
+            paymentMethods = [];
+            snapshot.forEach(doc => paymentMethods.push({ id: doc.id, ...doc.data() }));
+            if (paymentMethods.length === 0) {
+                ["Дансаар (Шилжүүлэг)", "Бэлнээр", "Картаар (POS)", "Зээлээр (Нэхэмжлэх)"].forEach(m => db.collection("paymentMethods").add({ name: m }));
+            } else {
+                renderPaymentMethodsSelect();
+                renderPaymentMethodManageList();
+            }
+        });
+
+        db.collection("packingLists").onSnapshot(snapshot => {
+            packingLists = [];
+            snapshot.forEach(doc => packingLists.push({ id: doc.id, ...doc.data() }));
+            renderPackingListsSelect();
+        });
+
+        db.collection("inventory").onSnapshot(snapshot => {
+            inventory = [];
+            snapshot.forEach(doc => inventory.push({ id: doc.id, ...doc.data() }));
+            inventory.sort((a, b) => a.name.localeCompare(b.name, 'mn'));
+            renderInventory();
+            renderProductStockSelect();
+        });
+
+        db.collection("customers").onSnapshot(snapshot => {
+            customers = [];
+            snapshot.forEach(doc => customers.push({ id: doc.id, ...doc.data() }));
+            renderCustomersModal();
+        });
+
+        db.collection("sales").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+            salesData = [];
+            snapshot.forEach(doc => salesData.push({ id: doc.id, ...doc.data() }));
+            filterSales('all');
+            renderCreditSalesList();
+        });
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function openReceiptSettingsModal() {
+            document.getElementById('cfgStoreName').value = receiptConfig.storeName || '';
+            document.getElementById('cfgCompanyName').value = receiptConfig.companyName || '';
+            document.getElementById('cfgPhone').value = receiptConfig.phone || '';
+            document.getElementById('cfgEmail').value = receiptConfig.email || '';
+            document.getElementById('cfgAddress').value = receiptConfig.address || '';
+            document.getElementById('cfgLogoUrl').value = receiptConfig.logoUrl || '';
+            document.getElementById('cfgBankInfo').value = receiptConfig.bankInfo || '';
+            document.getElementById('receiptSettingsModal').style.display = 'flex';
+        }
+        function closeReceiptSettingsModal() { document.getElementById('receiptSettingsModal').style.display = 'none'; }
+
+        document.getElementById('receiptSettingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newConfig = {
+                storeName: document.getElementById('cfgStoreName').value.trim(),
+                companyName: document.getElementById('cfgCompanyName').value.trim(),
+                phone: document.getElementById('cfgPhone').value.trim(),
+                email: document.getElementById('cfgEmail').value.trim(),
+                address: document.getElementById('cfgAddress').value.trim(),
+                logoUrl: document.getElementById('cfgLogoUrl').value.trim(),
+                bankInfo: document.getElementById('cfgBankInfo').value.trim(),
+                thermalFooter: receiptConfig.thermalFooter || 'Баярлалаа!',
+                a4Footer: receiptConfig.a4Footer || ''
+            };
+            await db.collection("settings").doc("receiptConfig").set(newConfig);
+            alert('Хадгалагдлаа!');
+            closeReceiptSettingsModal();
+        });
+
+        function applyReceiptSettingsUI() {
+            if (!receiptConfig) return;
+            document.getElementById('hdrStoreName').innerText = receiptConfig.storeName || 'Runs Automotive';
+            document.getElementById('invStoreName').innerText = receiptConfig.storeName || '';
+            document.getElementById('invCompName').innerText = receiptConfig.companyName || '';
+            document.getElementById('invPhone').innerText = receiptConfig.phone || '';
+            document.getElementById('invAddress').innerText = receiptConfig.address || '';
+            document.getElementById('invBankInfoDisplay').innerText = receiptConfig.bankInfo || '';
+            document.getElementById('invFooterNoteDisplay').innerText = receiptConfig.a4Footer || '';
+            document.getElementById('invSignStore').innerText = receiptConfig.storeName || '';
+
+            if (receiptConfig.logoUrl) {
+                document.getElementById('invLogoImg').src = receiptConfig.logoUrl;
+                document.getElementById('rcptLogoImg').src = receiptConfig.logoUrl;
+            }
+            document.getElementById('rcptStoreText').innerText = receiptConfig.storeName || '';
+            document.getElementById('rcptContactText').innerText = `${receiptConfig.address || ''} | Утас: ${receiptConfig.phone || ''}`;
+            document.getElementById('rcptFooterText').innerText = receiptConfig.thermalFooter || 'Баярлалаа!';
+        }
+
+        function openCategoryManager() { document.getElementById('categoryModal').style.display = 'flex'; }
+        function closeCategoryManager() { document.getElementById('categoryModal').style.display = 'none'; }
+
+        function renderCategoryManageList() {
+            const list = document.getElementById('categoryManageList');
+            if (!list) return;
+            list.innerHTML = '';
+            categories.forEach(c => {
+                list.innerHTML += `<div class="cat-item"><span><strong>${c.name}</strong></span><div><button class="btn-sm" style="background:#f59e0b; color:white; margin-right:4px;" onclick="editCategory('${c.id}', '${c.name}')"><i class="fa-solid fa-pen"></i></button><button class="btn-danger btn-sm" onclick="deleteCategory('${c.id}')"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            });
+        }
+        async function addNewCategory() {
+            const input = document.getElementById('newCatInput');
+            if (input.value.trim()) { await db.collection("categories").add({ name: input.value.trim() }); input.value = ''; }
+        }
+        async function editCategory(id, oldName) {
+            const newName = prompt('Засах:', oldName);
+            if (newName && newName.trim() !== '') await db.collection("categories").doc(id).update({ name: newName.trim() });
+        }
+        async function deleteCategory(id) { if (confirm('Устгах уу?')) await db.collection("categories").doc(id).delete(); }
+
+        function openPaymentMethodManager() { document.getElementById('paymentMethodModal').style.display = 'flex'; }
+        function closePaymentMethodManager() { document.getElementById('paymentMethodModal').style.display = 'none'; }
+
+        function renderPaymentMethodManageList() {
+            const list = document.getElementById('paymentMethodManageList');
+            if (!list) return;
+            list.innerHTML = '';
+            paymentMethods.forEach(m => {
+                list.innerHTML += `<div class="cat-item"><span><strong>${m.name}</strong></span><div><button class="btn-sm" style="background:#f59e0b; color:white; margin-right:4px;" onclick="editPaymentMethod('${m.id}', '${m.name}')"><i class="fa-solid fa-pen"></i></button><button class="btn-danger btn-sm" onclick="deletePaymentMethod('${m.id}')"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            });
+        }
+        async function addNewPaymentMethod() {
+            const input = document.getElementById('newPayMethodInput');
+            if (input.value.trim()) { await db.collection("paymentMethods").add({ name: input.value.trim() }); input.value = ''; }
+        }
+        async function editPaymentMethod(id, oldName) {
+            const newName = prompt('Засах:', oldName);
+            if (newName && newName.trim() !== '') await db.collection("paymentMethods").doc(id).update({ name: newName.trim() });
+        }
+        async function deletePaymentMethod(id) { if (confirm('Устгах уу?')) await db.collection("paymentMethods").doc(id).delete(); }
+
+        function openNewPackingListModal() { document.getElementById('newPackingModal').style.display = 'flex'; }
+        function closeNewPackingListModal() { document.getElementById('newPackingModal').style.display = 'none'; }
+
+        document.getElementById('newPackingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const code = document.getElementById('packingCode').value.trim();
+            const date = document.getElementById('packingDate').value;
+            const notes = document.getElementById('packingNotes').value || '';
+            const fileInput = document.getElementById('packingFile');
+            let fileData = null;
+            if (fileInput.files.length > 0) fileData = await fileToBase64(fileInput.files[0]);
+
+            await db.collection("packingLists").add({ code, date, notes, file: fileData });
+            alert('Үүслээ!');
+            this.reset();
+            closeNewPackingListModal();
+        });
+
+        function renderPackingListsSelect() {
+            const select = document.getElementById('selectPackingList');
+            select.innerHTML = '<option value="">-- PACKING LIST СОНГОХ --</option>';
+            packingLists.forEach(pl => { select.innerHTML += `<option value="${pl.id}">${pl.code} (${pl.date || ''})</option>`; });
+        }
+
+        function renderProductStockSelect() {
+            const select = document.getElementById('selectProductForStock');
+            select.innerHTML = '<option value="">-- Бараа сонгох --</option>';
+            select.innerHTML += '<option value="NEW" style="color:var(--accent-blue); font-weight:bold;">+ Шинэ бараа бүртгэх</option>';
+            inventory.forEach(p => { select.innerHTML += `<option value="${p.id}">${p.name} (Үлдэгдэл: ${p.stock})</option>`; });
+        }
+
+        async function autoFillCurrentPrice() {
+            const select = document.getElementById('selectProductForStock');
+            const val = select.value;
+            if (val === "NEW") {
+                const newName = prompt("Шинэ барааны нэр:");
+                if (!newName) { select.value = ""; return; }
+                const newPrice = prompt("Зарах үнэ (₮):");
+                const newCat = prompt("Ангилал:", "Моторын тос");
+
+                await db.collection("inventory").add({
+                    name: newName.trim(),
+                    price: parseFloat(newPrice) || 0,
+                    category: newCat || "Моторын тос",
+                    stock: 0
+                });
+                document.getElementById('stockInPrice').value = parseFloat(newPrice) || 0;
+            } else if (val !== "") {
+                const p = inventory.find(i => i.id === val);
+                if (p) document.getElementById('stockInPrice').value = p.price;
+            }
+        }
+
+        document.getElementById('stockInForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const plId = document.getElementById('selectPackingList').value;
+            const prodId = document.getElementById('selectProductForStock').value;
+            const inQty = parseInt(document.getElementById('stockInQty').value);
+            const inPrice = parseFloat(document.getElementById('stockInPrice').value);
+
+            if (!plId) return alert('Packing List сонгоно уу!');
+            if (!prodId || prodId === 'NEW') return alert('Бараа сонгоно уу!');
+
+            const selectedPL = packingLists.find(pl => pl.id === plId);
+            const product = inventory.find(p => p.id === prodId);
+            const updatedStock = (product.stock || 0) + inQty;
+
+            await db.collection("inventory").doc(prodId).update({
+                stock: updatedStock,
+                price: inPrice,
+                lastPackingCode: selectedPL.code || '',
+                lastPackingDate: selectedPL.date || '',
+                lastPackingFile: selectedPL.file || null
+            });
+
+            alert('Орлого амжилттай нэмэгдлээ!');
+            document.getElementById('stockInQty').value = '';
+        });
+
+        function renderInventory() {
+            const list = document.getElementById('inventoryList');
+            const searchVal = document.getElementById('searchBar').value.toLowerCase();
+            const filterCat = document.getElementById('filterCategory').value;
+
+            list.innerHTML = '';
+            inventory.filter(item => {
+                const matchName = item.name.toLowerCase().includes(searchVal);
+                const matchCat = filterCat === "Бүгд" || (item.category || "Моторын тос") === filterCat;
+                return matchName && matchCat;
+            }).forEach(item => {
+                const fileButton = item.lastPackingFile 
+                    ? `<a href="${item.lastPackingFile}" target="_blank" class="btn-sm btn-primary" style="text-decoration:none;"><i class="fa-solid fa-file-pdf"></i></a>`
+                    : '';
+
+                list.innerHTML += `
+                    <tr>
+                        <td><small style="color:var(--text-muted);">${item.category || 'Моторын тос'}</small><br><strong>${item.name}</strong></td>
+                        <td><small style="color:var(--accent-blue);">${item.lastPackingCode || '-'}</small> ${fileButton}</td>
+                        <td>${item.price.toLocaleString()}₮</td>
+                        <td><span style="background:var(--input-bg); padding:3px 8px; border-radius:8px; font-weight:bold;">${item.stock}</span></td>
+                        <td style="text-align:right;">
+                            <button class="btn-brand btn-sm" onclick="addToCart('${item.id}')"><i class="fa-solid fa-plus"></i></button>
+                            ${currentUserRole === 'admin' ? `<button class="btn-sm" style="background:#f59e0b; color:white; margin-left:2px;" onclick="openEditProductModal('${item.id}')"><i class="fa-solid fa-pen"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderCategoriesSelect() {
+            const filterCatSelect = document.getElementById('filterCategory');
+            filterCatSelect.innerHTML = '<option value="Бүгд">-- Бүх ангилал --</option>';
+            categories.forEach(c => filterCatSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`);
+        }
+
+        function renderPaymentMethodsSelect() {
+            const select = document.getElementById('paymentMethod');
+            select.innerHTML = '';
+            paymentMethods.forEach(m => select.innerHTML += `<option value="${m.name}">${m.name}</option>`);
+
+            const payCreditSelect = document.getElementById('payCreditMethodSelect');
+            if (payCreditSelect) {
+                payCreditSelect.innerHTML = '';
+                paymentMethods.filter(m => !m.name.includes('Зээл')).forEach(m => payCreditSelect.innerHTML += `<option value="${m.name}">${m.name}</option>`);
+            }
+        }
+
+        function openEditProductModal(id) {
+            if (currentUserRole !== 'admin') return alert('Зөвхөн Менежерт эрх байна!');
+            const product = inventory.find(p => p.id === id);
+            if (!product) return;
+            document.getElementById('editProdId').value = product.id;
+            document.getElementById('editProdName').value = product.name;
+            document.getElementById('editProdPrice').value = product.price;
+            document.getElementById('editProdStock').value = product.stock;
+
+            const catSelect = document.getElementById('editProdCat');
+            catSelect.innerHTML = '';
+            categories.forEach(c => {
+                catSelect.innerHTML += `<option value="${c.name}" ${c.name === product.category ? 'selected' : ''}>${c.name}</option>`;
+            });
+            document.getElementById('editProductModal').style.display = 'flex';
+        }
+        function closeEditProductModal() { document.getElementById('editProductModal').style.display = 'none'; }
+
+        async function saveProductEdits() {
+            const id = document.getElementById('editProdId').value;
+            const name = document.getElementById('editProdName').value.trim();
+            const cat = document.getElementById('editProdCat').value;
+            const price = parseFloat(document.getElementById('editProdPrice').value);
+            const stock = parseInt(document.getElementById('editProdStock').value);
+
+            await db.collection("inventory").doc(id).update({ name, category: cat, price, stock });
+            alert('Шинэчлэгдлээ.');
+            closeEditProductModal();
+        }
+
+        function openResetDataModal() { document.getElementById('resetDataModal').style.display = 'flex'; }
+        function closeResetDataModal() { document.getElementById('resetDataModal').style.display = 'none'; }
+
+        async function confirmResetDataWithPin() {
+            if (document.getElementById('resetPinInput').value.trim() !== "112520") return alert('Нууц код буруу!');
+            if (!confirm('Бүх дата устгах уу?')) return;
+            const batch = db.batch();
+            salesData.forEach(s => batch.delete(db.collection("sales").doc(s.id)));
+            inventory.forEach(i => batch.delete(db.collection("inventory").doc(i.id)));
+            packingLists.forEach(pl => batch.delete(db.collection("packingLists").doc(pl.id)));
+            await batch.commit();
+            alert('Цэвэрлэгдлээ.');
+            closeResetDataModal();
+        }
+
+        document.getElementById('customerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await db.collection("customers").add({
+                type: document.getElementById('custType').value,
+                name: document.getElementById('custName').value,
+                phone: document.getElementById('custPhone').value,
+                carNo: document.getElementById('custCarNo').value.toUpperCase(),
+                notes: ''
+            });
+            alert('Бүртгэгдлээ.');
+            this.reset();
+        });
+
+        function renderCustomersModal() {
+            const select = document.getElementById('modalCustomerSelect');
+            select.innerHTML = '<option value="">-- Шинэ / Энгийн үйлчлүүлэгч --</option>';
+            customers.forEach(c => {
+                select.innerHTML += `<option value="${c.id}" data-name="${c.name}" data-type="${c.type}" data-car="${c.carNo}" data-phone="${c.phone}" data-notes="${c.notes || ''}">${c.carNo} - ${c.name} (${c.phone})</option>`;
+            });
+        }
+
+        function autoFillCustomerInfo() {
+            const select = document.getElementById('modalCustomerSelect');
+            const opt = select.options[select.selectedIndex];
+            if (select.value === "") {
+                document.getElementById('modalCustName').value = "Энгийн үйлчлүүлэгч";
+                document.getElementById('modalCustPhone').value = "";
+                document.getElementById('modalCarNo').value = "";
+                document.getElementById('modalNotes').value = "";
+            } else {
+                document.getElementById('modalCustName').value = opt.getAttribute('data-name');
+                document.getElementById('modalCustPhone').value = opt.getAttribute('data-phone');
+                document.getElementById('modalCarNo').value = opt.getAttribute('data-car');
+                document.getElementById('modalNotes').value = opt.getAttribute('data-notes');
+                if (opt.getAttribute('data-type').includes('Байгууллага')) document.getElementById('docTypeSelect').value = "A4_PAID";
+            }
+        }
+
+        function addToCart(id) {
+            const product = inventory.find(p => p.id === id);
+            if (!product || product.stock <= 0) return alert('Үлдэгдэл хүрэлцэхгүй!');
+            const item = cart.find(c => c.id === id);
+            if (item) {
+                if (item.qty + 1 > product.stock) return alert('Үлдэгдэл хүрэлцэхгүй!');
+                item.qty += 1;
+            } else {
+                cart.push({ id: product.id, name: product.name, price: product.price, qty: 1, discountPercent: 0 });
+            }
+            renderCart();
+        }
+
+        function changeCartQty(index, change) {
+            const item = cart[index];
+            const product = inventory.find(p => p.id === item.id);
+            if (change > 0 && item.qty + 1 > product.stock) return alert('Үлдэгдэл хүрэлцэхгүй!');
+            item.qty += change;
+            if (item.qty <= 0) cart.splice(index, 1);
+            renderCart();
+        }
+
+        function updateItemDiscount(index, val) {
+            let disc = parseFloat(val);
+            if (isNaN(disc) || disc < 0) disc = 0;
+            if (disc > 100) disc = 100;
+            cart[index].discountPercent = disc;
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartList');
+            list.innerHTML = '';
+            let subTotal = 0, totalDisc = 0;
+            cart.forEach((item, index) => {
+                let base = item.price * item.qty;
+                let discAmt = (base * (item.discountPercent || 0)) / 100;
+                let final = base - discAmt;
+                subTotal += base;
+                totalDisc += discAmt;
+                list.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.price.toLocaleString()}₮</td>
+                        <td>
+                            <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main);" onclick="changeCartQty(${index}, -1)">-</button>
+                            ${item.qty}
+                            <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main);" onclick="changeCartQty(${index}, 1)">+</button>
+                        </td>
+                        <td><input type="number" min="0" max="100" value="${item.discountPercent || 0}" style="width:55px; padding:4px; text-align:center;" onchange="updateItemDiscount(${index}, this.value)"> %</td>
+                        <td>${final.toLocaleString()}₮</td>
+                        <td><button class="btn-danger btn-sm" onclick="cart.splice(${index},1); renderCart();">x</button></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('subTotal').innerText = subTotal.toLocaleString();
+            document.getElementById('discountAmount').innerText = totalDisc.toLocaleString();
+            document.getElementById('cartTotal').innerText = (subTotal - totalDisc).toLocaleString();
+        }
+
+        function toggleCreditOptions() {
+            const method = document.getElementById('paymentMethod').value;
+            document.getElementById('creditOptionsSection').style.display = method.includes('Зээл') ? 'block' : 'none';
+        }
+
+        function openCheckoutModal() {
+            if (cart.length === 0) return alert('Сагс хоосон байна!');
+            document.getElementById('modalFinalTotal').innerText = document.getElementById('cartTotal').innerText + " ₮";
+            toggleCreditOptions();
+            document.getElementById('checkoutModal').style.display = 'flex';
+        }
+        function closeCheckoutModal() { document.getElementById('checkoutModal').style.display = 'none'; }
+
+        async function confirmCheckoutAndPrint() {
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const docType = document.getElementById('docTypeSelect').value;
+            const custName = document.getElementById('modalCustName').value || 'Энгийн үйлчлүүлэгч';
+            const phone = document.getElementById('modalCustPhone').value || '';
+            const carNo = document.getElementById('modalCarNo').value.toUpperCase() || 'Бүртгэлгүй';
+            const currentKm = document.getElementById('modalKm').value || 'Бичигдээгүй';
+            const notes = document.getElementById('modalNotes').value || '';
+
+            const subTotal = parseFloat(document.getElementById('subTotal').innerText.replace(/,/g, ''));
+            const discountAmount = parseFloat(document.getElementById('discountAmount').innerText.replace(/,/g, ''));
+            const finalTotal = parseFloat(document.getElementById('cartTotal').innerText.replace(/,/g, ''));
+            const dateStr = new Date().toLocaleString('mn-MN');
+
+            const isCredit = paymentMethod.includes('Зээл') || docType === 'A4_INVOICE';
+            let advancePaid = isCredit ? parseFloat(document.getElementById('creditAdvanceInput').value) || 0 : 0;
+            let dueDate = isCredit ? document.getElementById('creditDueDateInput').value || '' : '';
+            let creditRemaining = isCredit ? finalTotal - advancePaid : 0;
+            const invNum = "INV-" + Date.now().toString().slice(-6);
+
+            const batch = db.batch();
+            cart.forEach(item => {
+                const product = inventory.find(p => p.id === item.id);
+                if (product) batch.update(db.collection("inventory").doc(product.id), { stock: product.stock - item.qty });
+            });
+
+            const saleRef = db.collection("sales").doc();
+            batch.set(saleRef, {
+                invoiceNum: invNum, date: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                paymentMethod, docType, customer: custName, phone, carNo, km: currentKm, notes, items: cart,
+                subTotal, discount: discountAmount, total: finalTotal, isCredit, advancePaid, creditRemaining, dueDate,
+                status: isCredit ? (creditRemaining <= 0 ? 'completed' : 'credit_unpaid') : 'completed'
+            });
+
+            await batch.commit();
+            closeCheckoutModal();
+
+            if (docType === 'THERMAL') {
+                printThermalReceipt(dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, finalTotal);
+            } else {
+                printA4Document(invNum, dateStr, dueDate, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, docType === 'A4_PAID' ? finalTotal : creditRemaining, docType === 'A4_PAID');
+            }
+            cart = [];
+            renderCart();
+        }
+
+        function printThermalReceipt(dateStr, custName, phone, carNo, currentKm, items, subTotal, discountAmount, finalTotal) {
+            document.body.classList.remove('print-a4-mode');
+            document.body.classList.add('print-receipt-mode');
+            document.getElementById('receiptDate').innerText = "Огноо: " + dateStr;
+            document.getElementById('receiptCustomer').innerText = "Харилцагч: " + custName;
+            document.getElementById('receiptCar').innerText = "Машин: " + carNo;
+            document.getElementById('receiptKm').innerText = "КМ: " + currentKm;
+            
+            const receiptItems = document.getElementById('receiptItems');
+            receiptItems.innerHTML = '';
+            items.forEach(item => {
+                let itemTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
+                receiptItems.innerHTML += `<tr><td>${item.name}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;">${itemTotal.toLocaleString()}₮</td></tr>`;
+            });
+            document.getElementById('receiptSubtotal').innerText = `Дүн: ${subTotal.toLocaleString()}₮`;
+            document.getElementById('receiptDiscount').innerText = `Хөнгөлөлт: -${discountAmount.toLocaleString()}₮`;
+            document.getElementById('receiptTotal').innerText = `НИЙТ: ${finalTotal.toLocaleString()}₮`;
+            window.print();
+        }
+
+        function printA4Document(invNum, dateStr, dueDate, custName, phone, carNo, currentKm, items, subTotal, discountAmount, advancePaid, finalTotalDisplay, isPaidFull) {
+            document.body.classList.remove('print-receipt-mode');
+            document.body.classList.add('print-a4-mode');
+            document.getElementById('invTitleHeader').innerText = isPaidFull ? "ТӨЛБӨРИЙН БАРИМТ" : "НЭХЭМЖЛЭХ";
+            document.getElementById('invPaidStamp').style.display = isPaidFull ? "inline-block" : "none";
+            document.getElementById('invNum').innerText = invNum;
+            document.getElementById('invDate').innerText = dateStr.slice(0, 10);
+            document.getElementById('invCustName').innerText = custName;
+            document.getElementById('invCustPhone').innerText = phone;
+            document.getElementById('invCustCar').innerText = carNo;
+            document.getElementById('invCustKm').innerText = currentKm;
+            document.getElementById('invSignCust').innerText = custName;
+
+            const list = document.getElementById('invItemsList');
+            list.innerHTML = '';
+            items.forEach((item, idx) => {
+                let rowTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
+                list.innerHTML += `<tr><td>${idx+1}</td><td>${item.name}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;">${item.price.toLocaleString()}₮</td><td style="text-align:right;">${item.discountPercent || 0}%</td><td style="text-align:right;">${rowTotal.toLocaleString()}₮</td></tr>`;
+            });
+            document.getElementById('invSubTotal').innerText = subTotal.toLocaleString();
+            document.getElementById('invDiscount').innerText = discountAmount.toLocaleString();
+            document.getElementById('invAdvance').innerText = advancePaid.toLocaleString();
+            document.getElementById('invFinalTotal').innerText = finalTotalDisplay.toLocaleString();
+            window.print();
+        }
+
+        function renderCreditSalesList() {
+            const list = document.getElementById('creditSalesList');
+            if (!list) return;
+            list.innerHTML = '';
+            const activeCredits = salesData.filter(s => s.isCredit && s.status === 'credit_unpaid');
+            activeCredits.forEach(s => {
+                list.innerHTML += `
+                    <tr>
+                        <td><strong>${s.customer}</strong> (${s.carNo})</td>
+                        <td><strong style="color:var(--moty-red);">${s.creditRemaining.toLocaleString()}₮</strong></td>
+                        <td>
+                            <button class="btn-sm btn-excel" onclick="openPayCreditModal('${s.id}')">Төлөх</button>
+                            <button class="btn-sm btn-primary" onclick="reprintA4Document('${s.id}')">A4</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            if (activeCredits.length === 0) list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Зээлийн авлага байхгүй байна.</td></tr>';
+        }
+
+        function openPayCreditModal(saleId) {
+            const sale = salesData.find(s => s.id === saleId);
+            if (!sale) return;
+            document.getElementById('payCreditSaleId').value = saleId;
+            document.getElementById('payCreditAmountInput').value = sale.creditRemaining;
+            document.getElementById('creditPaySummary').innerHTML = `Үлдэгдэл авлага: <strong>${sale.creditRemaining.toLocaleString()}₮</strong>`;
+            document.getElementById('payCreditModal').style.display = 'flex';
+        }
+        function closePayCreditModal() { document.getElementById('payCreditModal').style.display = 'none'; }
+
+        async function confirmPayCredit() {
+            const saleId = document.getElementById('payCreditSaleId').value;
+            const payAmount = parseFloat(document.getElementById('payCreditAmountInput').value);
+            const sale = salesData.find(s => s.id === saleId);
+            if (!sale || payAmount <= 0) return alert('Дүн буруу!');
+
+            let newRemaining = sale.creditRemaining - payAmount;
+            await db.collection("sales").doc(saleId).update({
+                advancePaid: sale.advancePaid + payAmount,
+                creditRemaining: newRemaining < 0 ? 0 : newRemaining,
+                status: newRemaining <= 0 ? 'completed' : 'credit_unpaid'
+            });
+            alert('Төлөгдлөө!');
+            closePayCreditModal();
+        }
+
+        function reprintA4Document(saleId) {
+            const s = salesData.find(item => item.id === saleId);
+            if (s) {
+                let isPaid = s.status === 'completed' && !s.creditRemaining;
+                printA4Document(s.invoiceNum || 'INV', s.date, s.dueDate, s.customer, s.phone, s.carNo, s.km, s.items, s.subTotal, s.discount, s.advancePaid, isPaid ? s.total : s.creditRemaining, isPaid);
+            }
+        }
+
+        function openReturnModal(saleId) {
+            if (currentUserRole !== 'admin') return alert('Зөвхөн Менежерт эрх байна!');
+            const sale = salesData.find(s => s.id === saleId);
+            if (!sale) return;
+            document.getElementById('returnSaleId').value = saleId;
+            document.getElementById('returnModal').style.display = 'flex';
+        }
+        function closeReturnModal() { document.getElementById('returnModal').style.display = 'none'; }
+
+        async function processReturnSaleConfirm() {
+            const saleId = document.getElementById('returnSaleId').value;
+            const sale = salesData.find(s => s.id === saleId);
+            if (!sale) return;
+            const batch = db.batch();
+            sale.items.forEach(item => {
+                const product = inventory.find(p => p.id === item.id);
+                if (product) batch.update(db.collection("inventory").doc(product.id), { stock: product.stock + item.qty });
+            });
+            batch.update(db.collection("sales").doc(saleId), { status: 'returned', total: 0, creditRemaining: 0 });
+            await batch.commit();
+            alert('Буцаагдлаа.');
+            closeReturnModal();
+        }
+
+        function filterSales(type) {
+            const list = document.getElementById('salesHistory');
+            list.innerHTML = '';
+            let totalRev = 0;
+            salesData.forEach(sale => {
+                totalRev += (sale.total || 0);
+                list.innerHTML += `
+                    <tr>
+                        <td style="font-size:0.75rem;">${sale.date}<br><small>${sale.paymentMethod || ''}</small></td>
+                        <td><strong>${sale.carNo || ''}</strong> (${sale.customer})</td>
+                        <td><strong>${sale.total.toLocaleString()}₮</strong></td>
+                        <td>
+                            <button class="btn-sm btn-primary" onclick="reprintA4Document('${sale.id}')">A4</button>
+                            ${currentUserRole === 'admin' ? `<button class="btn-danger btn-sm" onclick="openReturnModal('${sale.id}')"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('totalRevenue').innerText = totalRev.toLocaleString();
+        }
+
+        function exportInventoryToExcel() {
+            const rows = inventory.map((i, index) => ({
+                "№": index + 1, "Бараа": i.name, "Ангилал": i.category || '', "Үлдэгдэл": i.stock, "Үнэ": i.price
+            }));
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+            XLSX.writeFile(wb, `Inventory_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        function exportSalesToExcel() {
+            const rows = salesData.map(s => ({
+                "№": s.invoiceNum, "Огноо": s.date, "Харилцагч": s.customer, "Дүн": s.total
+            }));
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Sales");
+            XLSX.writeFile(wb, `Sales_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+    </script>
+</body>
+</html>
