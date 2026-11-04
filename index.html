@@ -281,10 +281,11 @@
                     <h2><i class="fa-solid fa-screwdriver-wrench"></i> Менежерийн Цэс & Удирдлага</h2>
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="btn-sm btn-primary" onclick="openNewPackingListModal()"><i class="fa-solid fa-plus"></i> Шинэ Парти</button>
+                    <button class="btn-sm btn-primary" onclick="openNewProductModal()"><i class="fa-solid fa-plus-circle"></i> Шинэ Бараа Нэмэх</button>
+                    <button class="btn-sm" style="background:#3b82f6; color:white;" onclick="openNewPackingListModal()"><i class="fa-solid fa-plus"></i> Парти</button>
                     <button class="btn-sm" style="background:#8b5cf6; color:white;" onclick="openCategoryManager()"><i class="fa-solid fa-layer-group"></i> Ангилал</button>
                     <button class="btn-sm" style="background:#06b6d4; color:white;" onclick="openPaymentMethodManager()"><i class="fa-solid fa-credit-card"></i> Төлбөр</button>
-                    <button class="btn-sm" style="background:#ec4899; color:white;" onclick="openOilCalcManagerModal()"><i class="fa-solid fa-calculator"></i> Тооцоолуурын Дата</button>
+                    <button class="btn-sm" style="background:#ec4899; color:white;" onclick="openOilCalcManagerModal()"><i class="fa-solid fa-calculator"></i> Дата</button>
                     <button class="btn-sm" style="background:#10b981; color:white;" onclick="openDocumentsManagerModal()"><i class="fa-solid fa-folder-open"></i> Бичиг баримт</button>
                     <button class="btn-sm" style="background:#f59e0b; color:white;" onclick="openReceiptSettingsModal()"><i class="fa-solid fa-gear"></i> Тохиргоо</button>
                     <button class="btn-sm btn-danger" onclick="openResetDataModal()"><i class="fa-solid fa-trash-can"></i></button>
@@ -417,6 +418,25 @@
             <div id="bookingSuccessMsg" style="display:none; text-align:center; padding:20px; color:var(--success); font-weight:700;">
                 <i class="fa-solid fa-circle-check" style="font-size:2rem; margin-bottom:8px;"></i><br>Таны цаг амжилттай захиалагдлаа! Бид тантай холбогдох болно.
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ЦОО ШИНЭ БАРАА БҮРТГЭХ (NEW PRODUCT MODAL) -->
+    <div class="modal-overlay" id="newProductModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-plus-circle" style="color:var(--moty-red);"></i> Шинэ Бараа Бүртгэх</h2>
+                <button onclick="closeNewProductModal()" style="background:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">&times;</button>
+            </div>
+            <form id="newProductForm" onsubmit="submitNewProduct(event)">
+                <div class="form-group"><label>Барааны нэр:</label><input type="text" id="newProdNameInput" required placeholder="Moty's M100 0W20 4L"></div>
+                <div class="form-group"><label>Ангилал:</label><select id="newProdCatSelect" required></select></div>
+                <div class="flex-grid">
+                    <div class="form-group"><label>Зарах үнэ (₮):</label><input type="number" id="newProdPriceInput" min="0" required placeholder="219600"></div>
+                    <div class="form-group"><label>Анхны үлдэгдэл:</label><input type="number" id="newProdStockInput" min="0" required placeholder="10"></div>
+                </div>
+                <button type="submit" class="btn-brand" style="width:100%; padding:12px; margin-top:10px;">Шинэ бараа хадгалах</button>
+            </form>
         </div>
     </div>
 
@@ -577,7 +597,7 @@
         </div>
     </div>
 
-    <!-- OTHER MODALS (RECEIPT SETTINGS, PACKING, CATEGORY, PAYMENT, RESET, PAY CREDIT, EDIT, RETURN, CHECKOUT) -->
+    <!-- OTHER MODALS -->
     <div class="modal-overlay" id="receiptSettingsModal">
         <div class="modal">
             <div class="modal-header">
@@ -716,14 +736,14 @@
             <div class="form-group" style="background:var(--input-bg); padding:10px; border-radius:8px;">
                 <label>Баримтын Төрөл:</label>
                 <select id="docTypeSelect">
-                    <option value="THERMAL">🧾 80mm Чех</option>
+                    <option value="THERMAL">🧾 80mm Чех (PDF хадгалахгүй)</option>
                     <option value="A4_PAID">✅ А4 Төлбөрийн Баримт</option>
-                    <option value="A4_INVOICE">📄 А4 Нэхэмжлэх (Зээл)</option>
+                    <option value="A4_INVOICE">📄 А4 Нэхэмжлэх (Зээл / Захиалга)</option>
                 </select>
             </div>
             <div id="creditOptionsSection" style="display:none; background:rgba(245, 158, 11, 0.1); padding:12px; border-radius:10px; border:1px solid var(--warning); margin-bottom:12px;">
-                <div class="form-group"><label>Урьдчилгаа:</label><input type="number" id="creditAdvanceInput" value="0" min="0"></div>
-                <div class="form-group"><label>Төлөх Огноо:</label><input type="date" id="creditDueDateInput"></div>
+                <div class="form-group"><label>Урьдчилгаа дүн:</label><input type="number" id="creditAdvanceInput" value="0" min="0"></div>
+                <div class="form-group"><label>Төлөх эцсийн хугацаа (Due Date):</label><input type="date" id="creditDueDateInput"></div>
             </div>
             <div class="form-group"><label>Харилцагч сонгох:</label><select id="modalCustomerSelect" onchange="autoFillCustomerInfo()"></select></div>
             <div class="form-group"><label>Нэр:</label><input type="text" id="modalCustName" value="Энгийн үйлчлүүлэгч"></div>
@@ -749,14 +769,16 @@
                 <div style="font-size:11px; color:#555; margin-top:6px;">
                     <strong>Дистрибьютор: <span id="invStoreName">Runs Automotive</span></strong><br>
                     Компани: <span id="invCompName">Эвримоторс ХХК</span><br>
-                    Утас: <span id="invPhone">75751595</span> | Хаяг: <span id="invAddress">Улаанбаатар</span>
+                    Утас: <span id="invPhone">75751595</span> | Хаяг: <span id="invAddress">Улаанбаатар</span><br>
+                    <div id="invBankInfoContainer" style="margin-top:4px; white-space:pre-line; font-size:10px; color:#333;"></div>
                 </div>
             </div>
             <div style="text-align:right;">
                 <h2 id="invTitleHeader" style="color:#e61924; font-size:22px;">НЭХЭМЖЛЭХ</h2>
                 <div style="font-size:12px; margin-top:4px;">
                     <strong>Дугаар:</strong> <span id="invNum">INV-000</span><br>
-                    <strong>Огноо:</strong> <span id="invDate">2026-11-02</span>
+                    <strong>Огноо:</strong> <span id="invDate">2026-11-04</span><br>
+                    <strong id="invDueDateWrapper" style="display:none;">Төлөх хугацаа: <span id="invDueDate"></span></strong>
                 </div>
             </div>
         </div>
@@ -773,7 +795,11 @@
         <div style="margin-top:20px; text-align:right; font-size:13px;">
             <p>Дүн: <span id="invSubTotal">0</span> ₮</p>
             <p>Хөнгөлөлт: -<span id="invDiscount">0</span> ₮</p>
-            <p style="font-size:16px; font-weight:bold; color:#e61924; margin-top:6px;">ЭЦСИЙН ДҮН: <span id="invFinalTotal">0</span> ₮</p>
+            <p id="invAdvanceRow" style="display:none;">Урьдчилгаа төлсөн: <span id="invAdvancePaid">0</span> ₮</p>
+            <p style="font-size:16px; font-weight:bold; color:#e61924; margin-top:6px;">ЭЦСИЙН ҮЛДЭГДЭЛ ДҮН: <span id="invFinalTotal">0</span> ₮</p>
+        </div>
+        <div style="margin-top:30px; text-align:center; font-size:12px; font-weight:bold; color:#333; border-top:1px dashed #ccc; padding-top:15px;">
+            Манайхаар үйлчлүүлсэн танд баярлалаа! Runs Automotive Mongolia
         </div>
     </div>
 
@@ -793,6 +819,8 @@
         </table>
         <div style="border-top:1px dashed #000; margin:6px 0;"></div>
         <p style="text-align:right; font-weight:bold; font-size:13px;" id="receiptTotal"></p>
+        <div style="border-top:1px dashed #000; margin:8px 0;"></div>
+        <p style="text-align:center; font-size:10px; font-weight:bold; margin-top:4px;">Манайхаар үйлчлүүлсэн танд баярлалаа!</p>
     </div>
 
     <script>
@@ -812,14 +840,6 @@
         let inventory = [], customers = [], salesData = [], categories = [], paymentMethods = [], packingLists = [], cart = [], receiptConfig = {};
         let carsDb = [];
         let documentsList = [];
-
-        const defaultCars = [
-            {name: "Toyota Alphard (2.4 AHCQW)", engine: "2400 AHCQW", capacity: 4.3},
-            {name: "Toyota Alphard (2.5 AGH30/35)", engine: "2500 AGH30W", capacity: 4.4},
-            {name: "Toyota Camry (2.5 AXVH70 Hybrid)", engine: "2500 AXVH70", capacity: 4.5},
-            {name: "Toyota Land Cruiser 300", engine: "3500 V3A30W", capacity: 7.3},
-            {name: "Toyota Prius 30", engine: "1800 ZVW30", capacity: 4.2}
-        ];
 
         document.getElementById('packingDate').valueAsDate = new Date();
         document.getElementById('bookDate').valueAsDate = new Date();
@@ -920,6 +940,14 @@
                 }
             }, err => console.error(err));
         }
+
+        const defaultCars = [
+            {name: "Toyota Alphard (2.4 AHCQW)", engine: "2400 AHCQW", capacity: 4.3},
+            {name: "Toyota Alphard (2.5 AGH30/35)", engine: "2500 AGH30W", capacity: 4.4},
+            {name: "Toyota Camry (2.5 AXVH70 Hybrid)", engine: "2500 AXVH70", capacity: 4.5},
+            {name: "Toyota Land Cruiser 300", engine: "3500 V3A30W", capacity: 7.3},
+            {name: "Toyota Prius 30", engine: "1800 ZVW30", capacity: 4.2}
+        ];
 
         function renderCarSelectOptions() {
             const select = document.getElementById("carSelect");
@@ -1078,7 +1106,7 @@
                 categories = [];
                 snapshot.forEach(doc => categories.push({ id: doc.id, ...doc.data() }));
                 if (categories.length === 0) ["Моторын тос", "Кроп", "Шүүлтүүр", "Үйлчилгээ"].forEach(c => db.collection("categories").add({ name: c }));
-                else { renderCategoriesSelect(); renderCategoryManageList(); }
+                else { renderCategoriesSelect(); renderCategoryManageList(); renderNewProductCategorySelect(); }
             });
 
             db.collection("paymentMethods").onSnapshot(snapshot => {
@@ -1142,6 +1170,43 @@
             alert('Хадгалагдлаа!');
             closeReceiptSettingsModal();
         }
+
+        // --- ЦОО ШИНЭ БАРАА БҮРТГЭХ ФУНКЦУУД ---
+        function openNewProductModal() {
+            if (currentUserRole !== 'admin') return alert('Зөвхөн Менежерт эрх байна!');
+            document.getElementById('newProductForm').reset();
+            document.getElementById('newProductModal').style.display = 'flex';
+        }
+        function closeNewProductModal() { document.getElementById('newProductModal').style.display = 'none'; }
+
+        function renderNewProductCategorySelect() {
+            const select = document.getElementById('newProdCatSelect');
+            if(!select) return;
+            select.innerHTML = '';
+            categories.forEach(c => {
+                select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+            });
+        }
+
+        async function submitNewProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('newProdNameInput').value.trim();
+            const category = document.getElementById('newProdCatSelect').value;
+            const price = parseFloat(document.getElementById('newProdPriceInput').value) || 0;
+            const stock = parseInt(document.getElementById('newProdStockInput').value) || 0;
+
+            if(!name) return alert('Барааны нэр оруулна уу!');
+            try {
+                await db.collection("inventory").add({
+                    name, category, price, stock
+                });
+                alert('Цоо шинэ бараа системд амжилттай бүртгэгдлээ!');
+                closeNewProductModal();
+            } catch(err) {
+                alert('Алдаа гарлаа: ' + err.message);
+            }
+        }
+        // ----------------------------------------
 
         function openCategoryManager() { document.getElementById('categoryModal').style.display = 'flex'; }
         function closeCategoryManager() { document.getElementById('categoryModal').style.display = 'none'; }
@@ -1349,6 +1414,20 @@
             renderCart();
         }
 
+        function updateItemQtyDirect(index, val) {
+            let q = parseInt(val);
+            if (isNaN(q) || q < 0) q = 0;
+            const item = cart[index];
+            const p = inventory.find(i => i.id === item.id);
+            if (q > p.stock) {
+                alert('Үлдэгдэл хүрэлцэхгүй! Хамгийн их үлдэгдэл: ' + p.stock);
+                q = p.stock;
+            }
+            item.qty = q;
+            if (item.qty === 0) cart.splice(index, 1);
+            renderCart();
+        }
+
         function updateItemDiscount(index, val) {
             let disc = parseFloat(val) || 0;
             if(disc > 100) disc = 100;
@@ -1373,7 +1452,7 @@
                         <td>${item.price.toLocaleString()}₮</td>
                         <td>
                             <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main);" onclick="changeCartQty(${index}, -1)">-</button>
-                            ${item.qty}
+                            <input type="number" min="1" value="${item.qty}" style="width:50px; padding:2px; text-align:center; display:inline-block;" onchange="updateItemQtyDirect(${index}, this.value)">
                             <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main);" onclick="changeCartQty(${index}, 1)">+</button>
                         </td>
                         <td><input type="number" min="0" max="100" value="${item.discountPercent || 0}" style="width:50px; padding:2px; text-align:center;" onchange="updateItemDiscount(${index}, this.value)">%</td>
@@ -1441,7 +1520,7 @@
             if (docType === 'THERMAL') {
                 printThermalReceipt(dateStr, custName, carNo, cart, subTotal, discountAmount, finalTotal);
             } else {
-                printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, docType === 'A4_PAID' ? finalTotal : creditRemaining, docType === 'A4_PAID');
+                printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, docType === 'A4_PAID' ? finalTotal : creditRemaining, docType === 'A4_PAID', dueDate);
             }
             cart = [];
             renderCart();
@@ -1464,16 +1543,32 @@
             window.print();
         }
 
-        function printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, items, subTotal, discountAmount, advancePaid, finalTotalDisplay, isPaidFull) {
+        function printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, items, subTotal, discountAmount, advancePaid, finalTotalDisplay, isPaidFull, dueDate) {
             document.body.classList.remove('print-receipt-mode');
             document.body.classList.add('print-a4-mode');
-            document.getElementById('invTitleHeader').innerText = isPaidFull ? "ТӨЛБӨРИЙН БАРИМТ" : "НЭХЭМЖЛЭХ";
+            document.getElementById('invTitleHeader').innerText = isPaidFull ? "ТӨЛБӨРИЙН БАРИМТ" : "ЗАХИАЛГЫН НЭХЭМЖЛЭХ";
             document.getElementById('invNum').innerText = invNum;
             document.getElementById('invDate').innerText = dateStr.slice(0, 10);
+            
+            const dueDateWrapper = document.getElementById('invDueDateWrapper');
+            if (dueDate) {
+                dueDateWrapper.style.display = 'block';
+                document.getElementById('invDueDate').innerText = dueDate;
+            } else {
+                dueDateWrapper.style.display = 'none';
+            }
+
             document.getElementById('invCustName').innerText = custName;
             document.getElementById('invCustPhone').innerText = phone;
             document.getElementById('invCustCar').innerText = carNo;
             document.getElementById('invCustKm').innerText = currentKm;
+
+            if (receiptConfig.bankInfo) {
+                document.getElementById('invBankInfoContainer').innerText = receiptConfig.bankInfo;
+            }
+            if (receiptConfig.companyName) {
+                document.getElementById('invCompName').innerText = receiptConfig.companyName;
+            }
 
             const list = document.getElementById('invItemsList');
             list.innerHTML = '';
@@ -1483,6 +1578,15 @@
             });
             document.getElementById('invSubTotal').innerText = subTotal.toLocaleString();
             document.getElementById('invDiscount').innerText = discountAmount.toLocaleString();
+            
+            const advRow = document.getElementById('invAdvanceRow');
+            if (advancePaid > 0) {
+                advRow.style.display = 'block';
+                document.getElementById('invAdvancePaid').innerText = advancePaid.toLocaleString();
+            } else {
+                advRow.style.display = 'none';
+            }
+
             document.getElementById('invFinalTotal').innerText = finalTotalDisplay.toLocaleString();
             window.print();
         }
@@ -1495,7 +1599,7 @@
             activeCredits.forEach(s => {
                 list.innerHTML += `
                     <tr>
-                        <td><strong>${s.customer}</strong> (${s.carNo})</td>
+                        <td><strong>${s.customer}</strong> (${s.carNo})<br><small style="color:var(--text-muted);">Дуусах: ${s.dueDate || '-'}</small></td>
                         <td><strong style="color:var(--moty-red);">${s.creditRemaining.toLocaleString()}₮</strong></td>
                         <td>
                             <button class="btn-sm btn-excel" onclick="openPayCreditModal('${s.id}')">Төлөх</button>
@@ -1537,7 +1641,7 @@
             const s = salesData.find(item => item.id === saleId);
             if (s) {
                 let isPaid = s.status === 'completed' && !s.creditRemaining;
-                printA4Document(s.invoiceNum || 'INV', s.date, s.customer, s.phone, s.carNo, s.km, s.items, s.subTotal, s.discount, s.advancePaid, isPaid ? s.total : s.creditRemaining, isPaid);
+                printA4Document(s.invoiceNum || 'INV', s.date, s.customer, s.phone, s.carNo, s.km, s.items, s.subTotal, s.discount, s.advancePaid, isPaid ? s.total : s.creditRemaining, isPaid, s.dueDate);
             }
         }
 
