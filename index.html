@@ -135,7 +135,7 @@
             body.print-receipt-mode #receipt, body.print-receipt-mode #receipt * { visibility: visible !important; }
             body.print-receipt-mode #receipt { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; font-size: 11px; padding: 10px; color: #000; background: #fff; }
             body.print-a4-mode #a4Invoice, body.print-a4-mode #a4Invoice * { visibility: visible !important; }
-            body.print-a4-mode #a4Invoice { display: block !important; position: absolute; left: 0; top: 0; width: 210mm; min-height: 297mm; padding: 15mm; color: #000; background: #fff; }
+            body.print-a4-mode #a4Invoice { display: block !important; position: absolute; left: 0; top: 0; width: 210mm; min-height: 297mm; padding: 15mm; color: #000; background: #fff; page-break-after: always; }
             .inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid #e61924; padding-bottom: 15px; margin-bottom: 20px; }
             .inv-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             .inv-table th, .inv-table td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; color: #000; }
@@ -334,6 +334,7 @@
                     <tbody id="cartList"></tbody>
                 </table>
                 <div style="margin-top: 14px; text-align: right; font-size: 0.85rem; color: var(--text-muted);">
+                    Нийт барааны тоо ширхэг: <strong style="color:var(--text-main);" id="cartTotalQtyCount">0</strong> ш | 
                     Нийт Дүн: <span id="subTotal">0</span> ₮ | Хөнгөлөлт: <span id="discountAmount" style="color:var(--warning);">0</span> ₮
                 </div>
                 <div style="text-align: right; font-size: 1.6rem; font-weight: 900; margin-top:2px; color: var(--moty-red); font-family:'Space Grotesk', sans-serif;">
@@ -421,7 +422,7 @@
         </div>
     </div>
 
-    <!-- MODAL: ЦОО ШИНЭ БАРАА БҮРТГЭХ (NEW PRODUCT MODAL) -->
+    <!-- MODAL: ЦОО ШИНЭ БАРАА БҮРТГЭХ -->
     <div class="modal-overlay" id="newProductModal">
         <div class="modal">
             <div class="modal-header">
@@ -432,8 +433,18 @@
                 <div class="form-group"><label>Барааны нэр:</label><input type="text" id="newProdNameInput" required placeholder="Moty's M100 0W20 4L"></div>
                 <div class="form-group"><label>Ангилал:</label><select id="newProdCatSelect" required></select></div>
                 <div class="flex-grid">
+                    <div class="form-group"><label>Савлагааны төрөл:</label>
+                        <select id="newProdPackingType">
+                            <option value="1L">1L Савлагаа</option>
+                            <option value="4L">4L Савлагаа</option>
+                            <option value="Standard">Бусад / Стандарт</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>1 хайрцагт орох тоо (Box Size):</label><input type="number" id="newProdBoxSize" value="1" min="1" required placeholder="12 эсвэл 6"></div>
+                </div>
+                <div class="flex-grid">
                     <div class="form-group"><label>Зарах үнэ (₮):</label><input type="number" id="newProdPriceInput" min="0" required placeholder="219600"></div>
-                    <div class="form-group"><label>Анхны үлдэгдэл:</label><input type="number" id="newProdStockInput" min="0" required placeholder="10"></div>
+                    <div class="form-group"><label>Анхны үлдэгдэл (Ширхэг):</label><input type="number" id="newProdStockInput" min="0" required placeholder="10"></div>
                 </div>
                 <button type="submit" class="btn-brand" style="width:100%; padding:12px; margin-top:10px;">Шинэ бараа хадгалах</button>
             </form>
@@ -537,7 +548,7 @@
         </div>
     </div>
 
-    <!-- MODAL: ТОСНЫ ТООЦООЛУУРЫН ДАТА УДИРДЛАГА (MANAGER ONLY) -->
+    <!-- MODAL: ТОСНЫ ТООЦООЛУУРЫН ДАТА УДИРДЛАГА -->
     <div class="modal-overlay" id="oilCalcManagerModal">
         <div class="modal" style="max-width: 650px;">
             <div class="modal-header">
@@ -563,7 +574,7 @@
         </div>
     </div>
 
-    <!-- MODAL: БИЧИГ БАРИМТ (DOCUMENTS MANAGER - MANAGER ONLY) -->
+    <!-- MODAL: БИЧИГ БАРИМТ (DOCUMENTS MANAGER) -->
     <div class="modal-overlay" id="documentsManagerModal">
         <div class="modal" style="max-width: 750px;">
             <div class="modal-header">
@@ -708,6 +719,16 @@
             <input type="hidden" id="editProdId">
             <div class="form-group"><label>Нэр:</label><input type="text" id="editProdName" required></div>
             <div class="form-group"><label>Ангилал:</label><select id="editProdCat"></select></div>
+            <div class="flex-grid">
+                <div class="form-group"><label>Савлагаа:</label>
+                    <select id="editProdPackingType">
+                        <option value="1L">1L Савлагаа</option>
+                        <option value="4L">4L Савлагаа</option>
+                        <option value="Standard">Стандарт</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Хайрцаг дахь тоо:</label><input type="number" id="editProdBoxSize" min="1" required></div>
+            </div>
             <div class="form-group"><label>Үнэ:</label><input type="number" id="editProdPrice" required></div>
             <div class="form-group"><label>Үлдэгдэл:</label><input type="number" id="editProdStock" required></div>
             <button class="btn-brand" style="width:100%; padding:12px; margin-top:10px;" onclick="saveProductEdits()">Хадгалах</button>
@@ -739,6 +760,8 @@
                     <option value="THERMAL">🧾 80mm Чех (PDF хадгалахгүй)</option>
                     <option value="A4_PAID">✅ А4 Төлбөрийн Баримт</option>
                     <option value="A4_INVOICE">📄 А4 Нэхэмжлэх (Зээл / Захиалга)</option>
+                    <option value="A4_PACKING_LIST">📦 А4 Packing List (Үнэгүй Бараа Падаан)</option>
+                    <option value="A4_BOTH_CREDIT" style="color:var(--warning); font-weight:bold;" selected>📄📦 Нэхэмжлэх + Packing List (Зээлийн үед давхар гаргах)</option>
                 </select>
             </div>
             <div id="creditOptionsSection" style="display:none; background:rgba(245, 158, 11, 0.1); padding:12px; border-radius:10px; border:1px solid var(--warning); margin-bottom:12px;">
@@ -763,43 +786,92 @@
 
     <!-- A4 & THERMAL TEMPLATES -->
     <div id="a4Invoice">
-        <div class="inv-header">
-            <div>
-                <img id="invLogoImg" class="inv-logo-img" src="Moty's_logo.webp" alt="Logo" style="max-width:200px;" onerror="this.style.display='none'">
-                <div style="font-size:11px; color:#555; margin-top:6px;">
-                    <strong>Дистрибьютор: <span id="invStoreName">Runs Automotive</span></strong><br>
-                    Компани: <span id="invCompName">Эвримоторс ХХК</span><br>
-                    Утас: <span id="invPhone">75751595</span> | Хаяг: <span id="invAddress">Улаанбаатар</span><br>
-                    <div id="invBankInfoContainer" style="margin-top:4px; white-space:pre-line; font-size:10px; color:#333;"></div>
+        <!-- 1-р ХУУДАС (Нэхэмжлэх / Үндсэн баримт) -->
+        <div id="firstPageSection">
+            <div class="inv-header">
+                <div>
+                    <img id="invLogoImg" class="inv-logo-img" src="Moty's_logo.webp" alt="Logo" style="max-width:200px;" onerror="this.style.display='none'">
+                    <div style="font-size:11px; color:#555; margin-top:6px;">
+                        <strong>Дистрибьютор: <span id="invStoreName">Runs Automotive</span></strong><br>
+                        Компани: <span id="invCompName">Эвримоторс ХХК</span><br>
+                        Утас: <span id="invPhone">75751595</span> | Хаяг: <span id="invAddress">Улаанбаатар</span><br>
+                        <div id="invBankInfoContainer" style="margin-top:4px; white-space:pre-line; font-size:10px; color:#333;"></div>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <h2 id="invTitleHeader" style="color:#e61924; font-size:22px;">НЭХЭМЖЛЭХ</h2>
+                    <div style="font-size:12px; margin-top:4px;">
+                        <strong>Дугаар:</strong> <span id="invNum">INV-000</span><br>
+                        <strong>Огноо:</strong> <span id="invDate">2026-11-04</span><br>
+                        <strong id="invDueDateWrapper" style="display:none;">Төлөх хугацаа: <span id="invDueDate"></span></strong>
+                    </div>
                 </div>
             </div>
-            <div style="text-align:right;">
-                <h2 id="invTitleHeader" style="color:#e61924; font-size:22px;">НЭХЭМЖЛЭХ</h2>
-                <div style="font-size:12px; margin-top:4px;">
-                    <strong>Дугаар:</strong> <span id="invNum">INV-000</span><br>
-                    <strong>Огноо:</strong> <span id="invDate">2026-11-04</span><br>
-                    <strong id="invDueDateWrapper" style="display:none;">Төлөх хугацаа: <span id="invDueDate"></span></strong>
-                </div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0;">
+                <div>Харилцагч: <span id="invCustName">-</span> (<span id="invCustPhone">-</span>)</div>
+                <div>Машин: <span id="invCustCar">-</span> | КМ: <span id="invCustKm">-</span></div>
+            </div>
+            <table class="inv-table" id="invTableElement">
+                <thead>
+                    <tr id="invTableHeadRow"><th>№</th><th>Бараа</th><th style="text-align:center;">Тоо</th><th class="price-col" style="text-align:right;">Үнэ</th><th class="price-col" style="text-align:right;">Дүн</th></tr>
+                </thead>
+                <tbody id="invItemsList"></tbody>
+            </table>
+            <!-- Нийт тоо ширхэг харуулах хэсэг (Нэхэмжлэл талд) -->
+            <div style="margin-top: 10px; font-size: 12px; font-weight: bold; color: #333;">
+                Нийт барааны тоо ширхэг: <span id="invTotalQtyText">0</span> ш
+            </div>
+            <div id="invTotalsSection" style="margin-top:10px; text-align:right; font-size:13px;">
+                <p>Дүн: <span id="invSubTotal">0</span> ₮</p>
+                <p>Хөнгөлөлт: -<span id="invDiscount">0</span> ₮</p>
+                <p id="invAdvanceRow" style="display:none;">Урьдчилгаа төлсөн: <span id="invAdvancePaid">0</span> ₮</p>
+                <p style="font-size:16px; font-weight:bold; color:#e61924; margin-top:6px;">ЭЦСИЙН ҮЛДЭГДЭЛ ДҮН: <span id="invFinalTotal">0</span> ₮</p>
+            </div>
+            <div style="margin-top:30px; text-align:center; font-size:12px; font-weight:bold; color:#333; border-top:1px dashed #ccc; padding-top:15px;">
+                Манайхаар үйлчлүүлсэн танд баярлалаа! Runs Automotive Mongolia
             </div>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:12px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0;">
-            <div>Харилцагч: <span id="invCustName">-</span> (<span id="invCustPhone">-</span>)</div>
-            <div>Машин: <span id="invCustCar">-</span> | КМ: <span id="invCustKm">-</span></div>
-        </div>
-        <table class="inv-table">
-            <thead>
-                <tr><th>№</th><th>Бараа</th><th style="text-align:center;">Тоо</th><th style="text-align:right;">Үнэ</th><th style="text-align:right;">Дүн</th></tr>
-            </thead>
-            <tbody id="invItemsList"></tbody>
-        </table>
-        <div style="margin-top:20px; text-align:right; font-size:13px;">
-            <p>Дүн: <span id="invSubTotal">0</span> ₮</p>
-            <p>Хөнгөлөлт: -<span id="invDiscount">0</span> ₮</p>
-            <p id="invAdvanceRow" style="display:none;">Урьдчилгаа төлсөн: <span id="invAdvancePaid">0</span> ₮</p>
-            <p style="font-size:16px; font-weight:bold; color:#e61924; margin-top:6px;">ЭЦСИЙН ҮЛДЭГДЭЛ ДҮН: <span id="invFinalTotal">0</span> ₮</p>
-        </div>
-        <div style="margin-top:30px; text-align:center; font-size:12px; font-weight:bold; color:#333; border-top:1px dashed #ccc; padding-top:15px;">
-            Манайхаар үйлчлүүлсэн танд баярлалаа! Runs Automotive Mongolia
+
+        <!-- 2-р ХУУДАС (Зөвхөн Packing List-д зориулсан тусдаа блок) -->
+        <div id="secondPagePackingSection" style="display: none; page-break-before: always; margin-top: 20px;">
+            <div class="inv-header">
+                <div>
+                    <img class="inv-logo-img" src="Moty's_logo.webp" alt="Logo" style="max-width:200px;" onerror="this.style.display='none'">
+                    <div style="font-size:11px; color:#555; margin-top:6px;">
+                        <strong>Дистрибьютор: <span class="plStoreName">Runs Automotive</span></strong><br>
+                        Компани: <span class="plCompName">Эвримоторс ХХК</span><br>
+                        Утас: <span class="plPhone">75751595</span>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <h2 style="color:#e61924; font-size:22px;">БАРАА ХҮЛЭЭЛЦЭХ ПАДААН (Packing List)</h2>
+                    <div style="font-size:12px; margin-top:4px;">
+                        <strong>Дугаар:</strong> <span class="plNum">INV-000</span><br>
+                        <strong>Огноо:</strong> <span class="plDate">2026-11-04</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0;">
+                <div>Харилцагч: <span class="plCustName">-</span> (<span class="plCustPhone">-</span>)</div>
+                <div>Машин: <span class="plCustCar">-</span> | КМ: <span class="plCustKm">-</span></div>
+            </div>
+            <table class="inv-table">
+                <thead>
+                    <tr><th>№</th><th>Бараа</th><th style="text-align:center;">ТОО ШИРХЭГ</th></tr>
+                </thead>
+                <tbody id="plItemsList"></tbody>
+            </table>
+            <!-- Packing List дээрх нийт барааны тоо ширхэг -->
+            <div style="margin-top: 15px; font-size: 13px; font-weight: bold; color: #000;">
+                Нийт барааны тоо ширхэг: <span id="plTotalQtyText">0</span> ш
+            </div>
+            <div style="margin-top:50px; display:flex; justify-content:space-between; font-size:12px;">
+                <div>Хүлээлгэн өгсөн ажилтан: ........................................</div>
+                <div>Хүлээн авсан жолооч/ажилтан: ........................................</div>
+            </div>
+            <div style="margin-top:40px; text-align:center; font-size:12px; font-weight:bold; color:#333; border-top:1px dashed #ccc; padding-top:15px;">
+                Манайхаар үйлчлүүлсэн танд баярлалаа! Runs Automotive Mongolia
+            </div>
         </div>
     </div>
 
@@ -1171,7 +1243,6 @@
             closeReceiptSettingsModal();
         }
 
-        // --- ЦОО ШИНЭ БАРАА БҮРТГЭХ ФУНКЦУУД ---
         function openNewProductModal() {
             if (currentUserRole !== 'admin') return alert('Зөвхөн Менежерт эрх байна!');
             document.getElementById('newProductForm').reset();
@@ -1192,13 +1263,15 @@
             e.preventDefault();
             const name = document.getElementById('newProdNameInput').value.trim();
             const category = document.getElementById('newProdCatSelect').value;
+            const packingType = document.getElementById('newProdPackingType').value;
+            const boxSize = parseInt(document.getElementById('newProdBoxSize').value) || 1;
             const price = parseFloat(document.getElementById('newProdPriceInput').value) || 0;
             const stock = parseInt(document.getElementById('newProdStockInput').value) || 0;
 
             if(!name) return alert('Барааны нэр оруулна уу!');
             try {
                 await db.collection("inventory").add({
-                    name, category, price, stock
+                    name, category, packingType, boxSize, price, stock
                 });
                 alert('Цоо шинэ бараа системд амжилттай бүртгэгдлээ!');
                 closeNewProductModal();
@@ -1206,7 +1279,6 @@
                 alert('Алдаа гарлаа: ' + err.message);
             }
         }
-        // ----------------------------------------
 
         function openCategoryManager() { document.getElementById('categoryModal').style.display = 'flex'; }
         function closeCategoryManager() { document.getElementById('categoryModal').style.display = 'none'; }
@@ -1296,9 +1368,10 @@
             const filterCat = document.getElementById('filterCategory').value;
             list.innerHTML = '';
             inventory.filter(i => (i.name.toLowerCase().includes(searchVal)) && (filterCat === "Бүгд" || i.category === filterCat)).forEach(item => {
+                let boxInfo = item.boxSize ? `<br><small style="color:var(--warning);">Хайрцагт: ${item.boxSize}ш</small>` : '';
                 list.innerHTML += `
                     <tr>
-                        <td><small style="color:var(--text-muted);">${item.category || ''}</small><br><strong>${item.name}</strong></td>
+                        <td><small style="color:var(--text-muted);">${item.category || ''}</small><br><strong>${item.name}</strong>${boxInfo}</td>
                         <td>-</td>
                         <td>${item.price.toLocaleString()}₮</td>
                         <td><span style="background:var(--input-bg); padding:3px 8px; border-radius:8px; font-weight:bold;">${item.stock}</span></td>
@@ -1439,8 +1512,9 @@
             const l = document.getElementById('cartList');
             if(!l) return;
             l.innerHTML = '';
-            let sub = 0, totalDisc = 0;
+            let sub = 0, totalDisc = 0, totalQty = 0;
             cart.forEach((item, index) => {
+                totalQty += (item.qty || 0);
                 let base = item.price * item.qty;
                 let discAmt = (base * (item.discountPercent || 0)) / 100;
                 let final = base - discAmt;
@@ -1461,6 +1535,7 @@
                     </tr>
                 `;
             });
+            document.getElementById('cartTotalQtyCount').innerText = totalQty;
             document.getElementById('subTotal').innerText = sub.toLocaleString();
             document.getElementById('discountAmount').innerText = totalDisc.toLocaleString();
             document.getElementById('cartTotal').innerText = (sub - totalDisc).toLocaleString();
@@ -1482,7 +1557,12 @@
 
         async function confirmCheckoutAndPrint() {
             const paymentMethod = document.getElementById('paymentMethod').value;
-            const docType = document.getElementById('docTypeSelect').value;
+            let docType = document.getElementById('docTypeSelect').value;
+            
+            if (paymentMethod.includes('Зээл') && docType !== 'A4_PACKING_LIST' && docType !== 'A4_PAID' && docType !== 'THERMAL') {
+                docType = 'A4_BOTH_CREDIT';
+            }
+
             const custName = document.getElementById('modalCustName').value || 'Энгийн үйлчлүүлэгч';
             const phone = document.getElementById('modalCustPhone').value || '';
             const carNo = document.getElementById('modalCarNo').value.toUpperCase() || 'Бүртгэлгүй';
@@ -1494,7 +1574,7 @@
             const finalTotal = parseFloat(document.getElementById('cartTotal').innerText.replace(/,/g, ''));
             const dateStr = new Date().toLocaleString('mn-MN');
 
-            const isCredit = paymentMethod.includes('Зээл') || docType === 'A4_INVOICE';
+            const isCredit = paymentMethod.includes('Зээл') || docType === 'A4_INVOICE' || docType === 'A4_BOTH_CREDIT';
             let advancePaid = isCredit ? parseFloat(document.getElementById('creditAdvanceInput').value) || 0 : 0;
             let dueDate = isCredit ? document.getElementById('creditDueDateInput').value || '' : '';
             let creditRemaining = isCredit ? finalTotal - advancePaid : 0;
@@ -1519,8 +1599,10 @@
 
             if (docType === 'THERMAL') {
                 printThermalReceipt(dateStr, custName, carNo, cart, subTotal, discountAmount, finalTotal);
+            } else if (docType === 'A4_BOTH_CREDIT') {
+                printBothA4Documents(invNum, dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, creditRemaining, dueDate);
             } else {
-                printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, docType === 'A4_PAID' ? finalTotal : creditRemaining, docType === 'A4_PAID', dueDate);
+                printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, docType === 'A4_PAID' ? finalTotal : creditRemaining, docType, dueDate);
             }
             cart = [];
             renderCart();
@@ -1543,10 +1625,87 @@
             window.print();
         }
 
-        function printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, items, subTotal, discountAmount, advancePaid, finalTotalDisplay, isPaidFull, dueDate) {
+        function printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, items, subTotal, discountAmount, advancePaid, finalTotalDisplay, docType, dueDate) {
             document.body.classList.remove('print-receipt-mode');
             document.body.classList.add('print-a4-mode');
-            document.getElementById('invTitleHeader').innerText = isPaidFull ? "ТӨЛБӨРИЙН БАРИМТ" : "ЗАХИАЛГЫН НЭХЭМЖЛЭХ";
+            
+            let isPackingList = docType === 'A4_PACKING_LIST';
+            let isPaidFull = docType === 'A4_PAID';
+
+            if (docType === 'A4_BOTH_CREDIT') {
+                let creditRemaining = finalTotalDisplay;
+                printBothA4Documents(invNum, dateStr, custName, phone, carNo, currentKm, items, subTotal, discountAmount, advancePaid, creditRemaining, dueDate);
+                return;
+            }
+
+            document.getElementById('firstPageSection').style.display = 'block';
+            document.getElementById('secondPagePackingSection').style.display = 'none';
+
+            document.getElementById('invTitleHeader').innerText = isPackingList ? "БАРАА ХҮЛЭЭЛЦЭХ ПАДААН (Packing List)" : (isPaidFull ? "ТӨЛБӨРИЙН БАРИМТ" : "ЗАХИАЛГЫН НЭХЭМЖЛЭХ");
+            document.getElementById('invNum').innerText = invNum;
+            document.getElementById('invDate').innerText = dateStr.slice(0, 10);
+            
+            const dueDateWrapper = document.getElementById('invDueDateWrapper');
+            if (dueDate && !isPackingList) {
+                dueDateWrapper.style.display = 'block';
+                document.getElementById('invDueDate').innerText = dueDate;
+            } else {
+                dueDateWrapper.style.display = 'none';
+            }
+
+            document.getElementById('invCustName').innerText = custName;
+            document.getElementById('invCustPhone').innerText = phone;
+            document.getElementById('invCustCar').innerText = carNo;
+            document.getElementById('invCustKm').innerText = currentKm;
+
+            if (receiptConfig.bankInfo) document.getElementById('invBankInfoContainer').innerText = receiptConfig.bankInfo;
+            if (receiptConfig.companyName) document.getElementById('invCompName').innerText = receiptConfig.companyName;
+
+            const priceCols = document.querySelectorAll('.price-col');
+            priceCols.forEach(col => col.style.display = isPackingList ? 'none' : '');
+            document.getElementById('invTotalsSection').style.display = isPackingList ? 'none' : 'block';
+
+            const list = document.getElementById('invItemsList');
+            list.innerHTML = '';
+            let totalQtyCount = 0;
+
+            items.forEach((item, idx) => {
+                totalQtyCount += (item.qty || 0);
+                let rowTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
+                if (isPackingList) {
+                    list.innerHTML += `<tr><td>${idx+1}</td><td>${item.name}</td><td style="text-align:center;"><strong>${item.qty} ширхэг</strong></td></tr>`;
+                } else {
+                    list.innerHTML += `<tr><td>${idx+1}</td><td>${item.name}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;" class="price-col">${item.price.toLocaleString()}₮</td><td style="text-align:right;" class="price-col">${rowTotal.toLocaleString()}₮</td></tr>`;
+                }
+            });
+
+            document.getElementById('invTotalQtyText').innerText = totalQtyCount;
+
+            if (!isPackingList) {
+                document.getElementById('invSubTotal').innerText = subTotal.toLocaleString();
+                document.getElementById('invDiscount').innerText = discountAmount.toLocaleString();
+                
+                const advRow = document.getElementById('invAdvanceRow');
+                if (advancePaid > 0) {
+                    advRow.style.display = 'block';
+                    document.getElementById('invAdvancePaid').innerText = advancePaid.toLocaleString();
+                } else {
+                    advRow.style.display = 'none';
+                }
+                document.getElementById('invFinalTotal').innerText = finalTotalDisplay.toLocaleString();
+            }
+
+            window.print();
+        }
+
+        function printBothA4Documents(invNum, dateStr, custName, phone, carNo, currentKm, items, subTotal, discountAmount, advancePaid, creditRemaining, dueDate) {
+            document.body.classList.remove('print-receipt-mode');
+            document.body.classList.add('print-a4-mode');
+
+            document.getElementById('firstPageSection').style.display = 'block';
+            document.getElementById('secondPagePackingSection').style.display = 'block';
+
+            document.getElementById('invTitleHeader').innerText = "ЗАХИАЛГЫН НЭХЭМЖЛЭХ";
             document.getElementById('invNum').innerText = invNum;
             document.getElementById('invDate').innerText = dateStr.slice(0, 10);
             
@@ -1563,22 +1722,24 @@
             document.getElementById('invCustCar').innerText = carNo;
             document.getElementById('invCustKm').innerText = currentKm;
 
-            if (receiptConfig.bankInfo) {
-                document.getElementById('invBankInfoContainer').innerText = receiptConfig.bankInfo;
-            }
-            if (receiptConfig.companyName) {
-                document.getElementById('invCompName').innerText = receiptConfig.companyName;
-            }
+            if (receiptConfig.bankInfo) document.getElementById('invBankInfoContainer').innerText = receiptConfig.bankInfo;
+            if (receiptConfig.companyName) document.getElementById('invCompName').innerText = receiptConfig.companyName;
 
-            const list = document.getElementById('invItemsList');
-            list.innerHTML = '';
+            document.querySelectorAll('.price-col').forEach(col => col.style.display = '');
+            document.getElementById('invTotalsSection').style.display = 'block';
+
+            let listHtml = '';
+            let totalQtyCount = 0;
             items.forEach((item, idx) => {
+                totalQtyCount += (item.qty || 0);
                 let rowTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
-                list.innerHTML += `<tr><td>${idx+1}</td><td>${item.name}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;">${item.price.toLocaleString()}₮</td><td style="text-align:right;">${rowTotal.toLocaleString()}₮</td></tr>`;
+                listHtml += `<tr><td>${idx+1}</td><td>${item.name}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;" class="price-col">${item.price.toLocaleString()}₮</td><td style="text-align:right;" class="price-col">${rowTotal.toLocaleString()}₮</td></tr>`;
             });
+            document.getElementById('invItemsList').innerHTML = listHtml;
+            document.getElementById('invTotalQtyText').innerText = totalQtyCount;
+
             document.getElementById('invSubTotal').innerText = subTotal.toLocaleString();
             document.getElementById('invDiscount').innerText = discountAmount.toLocaleString();
-            
             const advRow = document.getElementById('invAdvanceRow');
             if (advancePaid > 0) {
                 advRow.style.display = 'block';
@@ -1586,8 +1747,25 @@
             } else {
                 advRow.style.display = 'none';
             }
+            document.getElementById('invFinalTotal').innerText = creditRemaining.toLocaleString();
 
-            document.getElementById('invFinalTotal').innerText = finalTotalDisplay.toLocaleString();
+            document.querySelector('.plNum').innerText = invNum + "-PL";
+            document.querySelector('.plDate').innerText = dateStr.slice(0, 10);
+            document.querySelector('.plCustName').innerText = custName;
+            document.querySelector('.plCustPhone').innerText = phone;
+            document.querySelector('.plCustCar').innerText = carNo;
+            document.querySelector('.plCustKm').innerText = currentKm;
+            if (receiptConfig.storeName) document.querySelector('.plStoreName').innerText = receiptConfig.storeName;
+            if (receiptConfig.companyName) document.querySelector('.plCompName').innerText = receiptConfig.companyName;
+            if (receiptConfig.phone) document.querySelector('.plPhone').innerText = receiptConfig.phone;
+
+            let plListHtml = '';
+            items.forEach((item, idx) => {
+                plListHtml += `<tr><td>${idx+1}</td><td>${item.name}</td><td style="text-align:center;"><strong>${item.qty} ширхэг</strong></td></tr>`;
+            });
+            document.getElementById('plItemsList').innerHTML = plListHtml;
+            document.getElementById('plTotalQtyText').innerText = totalQtyCount;
+
             window.print();
         }
 
@@ -1641,7 +1819,7 @@
             const s = salesData.find(item => item.id === saleId);
             if (s) {
                 let isPaid = s.status === 'completed' && !s.creditRemaining;
-                printA4Document(s.invoiceNum || 'INV', s.date, s.customer, s.phone, s.carNo, s.km, s.items, s.subTotal, s.discount, s.advancePaid, isPaid ? s.total : s.creditRemaining, isPaid, s.dueDate);
+                printA4Document(s.invoiceNum || 'INV', s.date, s.customer, s.phone, s.carNo, s.km, s.items, s.subTotal, s.discount, s.advancePaid, isPaid ? s.total : s.creditRemaining, s.docType || 'A4_PAID', s.dueDate);
             }
         }
 
@@ -1653,6 +1831,8 @@
             document.getElementById('editProdName').value = product.name;
             document.getElementById('editProdPrice').value = product.price;
             document.getElementById('editProdStock').value = product.stock;
+            document.getElementById('editProdPackingType').value = product.packingType || 'Standard';
+            document.getElementById('editProdBoxSize').value = product.boxSize || 1;
 
             const catSelect = document.getElementById('editProdCat');
             catSelect.innerHTML = '';
@@ -1667,10 +1847,12 @@
             const id = document.getElementById('editProdId').value;
             const name = document.getElementById('editProdName').value.trim();
             const cat = document.getElementById('editProdCat').value;
+            const packingType = document.getElementById('editProdPackingType').value;
+            const boxSize = parseInt(document.getElementById('editProdBoxSize').value) || 1;
             const price = parseFloat(document.getElementById('editProdPrice').value);
             const stock = parseInt(document.getElementById('editProdStock').value);
 
-            await db.collection("inventory").doc(id).update({ name, category: cat, price, stock });
+            await db.collection("inventory").doc(id).update({ name, category: cat, packingType, boxSize, price, stock });
             alert('Бараа амжилттай шинэчлэгдлээ.');
             closeEditProductModal();
         }
@@ -1723,7 +1905,7 @@
 
         function exportInventoryToExcel() {
             const rows = inventory.map((i, index) => ({
-                "№": index + 1, "Бараа": i.name, "Ангилал": i.category || '', "Үлдэгдэл": i.stock, "Үнэ": i.price
+                "№": index + 1, "Бараа": i.name, "Ангилал": i.category || '', "Үлдэгдэл": i.stock, "Хайрцаг ш": i.boxSize || 1, "Үнэ": i.price
             }));
             const ws = XLSX.utils.json_to_sheet(rows);
             const wb = XLSX.utils.book_new();
