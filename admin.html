@@ -27,6 +27,18 @@
             --modal-bg: #0c0d12;
         }
 
+        /* Харилцагч хайлт */
+        .cust-results { margin-top:6px; border:1px solid var(--border); border-radius:10px; max-height:240px; overflow-y:auto; background:var(--modal-bg); }
+        .cust-results:empty { display:none; }
+        .cust-item { padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--border); font-size:0.88rem; }
+        .cust-item:last-child { border-bottom:none; }
+        .cust-item:hover, .cust-item.active { background:var(--input-bg); }
+        .cust-item .cust-sub { color:var(--text-muted); font-size:0.78rem; }
+        .cust-item.cust-new { color:var(--success); font-weight:600; }
+        .cust-picked { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:6px; padding:8px 12px; border-radius:10px; background:rgba(16,185,129,0.1); border:1px solid var(--success); font-size:0.88rem; }
+        .cust-picked button { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; }
+        .cust-warn { color:var(--warning); font-size:0.82rem; margin-top:4px; }
+
         body.light-theme {
             --bg-main: #f1f5f9;
             --bg-card: #ffffff;
@@ -229,6 +241,11 @@
                 <div class="card-header">
                     <h2><i class="fa-solid fa-id-card"></i> Байнгын Харилцагч Бүртгэх</h2>
                 </div>
+                <div class="form-group">
+                    <label>Хайх (утас, машины №, нэр)</label>
+                    <input type="text" id="custSearch" placeholder="🔍 Жишээ: 9911 эсвэл 1234 эсвэл Бат" autocomplete="off" oninput="renderCustomerSearch()">
+                    <div id="custSearchResults" class="cust-results"></div>
+                </div>
                 <form id="customerForm">
                     <div class="flex-grid">
                         <div class="form-group">
@@ -244,13 +261,14 @@
                         </div>
                         <div class="form-group">
                             <label>Утас / РД</label>
-                            <input type="text" id="custPhone" required placeholder="99112233">
+                            <input type="tel" id="custPhone" required placeholder="99112233" oninput="checkCustomerDuplicate()">
                         </div>
                         <div class="form-group">
                             <label>Машины №</label>
-                            <input type="text" id="custCarNo" required placeholder="1234 УБН">
+                            <input type="text" id="custCarNo" required placeholder="1234 УБН" oninput="checkCustomerDuplicate()">
                         </div>
                     </div>
+                    <div id="custDupWarn" class="cust-warn"></div>
                     <button type="submit" class="btn-primary" style="width:100%; margin-top:4px;">
                         <i class="fa-solid fa-user-plus"></i> Харилцагч Хадгалах
                     </button>
@@ -742,13 +760,18 @@
                 <div class="form-group"><label>Урьдчилгаа дүн:</label><input type="number" id="creditAdvanceInput" value="0" min="0"></div>
                 <div class="form-group"><label>Төлөх эцсийн хугацаа (Due Date):</label><input type="date" id="creditDueDateInput"></div>
             </div>
-            <div class="form-group"><label>Харилцагч сонгох:</label><select id="modalCustomerSelect" onchange="autoFillCustomerInfo()"></select></div>
-            <div class="form-group"><label>Нэр:</label><input type="text" id="modalCustName" value="Энгийн үйлчлүүлэгч"></div>
-            <div class="form-group"><label>Утас:</label><input type="text" id="modalCustPhone"></div>
+            <div class="form-group"><label>Харилцагч хайх (утас, машины №, нэр):</label>
+                <input type="text" id="modalCustomerSearch" placeholder="🔍 Бичээд сонгоно уу" autocomplete="off" oninput="renderCheckoutCustomerSearch()">
+                <div id="modalCustomerResults" class="cust-results"></div>
+                <div id="modalCustomerPicked" class="cust-picked" style="display:none;"></div>
+            </div>
+            <div class="form-group"><label>Нэр:</label><input type="text" id="modalCustName" placeholder="Энгийн үйлчлүүлэгч" oninput="onCheckoutCustomerFieldEdit()"></div>
+            <div class="form-group"><label>Утас:</label><input type="tel" id="modalCustPhone" oninput="onCheckoutCustomerFieldEdit()"></div>
             <div class="flex-grid">
-                <div class="form-group"><label>Машины №:</label><input type="text" id="modalCarNo"></div>
+                <div class="form-group"><label>Машины №:</label><input type="text" id="modalCarNo" oninput="onCheckoutCustomerFieldEdit()"></div>
                 <div class="form-group"><label>КМ:</label><input type="number" id="modalKm"></div>
             </div>
+            <label id="modalSaveCustWrap" style="display:none; font-size:0.85rem; margin-bottom:10px; cursor:pointer;"><input type="checkbox" id="modalSaveCust" checked style="width:auto; margin-right:6px;">Энэ харилцагчийг байнгын харилцагчаар хадгалах</label>
             <div class="form-group"><label>Тэмдэглэл:</label><textarea id="modalNotes" rows="2"></textarea></div>
             <div style="margin-top: 14px; background:var(--input-bg); padding:14px; border-radius:12px; text-align:right;">
                 <span style="font-size:0.82rem; color:var(--text-muted);">Эцсийн дүн:</span>
@@ -1376,16 +1399,26 @@
 
         document.getElementById('customerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            await db.collection("customers").add({
-                type: document.getElementById('custType').value,
-                name: document.getElementById('custName').value,
-                phone: document.getElementById('custPhone').value,
-                carNo: document.getElementById('custCarNo').value.toUpperCase(),
-                createdBy: currentUserEmail,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            const name = document.getElementById('custName').value.trim();
+            const phone = cleanPhone(document.getElementById('custPhone').value);
+            const carNo = cleanCarNo(document.getElementById('custCarNo').value);
+            const dup = findDuplicateCustomer(phone, carNo);
+            if (dup && !confirm(`Энэ ${dup.reason} аль хэдийн бүртгэлтэй байна:\n${dup.c.name} | ${dup.c.phone} | ${dup.c.carNo}\n\nДахин бүртгэх үү?`)) return;
+            try {
+                await db.collection("customers").add({
+                    type: document.getElementById('custType').value,
+                    name, phone, carNo,
+                    createdBy: currentUserEmail,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (err) {
+                return alert('Хадгалагдсангүй: ' + err.message);
+            }
             alert('Харилцагч амжилттай бүртгэгдлээ.');
             this.reset();
+            document.getElementById('custDupWarn').textContent = '';
+            document.getElementById('custSearch').value = '';
+            renderCustomerSearch();
         });
 
         async function submitStockIn(e) {
@@ -1492,22 +1525,162 @@
         }
         async function deletePaymentMethod(id) { if(confirm('Устгах уу?')) await db.collection("paymentMethods").doc(id).delete(); }
 
-        function renderCustomersModal() {
-            const s = document.getElementById('modalCustomerSelect');
-            if(s) {
-                s.innerHTML = '<option value="">-- Энгийн үйлчлүүлэгч --</option>';
-                customers.forEach(c => s.innerHTML += `<option value="${c.id}" data-name="${esc(c.name)}" data-car="${esc(c.carNo)}" data-phone="${esc(c.phone)}">${esc(c.carNo)} - ${esc(c.name)}</option>`);
-            }
+        // ===== ХАРИЛЦАГЧ ХАЙХ / БҮРТГЭХ =====
+        let checkoutCustomerId = null;
+
+        // Хайлтад зай, зураас, том жижиг үсгийг үл тоох
+        function normKey(v) { return String(v || '').toLowerCase().replace(/[\s\-\.]/g, ''); }
+        function cleanPhone(v) { return String(v || '').trim().replace(/\s+/g, ''); }
+        // "1234убн" -> "1234 УБН"
+        function cleanCarNo(v) {
+            const t = String(v || '').toUpperCase().replace(/[\s\-]/g, '');
+            const m = t.match(/^(\d{4})([А-ЯӨҮЁ]{2,3})$/);
+            return m ? m[1] + ' ' + m[2] : String(v || '').toUpperCase().trim().replace(/\s+/g, ' ');
         }
 
-        function autoFillCustomerInfo() {
-            const select = document.getElementById('modalCustomerSelect');
-            const opt = select.options[select.selectedIndex];
-            if(select.value) {
-                document.getElementById('modalCustName').value = opt.getAttribute('data-name');
-                document.getElementById('modalCustPhone').value = opt.getAttribute('data-phone');
-                document.getElementById('modalCarNo').value = opt.getAttribute('data-car');
+        function searchCustomers(q, limit = 8) {
+            const k = normKey(q);
+            if (!k) return [];
+            const scored = [];
+            customers.forEach(c => {
+                const phone = normKey(c.phone), car = normKey(c.carNo), name = normKey(c.name);
+                let score = 0;
+                if (phone === k || car === k) score = 100;
+                else if (phone.startsWith(k) || car.startsWith(k)) score = 80;
+                else if (name.startsWith(k)) score = 60;
+                else if (phone.includes(k) || car.includes(k)) score = 40;
+                else if (name.includes(k)) score = 30;
+                if (score) scored.push({ c, score });
+            });
+            return scored.sort((a, b) => b.score - a.score).slice(0, limit).map(x => x.c);
+        }
+
+        // Харилцагчийн нийт үйлчлүүлсэн тоо, сүүлийн огноо
+        function customerStats(c) {
+            const p = normKey(c.phone), car = normKey(c.carNo);
+            const list = salesData.filter(s => s.customerId === c.id || (p && normKey(s.phone) === p) || (car && normKey(s.carNo) === car));
+            return { count: list.length, last: list[0] ? list[0].date : null };
+        }
+
+        function customerItemHtml(c, onclick) {
+            const st = customerStats(c);
+            const extra = st.count ? ` · ${st.count} удаа · сүүлд ${esc(String(st.last || '').split(' ')[0])}` : ' · үйлчлүүлээгүй';
+            return `<div class="cust-item" onclick="${onclick}('${c.id}')"><strong>${esc(c.name)}</strong> — ${esc(c.carNo)}<div class="cust-sub">📞 ${esc(c.phone)}${c.type === 'Байгууллага' ? ' · Байгууллага' : ''}${extra}</div></div>`;
+        }
+
+        // Бүртгэлийн хэсгийн хайлт
+        function renderCustomerSearch() {
+            const q = document.getElementById('custSearch').value;
+            const box = document.getElementById('custSearchResults');
+            if (!q.trim()) { box.innerHTML = ''; return; }
+            const found = searchCustomers(q);
+            let html = found.map(c => customerItemHtml(c, 'showCustomerInfo')).join('');
+            html += `<div class="cust-item cust-new" onclick="prefillNewCustomer()">➕ "${esc(q.trim())}" — шинээр бүртгэх</div>`;
+            box.innerHTML = html;
+        }
+
+        function showCustomerInfo(id) {
+            const c = customers.find(x => x.id === id);
+            if (!c) return;
+            const st = customerStats(c);
+            alert(`${c.name} (${c.type || 'Хувь хүн'})\nУтас: ${c.phone}\nМашин: ${c.carNo}\nҮйлчлүүлсэн: ${st.count} удаа${st.last ? '\nСүүлд: ' + st.last : ''}`);
+        }
+
+        // Хайсан утгаар бүртгэлийн маягтыг урьдчилан бөглөх
+        function prefillNewCustomer() {
+            const q = document.getElementById('custSearch').value.trim();
+            const digits = q.replace(/\D/g, '');
+            if (/^[\d\s\-]+$/.test(q) && digits.length >= 6) document.getElementById('custPhone').value = digits;
+            else if (/^\d{4}\s*[А-ЯӨҮЁа-яөүё]{2,3}$/.test(q)) document.getElementById('custCarNo').value = cleanCarNo(q);
+            else document.getElementById('custName').value = q;
+            document.getElementById('custSearchResults').innerHTML = '';
+            const firstEmpty = ['custName', 'custPhone', 'custCarNo'].map(id => document.getElementById(id)).find(el => !el.value);
+            (firstEmpty || document.getElementById('custName')).focus();
+            checkCustomerDuplicate();
+        }
+
+        function findDuplicateCustomer(phone, carNo) {
+            const p = normKey(phone), car = normKey(carNo);
+            let c = p && customers.find(x => normKey(x.phone) === p);
+            if (c) return { c, reason: 'утас' };
+            c = car && customers.find(x => normKey(x.carNo) === car);
+            if (c) return { c, reason: 'машины дугаар' };
+            return null;
+        }
+
+        function checkCustomerDuplicate() {
+            const dup = findDuplicateCustomer(document.getElementById('custPhone').value, document.getElementById('custCarNo').value);
+            document.getElementById('custDupWarn').textContent = dup ? `⚠️ Энэ ${dup.reason} бүртгэлтэй: ${dup.c.name} — ${dup.c.carNo} (${dup.c.phone})` : '';
+        }
+
+        // Төлбөрийн цонхны хайлт
+        function renderCustomersModal() {
+            if (document.getElementById('modalCustomerSearch')) renderCheckoutCustomerSearch();
+        }
+
+        function renderCheckoutCustomerSearch() {
+            const q = document.getElementById('modalCustomerSearch').value;
+            const box = document.getElementById('modalCustomerResults');
+            if (!q.trim()) { box.innerHTML = ''; return; }
+            const found = searchCustomers(q, 6);
+            box.innerHTML = found.length
+                ? found.map(c => customerItemHtml(c, 'pickCheckoutCustomer')).join('')
+                : `<div class="cust-item cust-new" onclick="useCheckoutSearchAsNew()">➕ Олдсонгүй — доорх талбарт бөглөөд шинээр хадгалах</div>`;
+        }
+
+        function pickCheckoutCustomer(id) {
+            const c = customers.find(x => x.id === id);
+            if (!c) return;
+            checkoutCustomerId = c.id;
+            document.getElementById('modalCustName').value = c.name || '';
+            document.getElementById('modalCustPhone').value = c.phone || '';
+            document.getElementById('modalCarNo').value = c.carNo || '';
+            document.getElementById('modalCustomerSearch').value = '';
+            document.getElementById('modalCustomerResults').innerHTML = '';
+            const picked = document.getElementById('modalCustomerPicked');
+            picked.innerHTML = `<span>✅ <strong>${esc(c.name)}</strong> — ${esc(c.carNo)} · ${esc(c.phone)}</span><button type="button" title="Цуцлах" onclick="clearCheckoutCustomer()">✕</button>`;
+            picked.style.display = 'flex';
+            updateSaveCustomerOption();
+            document.getElementById('modalKm').focus();
+        }
+
+        function useCheckoutSearchAsNew() {
+            const q = document.getElementById('modalCustomerSearch').value.trim();
+            const digits = q.replace(/\D/g, '');
+            if (/^[\d\s\-]+$/.test(q) && digits.length >= 6) document.getElementById('modalCustPhone').value = digits;
+            else if (/^\d{4}\s*[А-ЯӨҮЁа-яөүё]{2,3}$/.test(q)) document.getElementById('modalCarNo').value = cleanCarNo(q);
+            else document.getElementById('modalCustName').value = q;
+            document.getElementById('modalCustomerSearch').value = '';
+            document.getElementById('modalCustomerResults').innerHTML = '';
+            updateSaveCustomerOption();
+            document.getElementById('modalCustName').focus();
+        }
+
+        function clearCheckoutCustomer() {
+            checkoutCustomerId = null;
+            ['modalCustName', 'modalCustPhone', 'modalCarNo', 'modalKm', 'modalCustomerSearch'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('modalCustomerPicked').style.display = 'none';
+            document.getElementById('modalCustomerResults').innerHTML = '';
+            updateSaveCustomerOption();
+        }
+
+        // Сонгосон харилцагчийн мэдээллийг гараар өөрчилбөл холбоосыг салгана
+        function onCheckoutCustomerFieldEdit() {
+            if (checkoutCustomerId) {
+                const c = customers.find(x => x.id === checkoutCustomerId);
+                const same = c && document.getElementById('modalCustName').value === (c.name || '')
+                    && document.getElementById('modalCustPhone').value === (c.phone || '')
+                    && document.getElementById('modalCarNo').value === (c.carNo || '');
+                if (!same) { checkoutCustomerId = null; document.getElementById('modalCustomerPicked').style.display = 'none'; }
             }
+            updateSaveCustomerOption();
+        }
+
+        function updateSaveCustomerOption() {
+            const phone = document.getElementById('modalCustPhone').value.trim();
+            const car = document.getElementById('modalCarNo').value.trim();
+            const show = !checkoutCustomerId && (phone || car) && !findDuplicateCustomer(phone, car);
+            document.getElementById('modalSaveCustWrap').style.display = show ? 'block' : 'none';
         }
 
         function addToCart(id) {
@@ -1597,6 +1770,8 @@
             document.getElementById('modalFinalTotal').innerText = document.getElementById('cartTotal').innerText + " ₮";
             toggleCreditOptions();
             document.getElementById('checkoutModal').style.display = 'flex';
+            updateSaveCustomerOption();
+            if (!checkoutCustomerId) setTimeout(() => document.getElementById('modalCustomerSearch').focus(), 50);
         }
         function closeCheckoutModal() { document.getElementById('checkoutModal').style.display = 'none'; }
 
@@ -1608,9 +1783,9 @@
                 docType = 'A4_BOTH_CREDIT';
             }
 
-            const custName = document.getElementById('modalCustName').value || 'Энгийн үйлчлүүлэгч';
-            const phone = document.getElementById('modalCustPhone').value || '';
-            const carNo = document.getElementById('modalCarNo').value.toUpperCase() || 'Бүртгэлгүй';
+            const custName = document.getElementById('modalCustName').value.trim() || 'Энгийн үйлчлүүлэгч';
+            const phone = cleanPhone(document.getElementById('modalCustPhone').value);
+            const carNo = cleanCarNo(document.getElementById('modalCarNo').value) || 'Бүртгэлгүй';
             const currentKm = document.getElementById('modalKm').value || 'Бичигдээгүй';
             const notes = document.getElementById('modalNotes').value || '';
 
@@ -1631,10 +1806,25 @@
                 if (product) batch.update(db.collection("inventory").doc(product.id), { stock: inc(-item.qty) });
             });
 
+            // Шинэ харилцагчийг борлуулалттай хамт хадгалах
+            let customerId = checkoutCustomerId;
+            if (!customerId) {
+                const dup = findDuplicateCustomer(phone, carNo === 'Бүртгэлгүй' ? '' : carNo);
+                if (dup) customerId = dup.c.id;
+                else if (document.getElementById('modalSaveCustWrap').style.display !== 'none' && document.getElementById('modalSaveCust').checked) {
+                    const custRef = db.collection("customers").doc();
+                    batch.set(custRef, {
+                        type: 'Хувь хүн', name: custName, phone, carNo: carNo === 'Бүртгэлгүй' ? '' : carNo,
+                        createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    customerId = custRef.id;
+                }
+            }
+
             const saleRef = db.collection("sales").doc();
             batch.set(saleRef, {
                 invoiceNum: invNum, date: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                paymentMethod, docType, customer: custName, phone, carNo, km: currentKm, notes, items: cart,
+                paymentMethod, docType, customer: custName, customerId: customerId || null, phone, carNo, km: currentKm, notes, items: cart,
                 subTotal, discount: discountAmount, total: finalTotal, isCredit, advancePaid, creditRemaining, dueDate,
                 status: isCredit ? (creditRemaining <= 0 ? 'completed' : 'credit_unpaid') : 'completed',
                 soldBy: currentUserEmail
@@ -1646,6 +1836,8 @@
                 return alert('Борлуулалт хадгалагдсангүй: ' + err.message);
             }
             closeCheckoutModal();
+            clearCheckoutCustomer();
+            document.getElementById('modalNotes').value = '';
 
             if (docType === 'THERMAL') {
                 printThermalReceipt(dateStr, custName, carNo, cart, subTotal, discountAmount, finalTotal);
