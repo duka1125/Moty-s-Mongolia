@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Runs Automotive Mongolia - Дотоод систем</title>
     <!-- Google Fonts & FontAwesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -172,6 +172,133 @@
             .inv-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             .inv-table th, .inv-table td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; color: #000; }
         }
+
+        /* ================= ШИНЭ ЗАГВАР (цэнхэр, зүүн цэстэй) ================= */
+        :root {
+            --bg-main: #05070d;
+            --bg-card: #0c0f17;
+            --moty-red: #2f6bff;
+            --moty-red-glow: rgba(47, 107, 255, 0.35);
+            --moty-red-hover: #4a80ff;
+            --border: rgba(255, 255, 255, 0.07);
+            --border-hover: rgba(47, 107, 255, 0.5);
+            --accent-blue: #3b82f6;
+            --input-bg: rgba(255, 255, 255, 0.035);
+            --table-th-bg: transparent;
+            --modal-bg: #0c0f17;
+            --danger: #ef4444;
+            --radius: 18px;
+        }
+        body.light-theme { --bg-main: #eef2f9; --bg-card: #ffffff; --modal-bg: #ffffff; --moty-red: #2563eb; --moty-red-hover: #1d4ed8; --moty-red-glow: rgba(37,99,235,0.25); }
+        * { font-family: 'Montserrat', 'Plus Jakarta Sans', sans-serif; }
+        h2, header h1, .kpi-value, .landing-btn span { font-family: 'Montserrat', 'Plus Jakarta Sans', sans-serif !important; }
+        body { padding: 0; background: radial-gradient(1200px 600px at 70% -10%, rgba(47,107,255,0.10), transparent 60%), var(--bg-main); background-attachment: fixed; }
+        body.light-theme { background: var(--bg-main); }
+
+        /* Зүүн цэс */
+        .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background: #070a12; border-right: 1px solid var(--border); padding: 22px 16px; display: none; flex-direction: column; gap: 4px; z-index: 1500; overflow-y: auto; }
+        body.light-theme .sidebar { background: #ffffff; }
+        body.logged-in .sidebar { display: flex; }
+        .sb-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 14px; }
+        .sb-brand img { height: auto; width: 150px; max-width: 100%; }
+        body.light-theme .brand-logo { filter: invert(1); }
+        .sb-brand b { font-size: 1rem; font-weight: 800; letter-spacing: .2px; }
+        .sb-brand b span { color: var(--moty-red); }
+        .sb-welcome { padding: 6px 8px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+        .sb-welcome .hi { font-size: 1.25rem; font-weight: 500; }
+        .sb-welcome .hi b { font-weight: 800; }
+        .sb-welcome small { color: var(--text-muted); font-size: 0.72rem; }
+        .sb-label { color: var(--text-muted); font-size: 0.68rem; font-weight: 600; padding: 12px 10px 6px; text-transform: none; }
+        .sb-item { display: flex; align-items: center; justify-content: flex-start; gap: 12px; width: 100%; background: none; color: var(--text-main); font-weight: 500; font-size: 0.86rem; padding: 11px 14px; border-radius: 12px; text-align: left; }
+        .sb-item i { width: 18px; text-align: center; color: var(--text-muted); }
+        .sb-item:hover { background: var(--input-bg); }
+        .sb-item.active { background: var(--moty-red); color: #fff; box-shadow: 0 8px 22px var(--moty-red-glow); }
+        .sb-item.active i { color: #fff; }
+        .sb-item .sb-count { margin-left: auto; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 1px 8px; font-size: 0.7rem; font-weight: 700; }
+        .sb-item.active .sb-count { background: rgba(255,255,255,0.25); }
+        .sb-spacer { flex: 1; }
+
+        /* Үндсэн хэсэг */
+        body.logged-in .main-area { margin-left: 240px; }
+        .main-area { padding: 18px 26px 30px; min-height: 100vh; }
+        header { max-width: none; margin: 0 0 18px; padding: 10px 14px 10px 20px; border-radius: var(--radius); background: var(--bg-card); gap: 14px; height: auto; min-height: 60px; box-shadow: none; }
+        .sidebar .sb-item.admin-only[style*="block"] { display: flex !important; }
+        .sb-item { transition: none; }
+        .header-logo-img { display: none; }
+        header h1 { border-left: none; padding-left: 0; font-size: 1.1rem; font-weight: 800; }
+        header h1 span { font-size: 0.72rem; font-weight: 500; }
+        .top-search { position: relative; flex: 1; max-width: 460px; }
+        .top-search input { border-radius: 30px !important; padding-left: 40px !important; background: var(--input-bg); }
+        .top-search > i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--moty-red); }
+        .top-search .cust-results { position: absolute; left: 0; right: 0; top: 46px; z-index: 1600; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .theme-toggle-btn, .user-info-badge { border-radius: 30px; }
+
+        .container { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; max-width: 1600px; margin: 0; }
+        .container > .col { display: contents; }
+        .container .card { margin-bottom: 0; grid-column: span 12; }
+        .span-4 { grid-column: span 4 !important; } .span-5 { grid-column: span 5 !important; } .span-6 { grid-column: span 6 !important; }
+        .span-7 { grid-column: span 7 !important; } .span-8 { grid-column: span 8 !important; }
+        .page-hidden { display: none !important; }
+        .card { border-radius: var(--radius); padding: 22px; box-shadow: none; backdrop-filter: none; }
+        body:not(.light-theme) .card { background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0)) , var(--bg-card); }
+        .card-header { border-bottom: none; padding-bottom: 0; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
+        h2 { font-size: 0.98rem; font-weight: 700; }
+        h2 i { color: var(--moty-red); }
+        label { text-transform: none; font-size: 0.76rem; font-weight: 600; letter-spacing: 0; }
+        th { text-transform: none; font-size: 0.74rem; font-weight: 600; letter-spacing: 0; border-bottom: 1px solid var(--border); }
+        td { border-bottom: 1px solid var(--border); }
+        input[type="text"], input[type="tel"], input[type="number"], input[type="password"], input[type="date"], input[type="file"], textarea, select { border-radius: 12px; padding: 11px 14px; }
+        button { border-radius: 30px; font-weight: 600; }
+        .btn-sm { border-radius: 30px; padding: 6px 12px; }
+        .btn-primary { background: var(--moty-red); color: #fff; }
+        .btn-brand { border-radius: 14px; }
+        .modal { border-radius: 22px; }
+        .modal-header { border-bottom: none; }
+        .scroll-box thead th { background: var(--bg-card); }
+        #page-pos .scroll-box, [data-page="pos"] .scroll-box { max-height: calc(100vh - 300px); }
+
+        /* Хуудасны доторх шүүлтүүрийн товчнууд (зурган дээрх шиг дугуй) */
+        .card .btn-sm[onclick^="filterSales"] { background: transparent !important; border: 1px solid var(--border) !important; }
+
+        /* Самбар */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+        .kpi { background: var(--input-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; cursor: pointer; transition: border-color .2s, transform .2s; }
+        .kpi:hover { border-color: var(--moty-red); transform: translateY(-2px); }
+        .kpi .kpi-label { color: var(--text-muted); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .kpi .kpi-label i { color: var(--moty-red); }
+        .kpi .kpi-value { font-size: 1.45rem; font-weight: 800; margin-top: 8px; }
+        .kpi .kpi-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+        .kpi .up { color: var(--success); } .kpi .down { color: var(--danger); }
+        .kpi.hero { background: linear-gradient(135deg, rgba(47,107,255,0.25), rgba(47,107,255,0.04)); border-color: rgba(47,107,255,0.35); }
+        .pill-group { display: flex; gap: 6px; }
+        .pill { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 6px 14px; font-size: 0.75rem; }
+        .pill.active { background: var(--moty-red); border-color: var(--moty-red); color: #fff; }
+        .chart-wrap { position: relative; height: 260px; }
+        .chart-wrap svg { width: 100%; height: 100%; display: block; }
+        .chart-tip { position: absolute; pointer-events: none; background: var(--modal-bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; font-size: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.4); display: none; white-space: nowrap; }
+        .chart-tip b { font-size: 0.95rem; display: block; }
+        .mini-list { display: flex; flex-direction: column; }
+        .mini-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 2px; border-bottom: 1px solid var(--border); font-size: 0.83rem; }
+        .mini-row:last-child { border-bottom: none; }
+        .mini-row small { color: var(--text-muted); display: block; font-size: 0.72rem; }
+        .mini-empty { color: var(--text-muted); font-size: 0.82rem; padding: 10px 0; }
+
+        @media (max-width: 1100px) {
+            .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12 !important; }
+        }
+        @media (max-width: 860px) {
+            .sidebar { position: sticky; width: auto; bottom: auto; flex-direction: row; align-items: center; overflow-x: auto; padding: 8px 10px; gap: 6px; }
+            body.logged-in .main-area { margin-left: 0; }
+            .sb-welcome, .sb-label, .sb-spacer, .sb-brand b { display: none; }
+            .sb-brand { padding: 0 6px 0 0; }
+            .sb-brand img { width: 90px; }
+            .sb-item { width: auto; white-space: nowrap; padding: 9px 12px; }
+            .main-area { padding: 12px; }
+            header { flex-wrap: wrap; }
+            .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .kpi .kpi-value { font-size: 1.1rem; }
+            .top-search { order: 3; max-width: none; flex-basis: 100%; }
+        }
     </style>
 
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -184,7 +311,7 @@
     <!-- НЭВТРЭХ ДЭЛГЭЦ (Firebase Authentication) -->
     <div class="login-overlay" id="loginModal" style="display:flex;">
         <div class="glass-card">
-            <img src="Moty's_logo.webp" alt="Moty's Logo" style="max-width:160px; margin-bottom:12px; filter:drop-shadow(0 0 10px var(--moty-red-glow));" onerror="this.style.display='none'">
+            <img src="every_motors_logo.png" alt="Every Motors" style="max-width:200px; margin:6px 0 18px;" onerror="this.style.display='none'">
             <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:20px;">Ажилтны и-мэйл болон нууц үгээр нэвтэрнэ үү</p>
             <form id="loginForm">
                 <div class="glass-input-wrapper">
@@ -202,14 +329,39 @@
         </div>
     </div>
 
+    <!-- ЗҮҮН ЦЭС -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sb-brand"><img src="every_motors_logo.png" alt="Every Motors" class="brand-logo" onerror="this.style.display='none'"></div>
+        <div class="sb-welcome"><div class="hi">Сайн уу, <b id="sbUserName">—</b></div><small>Өнөөдрийн ажлын тойм</small></div>
+        <div class="sb-label">Үндсэн цэс</div>
+        <button class="sb-item" data-nav="dashboard" onclick="showPage('dashboard')"><i class="fa-solid fa-gauge-high"></i> Самбар</button>
+        <button class="sb-item" data-nav="pos" onclick="showPage('pos')"><i class="fa-solid fa-cash-register"></i> Касс & Бараа <span class="sb-count" id="sbCartCount" style="display:none;"></span></button>
+        <button class="sb-item" data-nav="customers" onclick="showPage('customers')"><i class="fa-solid fa-users"></i> Харилцагч</button>
+        <button class="sb-item" data-nav="bookings" onclick="showPage('bookings')"><i class="fa-solid fa-calendar-check"></i> Цаг захиалга <span class="sb-count" id="sbBookingCount" style="display:none;"></span></button>
+        <button class="sb-item" data-nav="credit" onclick="showPage('credit')"><i class="fa-solid fa-hand-holding-dollar"></i> Зээл & Төлөлт <span class="sb-count" id="sbCreditCount" style="display:none;"></span></button>
+        <button class="sb-item" data-nav="reports" onclick="showPage('reports')"><i class="fa-solid fa-chart-line"></i> Тайлан</button>
+        <button class="sb-item admin-only" style="display:none;" data-nav="manage" onclick="showPage('manage')"><i class="fa-solid fa-screwdriver-wrench"></i> Удирдлага</button>
+        <div class="sb-label">Хэрэгсэл</div>
+        <button class="sb-item" onclick="openOilCalculatorModal()"><i class="fa-solid fa-calculator"></i> Тосны тооцоолуур</button>
+        <button class="sb-item" onclick="openCustomerListModal()"><i class="fa-solid fa-address-book"></i> Бүх харилцагч</button>
+        <div class="sb-spacer"></div>
+        <button class="sb-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Гарах</button>
+    </aside>
+
+    <div class="main-area" id="mainArea">
     <!-- HEADER -->
     <header>
         <div class="logo-container">
-            <img src="Moty's_logo.webp" alt="Moty's Logo" class="header-logo-img" onerror="this.style.display='none'">
+            <img src="every_motors_logo.png" alt="Every Motors" class="header-logo-img" onerror="this.style.display='none'">
             <h1>
+                <span id="pageTitle" style="font-size:1.1rem; color:var(--text-main); font-weight:800; display:block;">Самбар</span>
                 <span id="hdrStoreName">Runs Automotive Mongolia</span>
-                <span>Official Authorized Distributor & Service POS System</span>
             </h1>
+        </div>
+        <div class="top-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="globalSearch" placeholder="Харилцагч хайх: утас, машины №, нэр..." autocomplete="off" oninput="renderGlobalSearch()" onblur="setTimeout(() => document.getElementById('globalSearchResults').innerHTML = '', 200)">
+            <div id="globalSearchResults" class="cust-results"></div>
         </div>
         <div class="header-actions">
             <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn" title="Сэдэв солих">
@@ -224,10 +376,39 @@
 
     <!-- MAIN POS CONTAINER -->
     <div class="container" id="mainSystemContainer" style="display:none;">
+        <!-- САМБАР -->
+        <div class="card" data-page="dashboard">
+            <div class="kpi-grid" id="kpiGrid"></div>
+        </div>
+        <div class="card span-8" data-page="dashboard">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-chart-area"></i> Борлуулалтын явц</h2>
+                <div class="pill-group" id="chartRangePills">
+                    <button class="pill" data-range="7" onclick="setChartRange(7)">7 хоног</button>
+                    <button class="pill active" data-range="30" onclick="setChartRange(30)">30 хоног</button>
+                    <button class="pill" data-range="180" onclick="setChartRange(180)">6 сар</button>
+                    <button class="pill" data-range="365" onclick="setChartRange(365)">1 жил</button>
+                </div>
+            </div>
+            <div class="chart-wrap" id="salesChart"><div class="chart-tip" id="chartTip"></div></div>
+        </div>
+        <div class="card span-4" data-page="dashboard">
+            <div class="card-header"><h2><i class="fa-solid fa-calendar-day"></i> Өнөөдрийн цаг захиалга</h2><button class="btn-sm pill" onclick="showPage('bookings')">Бүгд ↗</button></div>
+            <div class="mini-list" id="dashBookings"></div>
+        </div>
+        <div class="card span-7" data-page="dashboard">
+            <div class="card-header"><h2><i class="fa-solid fa-receipt"></i> Сүүлийн борлуулалт</h2><button class="btn-sm pill" onclick="showPage('reports')">Тайлан ↗</button></div>
+            <div class="mini-list" id="dashRecentSales"></div>
+        </div>
+        <div class="card span-5" data-page="dashboard">
+            <div class="card-header"><h2><i class="fa-solid fa-triangle-exclamation" style="color:var(--warning);"></i> Дуусч буй бараа</h2><button class="btn-sm pill" onclick="showPage('pos')">Касс ↗</button></div>
+            <div class="mini-list" id="dashLowStock"></div>
+        </div>
+
         <!-- ЗҮҮН БАГАНА -->
-        <div>
+        <div class="col">
             <!-- 1. БАРААНЫ ҮЛДЭГДЭЛ -->
-            <div class="card">
+            <div class="card span-7" data-page="pos">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-warehouse"></i> Барааны Үлдэгдэл & Касс (A-Z)</h2>
                     <button class="btn-excel btn-sm admin-only" style="display:none;" onclick="exportInventoryToExcel()">
@@ -259,7 +440,7 @@
             </div>
 
             <!-- 2. ХАРИЛЦАГЧ БҮРТГЭХ -->
-            <div class="card">
+            <div class="card" data-page="customers">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-id-card"></i> Байнгын Харилцагч Бүртгэх</h2>
                     <button class="btn-sm" style="background:#0ea5e9; color:white;" onclick="openCustomerListModal()"><i class="fa-solid fa-address-book"></i> Бүх харилцагч (<span id="custCountBadge">0</span>)</button>
@@ -299,7 +480,7 @@
             </div>
 
             <!-- 3. МЕНЕЖЕРИЙН УДИРДЛАГЫН ХЭСЭГ -->
-            <div class="card admin-only" style="display:none;">
+            <div class="card admin-only" data-page="manage" style="display:none;">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-screwdriver-wrench"></i> Менежерийн Цэс & Удирдлага</h2>
                 </div>
@@ -335,9 +516,9 @@
         </div>
 
         <!-- БАРУУН БАГАНА -->
-        <div>
+        <div class="col">
             <!-- 4. КАСС / САГС -->
-            <div class="card" style="border: 2px solid var(--moty-red);">
+            <div class="card span-5" data-page="pos" style="border: 1px solid rgba(47,107,255,0.45); align-self:start; position:sticky; top:18px;">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-receipt"></i> Борлуулалтын Сагс & Касс</h2>
                     <button class="btn-brand btn-sm" onclick="openOilCalculatorModal()" style="background:var(--moty-red);">
@@ -370,7 +551,7 @@
             </div>
 
             <!-- ЦАГ ЗАХИАЛГУУД -->
-            <div class="card">
+            <div class="card" data-page="bookings">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-calendar-check" style="color:var(--accent-blue);"></i> Ирсэн Цаг Захиалгууд</h2>
                     <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
@@ -389,7 +570,7 @@
             </div>
 
             <!-- 5. ЗЭЭЛИЙН АВЛАГЫН ХЯНАЛТ -->
-            <div class="card">
+            <div class="card span-6" data-page="credit">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-hand-holding-dollar" style="color:var(--warning);"></i> Зээлийн Авлагын Хяналт</h2>
                 </div>
@@ -408,7 +589,7 @@
             </div>
 
             <!-- 5б. ЗЭЭЛИЙН ТӨЛӨЛТҮҮД -->
-            <div class="card">
+            <div class="card span-6" data-page="credit">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-money-bill-wave" style="color:var(--success);"></i> Зээлийн Төлөлтүүд</h2>
                     <select id="creditPayFilter" onchange="renderCreditPayments()" style="width:auto; padding:6px 10px; font-size:0.8rem;">
@@ -427,7 +608,7 @@
             </div>
 
             <!-- 6. БОРЛУУЛАЛТЫН ТАЙЛАН -->
-            <div class="card">
+            <div class="card" data-page="reports">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-chart-pie"></i> Борлуулалтын Тайлан</h2>
                     <button class="btn-excel btn-sm admin-only" style="display:none;" onclick="exportSalesToExcel()">
@@ -466,6 +647,7 @@
             </div>
         </div>
     </div>
+    </div><!-- /main-area -->
 
     <!-- MODAL: ЦОО ШИНЭ БАРАА БҮРТГЭХ -->
     <div class="modal-overlay" id="newProductModal">
@@ -1131,6 +1313,11 @@
             document.querySelectorAll('.admin-only').forEach(el => el.style.display = currentUserRole === 'admin' ? 'block' : 'none');
             document.getElementById('loginModal').style.display = 'none';
             document.getElementById('mainSystemContainer').style.display = 'grid';
+            document.body.classList.add('logged-in');
+            document.getElementById('sbUserName').textContent = currentUserName;
+            let startPage = 'dashboard';
+            try { startPage = localStorage.getItem('lastPage') || 'dashboard'; } catch (e) { }
+            showPage(startPage);
             document.getElementById('loginPassword').value = '';
             unsubscribers.forEach(u => u()); unsubscribers = [];
             loadCarsFromFirestore();
@@ -1144,6 +1331,7 @@
             currentUserRole = null; currentUserEmail = null;
             cart = []; renderCart();
             document.getElementById('mainSystemContainer').style.display = 'none';
+            document.body.classList.remove('logged-in');
             document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
             document.getElementById('currentUserRole').innerText = 'Нэвтрээгүй';
             document.getElementById('loginModal').style.display = 'flex';
@@ -2780,6 +2968,193 @@
             XLSX.utils.book_append_sheet(wb, ws, "Sales");
             XLSX.writeFile(wb, `Sales_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
+        // ================= ШИНЭ ЗАГВАР: ЦЭС, САМБАР, ГРАФИК =================
+        const PAGE_TITLES = { dashboard: 'Самбар', pos: 'Касс & Бараа', customers: 'Харилцагч', bookings: 'Цаг захиалга', credit: 'Зээл & Төлөлт', reports: 'Борлуулалтын тайлан', manage: 'Удирдлага' };
+        let currentPage = 'dashboard';
+        let chartRange = 30;
+
+        function showPage(page) {
+            if (!PAGE_TITLES[page] || (page === 'manage' && currentUserRole !== 'admin')) page = 'dashboard';
+            currentPage = page;
+            try { localStorage.setItem('lastPage', page); } catch (e) { }
+            document.querySelectorAll('#mainSystemContainer [data-page]').forEach(el => el.classList.toggle('page-hidden', el.dataset.page !== page));
+            document.querySelectorAll('.sb-item[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === page));
+            document.getElementById('pageTitle').textContent = PAGE_TITLES[page];
+            if (page === 'dashboard') renderDashboard();
+            window.scrollTo(0, 0);
+        }
+
+        function renderGlobalSearch() {
+            const q = document.getElementById('globalSearch').value;
+            const box = document.getElementById('globalSearchResults');
+            if (!q.trim()) { box.innerHTML = ''; return; }
+            const found = searchCustomers(q, 8);
+            box.innerHTML = found.length ? found.map(c => customerItemHtml(c, 'openFromGlobalSearch')).join('')
+                : '<div class="cust-item" style="color:var(--text-muted); cursor:default;">Олдсонгүй</div>';
+        }
+        function openFromGlobalSearch(id) {
+            document.getElementById('globalSearch').value = '';
+            document.getElementById('globalSearchResults').innerHTML = '';
+            openCustomerProfile(id);
+        }
+
+        function updateNavCounts() {
+            const set = (id, n) => { const el = document.getElementById(id); if (!el) return; el.textContent = n; el.style.display = n ? 'inline-block' : 'none'; };
+            set('sbCartCount', cart.reduce((a, c) => a + (Number(c.qty) || 0), 0));
+            set('sbBookingCount', bookingsList.filter(b => b.status === 'new').length);
+            set('sbCreditCount', salesData.filter(s => s.isCredit && s.status === 'credit_unpaid').length);
+        }
+
+        let dashTimer = null;
+        function scheduleDashboard() {
+            updateNavCounts();
+            if (currentPage !== 'dashboard') return;
+            clearTimeout(dashTimer);
+            dashTimer = setTimeout(renderDashboard, 60);
+        }
+
+        function salesBetween(from, to) {
+            return salesData.filter(sl => sl.status !== 'returned').filter(sl => { const d = saleDate(sl); return d >= from && (!to || d < to); });
+        }
+        const sumTotal = list => list.reduce((a, sl) => a + (Number(sl.total) || 0), 0);
+
+        function renderDashboard() {
+            const grid = document.getElementById('kpiGrid');
+            if (!grid) return;
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterday = new Date(today.getTime() - 86400000);
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const prevMonthSameDay = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate() + 1);
+            const tList = salesBetween(today), yList = salesBetween(yesterday, today);
+            const mList = salesBetween(monthStart), pmList = salesBetween(prevMonthStart, prevMonthSameDay < monthStart ? prevMonthSameDay : monthStart);
+            const tSum = sumTotal(tList), ySum = sumTotal(yList), mSum = sumTotal(mList), pmSum = sumTotal(pmList);
+            const change = (a, b) => b ? Math.round((a - b) / b * 100) : null;
+            const chg = (v, label) => v === null ? `<span>${label}</span>` : `<span class="${v >= 0 ? 'up' : 'down'}">${v >= 0 ? '▲' : '▼'} ${Math.abs(v)}%</span> ${label}`;
+            const credits = salesData.filter(sl => sl.isCredit && sl.status === 'credit_unpaid');
+            const creditSum = credits.reduce((a, sl) => a + (Number(sl.creditRemaining) || 0), 0);
+            const todayISO = localISODate(now);
+            const todayBookings = bookingsList.filter(b => b.date === todayISO && b.status !== 'done').sort((a, b) => String(a.time).localeCompare(String(b.time)));
+            const lowStock = inventory.filter(i => (Number(i.stock) || 0) <= 3).sort((a, b) => (a.stock || 0) - (b.stock || 0));
+            const vatMonth = mList.filter(sl => sl.vat);
+            const kpi = (icon, label, value, sub, page, hero) => `<div class="kpi ${hero ? 'hero' : ''}" onclick="showPage('${page}')"><div class="kpi-label"><i class="fa-solid ${icon}"></i>${label}</div><div class="kpi-value">${value}</div><div class="kpi-sub">${sub}</div></div>`;
+            grid.innerHTML =
+                kpi('fa-sack-dollar', 'Өнөөдрийн борлуулалт', fmtMoney(tSum), chg(change(tSum, ySum), `өчигдрөөс · ${tList.length} борлуулалт`), 'reports', true) +
+                kpi('fa-calendar', 'Энэ сарын борлуулалт', fmtMoney(mSum), chg(change(mSum, pmSum), 'өмнөх сарын мөн үеэс'), 'reports') +
+                kpi('fa-hand-holding-dollar', 'Зээлийн авлага', fmtMoney(creditSum), `${credits.length} харилцагч`, 'credit') +
+                kpi('fa-calendar-check', 'Өнөөдрийн захиалга', todayBookings.length, `${bookingsList.filter(b => b.status === 'new').length} шинэ хүлээгдэж буй`, 'bookings') +
+                kpi('fa-users', 'Харилцагч', customers.length, 'бүртгэлтэй', 'customers') +
+                kpi('fa-file-invoice', 'НӨАТ-тэй (энэ сар)', fmtMoney(sumTotal(vatMonth)), `${vatMonth.length} баримт · НӨАТ ${fmtMoney(Math.round(sumTotal(vatMonth) / 11))}`, 'reports');
+
+            document.getElementById('dashBookings').innerHTML = todayBookings.length ? todayBookings.slice(0, 8).map(b => `
+                <div class="mini-row"><div><strong>${esc(b.time)}</strong> — ${esc(b.car)}<small>${esc(b.name)} · ${esc(b.phone)}</small></div>${b.status === 'new' ? '<span class="vat-badge" style="color:var(--accent-blue); border-color:var(--accent-blue); background:rgba(59,130,246,0.12);">Шинэ</span>' : ''}</div>`).join('')
+                : '<div class="mini-empty">Өнөөдөр хүлээгдэж буй захиалга алга.</div>';
+
+            const recent = salesData.slice(0, 7);
+            document.getElementById('dashRecentSales').innerHTML = recent.length ? recent.map(sl => `
+                <div class="mini-row"><div><strong>${esc(sl.carNo || '')}</strong> ${esc(sl.customer || '')}<small>${esc(sl.date || '')} · ${esc(sl.paymentMethod || '')}${sl.vat ? ' · НӨАТ' : ''}</small></div>
+                <strong style="${sl.status === 'returned' ? 'opacity:.5; text-decoration:line-through;' : ''}">${fmtMoney(sl.total)}</strong></div>`).join('')
+                : '<div class="mini-empty">Борлуулалт алга.</div>';
+
+            document.getElementById('dashLowStock').innerHTML = lowStock.length ? lowStock.slice(0, 8).map(i => `
+                <div class="mini-row"><div>${esc(i.name)}<small>${esc(i.category || '')}</small></div><strong style="color:${(i.stock || 0) <= 0 ? 'var(--danger)' : 'var(--warning)'};">${esc(i.stock || 0)} ш</strong></div>`).join('')
+                : '<div class="mini-empty">Бүх барааны үлдэгдэл хангалттай.</div>';
+
+            renderSalesChart();
+        }
+
+        function setChartRange(days) {
+            chartRange = days;
+            document.querySelectorAll('#chartRangePills .pill').forEach(b => b.classList.toggle('active', +b.dataset.range === days));
+            renderSalesChart();
+        }
+
+        function renderSalesChart() {
+            const wrap = document.getElementById('salesChart');
+            if (!wrap || !wrap.offsetWidth) return;
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const buckets = [];
+            if (chartRange <= 31) {
+                for (let i = chartRange - 1; i >= 0; i--) {
+                    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+                    buckets.push({ from: d, to: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1), label: `${d.getMonth() + 1}/${d.getDate()}` });
+                }
+            } else if (chartRange <= 190) {
+                for (let i = 25; i >= 0; i--) {
+                    const to = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1 - i * 7);
+                    const from = new Date(to.getTime() - 7 * 86400000);
+                    buckets.push({ from, to, label: `${from.getMonth() + 1}/${from.getDate()}` });
+                }
+            } else {
+                for (let i = 11; i >= 0; i--) {
+                    const from = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    buckets.push({ from, to: new Date(from.getFullYear(), from.getMonth() + 1, 1), label: `${from.getFullYear() % 100}/${from.getMonth() + 1}` });
+                }
+            }
+            const valid = salesData.filter(sl => sl.status !== 'returned');
+            buckets.forEach(b => { b.value = 0; b.count = 0; });
+            valid.forEach(sl => {
+                const d = saleDate(sl);
+                const b = buckets.find(x => d >= x.from && d < x.to);
+                if (b) { b.value += Number(sl.total) || 0; b.count++; }
+            });
+            const W = wrap.offsetWidth, H = wrap.offsetHeight || 260, padL = 52, padR = 12, padT = 14, padB = 26;
+            const max = Math.max(1, ...buckets.map(b => b.value));
+            const nice = (() => { const p = Math.pow(10, Math.floor(Math.log10(max))); return Math.ceil(max / p) * p; })();
+            const x = i => padL + (buckets.length === 1 ? 0 : i * (W - padL - padR) / (buckets.length - 1));
+            const y = v => padT + (H - padT - padB) * (1 - v / nice);
+            const pts = buckets.map((b, i) => [x(i), y(b.value)]);
+            const line = pts.map((p, i) => {
+                if (i === 0) return `M${p[0]},${p[1]}`;
+                const q = pts[i - 1], cx = (q[0] + p[0]) / 2;
+                return `C${cx},${q[1]} ${cx},${p[1]} ${p[0]},${p[1]}`;
+            }).join(' ');
+            const area = `${line} L${pts[pts.length - 1][0]},${y(0)} L${pts[0][0]},${y(0)} Z`;
+            const fmtShort = v => v >= 1e6 ? (v / 1e6).toFixed(v % 1e6 ? 1 : 0) + 'сая' : v >= 1e3 ? Math.round(v / 1e3) + 'мян' : String(v);
+            let grid = '';
+            for (let k = 0; k <= 4; k++) {
+                const v = nice * k / 4, yy = y(v);
+                grid += `<line x1="${padL}" x2="${W - padR}" y1="${yy}" y2="${yy}" stroke="currentColor" stroke-opacity="0.08"/><text x="${padL - 8}" y="${yy + 4}" text-anchor="end" font-size="10" fill="currentColor" fill-opacity="0.5">${fmtShort(v)}</text>`;
+            }
+            const step = Math.ceil(buckets.length / 8);
+            const lastIdx = buckets.length - 1;
+            const labels = buckets.map((b, i) => (i % step === 0 && (lastIdx - i >= step / 2 || i === lastIdx)) || i === lastIdx ? `<text x="${x(i)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.5">${b.label}</text>` : '').join('');
+            const tip = document.getElementById('chartTip');
+            wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="color:var(--text-main);">
+                <defs><linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2f6bff" stop-opacity="0.45"/><stop offset="100%" stop-color="#2f6bff" stop-opacity="0"/></linearGradient></defs>
+                ${grid}${labels}
+                <path d="${area}" fill="url(#salesGrad)"/>
+                <path d="${line}" fill="none" stroke="#3b7bff" stroke-width="2.5"/>
+                <line id="chartCursor" x1="0" x2="0" y1="${padT}" y2="${y(0)}" stroke="#3b7bff" stroke-dasharray="4 4" stroke-opacity="0.8" style="display:none;"/>
+                <circle id="chartDot" r="6" fill="#3b7bff" stroke="#fff" stroke-width="2" style="display:none;"/>
+            </svg>`;
+            wrap.appendChild(tip);
+            const svg = wrap.querySelector('svg');
+            svg.onmousemove = e => {
+                const r = svg.getBoundingClientRect();
+                const mx = (e.clientX - r.left) * W / r.width;
+                let best = 0; pts.forEach((p, i) => { if (Math.abs(p[0] - mx) < Math.abs(pts[best][0] - mx)) best = i; });
+                const [px, py] = pts[best], b = buckets[best];
+                const cur = svg.querySelector('#chartCursor'), dot = svg.querySelector('#chartDot');
+                cur.setAttribute('x1', px); cur.setAttribute('x2', px); cur.style.display = '';
+                dot.setAttribute('cx', px); dot.setAttribute('cy', py); dot.style.display = '';
+                tip.innerHTML = `${esc(b.label)}${chartRange > 31 && chartRange <= 190 ? ' (7 хоног)' : ''}<b>${fmtMoney(b.value)}</b>${b.count} борлуулалт`;
+                tip.style.display = 'block';
+                const left = px * r.width / W;
+                tip.style.left = Math.min(Math.max(0, left - 60), r.width - 140) + 'px';
+                tip.style.top = Math.max(0, py * r.height / H - 64) + 'px';
+            };
+            svg.onmouseleave = () => { tip.style.display = 'none'; svg.querySelector('#chartCursor').style.display = 'none'; svg.querySelector('#chartDot').style.display = 'none'; };
+        }
+        window.addEventListener('resize', () => { if (currentPage === 'dashboard') renderSalesChart(); });
+
+        // Одоо байгаа функцуудыг өөрчлөхгүйгээр самбарыг шинэчлэх
+        (function hookDashboard() {
+            const wrap = name => { const orig = window[name]; if (typeof orig !== 'function') return; window[name] = function () { const r = orig.apply(this, arguments); scheduleDashboard(); return r; }; };
+            ['renderInventory', 'renderCart', 'renderBookingsList', 'filterSales', 'renderCustomersModal'].forEach(wrap);
+        })();
     </script>
 </body>
 </html>
