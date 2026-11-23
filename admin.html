@@ -27,6 +27,11 @@
             --modal-bg: #0c0d12;
         }
 
+        /* Дотроо гүйдэг хүснэгт */
+        .scroll-box { max-height: 420px; overflow-y: auto; border-radius: 10px; }
+        .scroll-box table { margin-top: 0; }
+        .scroll-box thead th { position: sticky; top: 0; z-index: 1; background: var(--modal-bg); }
+
         /* Харилцагч хайлт */
         .cust-results { margin-top:6px; border:1px solid var(--border); border-radius:10px; max-height:240px; overflow-y:auto; background:var(--modal-bg); }
         .cust-results:empty { display:none; }
@@ -222,18 +227,20 @@
                     </select>
                 </div>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ангилал / Нэр</th>
-                            <th>Парти</th>
-                            <th>Үнэ</th>
-                            <th>Үлдэгдэл</th>
-                            <th style="width: 80px; text-align:right;">Сагслах</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventoryList"></tbody>
-                </table>
+                <div class="scroll-box">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ангилал / Нэр</th>
+                                <th>Парти</th>
+                                <th>Үнэ</th>
+                                <th>Үлдэгдэл</th>
+                                <th style="width: 80px; text-align:right;">Сагслах</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryList"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- 2. ХАРИЛЦАГЧ БҮРТГЭХ -->
