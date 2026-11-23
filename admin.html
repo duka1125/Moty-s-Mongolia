@@ -407,6 +407,25 @@
                 </div>
             </div>
 
+            <!-- 5б. ЗЭЭЛИЙН ТӨЛӨЛТҮҮД -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-money-bill-wave" style="color:var(--success);"></i> Зээлийн Төлөлтүүд</h2>
+                    <select id="creditPayFilter" onchange="renderCreditPayments()" style="width:auto; padding:6px 10px; font-size:0.8rem;">
+                        <option value="today">Өнөөдөр</option>
+                        <option value="month" selected>Энэ сар</option>
+                        <option value="all">Бүгд</option>
+                    </select>
+                </div>
+                <div id="creditPaySummaryLine" style="font-weight:700; color:var(--success); margin-bottom:6px;"></div>
+                <div class="scroll-box" style="max-height:220px;">
+                    <table>
+                        <thead><tr><th>Огноо</th><th>Харилцагч / Машин</th><th style="text-align:right;">Төлсөн</th><th>Төлөв</th></tr></thead>
+                        <tbody id="creditPaymentsList"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- 6. БОРЛУУЛАЛТЫН ТАЙЛАН -->
             <div class="card">
                 <div class="card-header">
@@ -817,6 +836,7 @@
             <div id="creditPaySummary" style="margin-bottom:12px; background:var(--input-bg); padding:10px; border-radius:8px; font-size:0.85rem;"></div>
             <div class="form-group"><label>Төлөх Дүн:</label><input type="number" id="payCreditAmountInput" required></div>
             <div class="form-group"><label>Төлсөн Хэлбэр:</label><select id="payCreditMethodSelect"></select></div>
+            <div id="payCreditHistory" style="font-size:0.8rem; color:var(--text-muted);"></div>
             <button class="btn-brand" style="width:100%; padding:12px; margin-top:10px;" onclick="confirmPayCredit()">Хадгалах</button>
         </div>
     </div>
@@ -1367,6 +1387,7 @@
                 snapshot.forEach(doc => salesData.push({ id: doc.id, ...doc.data() }));
                 filterSales(currentSalesFilter);
                 renderCreditSalesList();
+                renderCreditPayments();
             });
 
             L(db.collection("settings").doc("booking"), doc => {
@@ -2071,7 +2092,7 @@
                     <td><small>${esc(sl.date || '')}</small><br><small style="color:var(--text-muted);">${esc(sl.invoiceNum || '')}</small></td>
                     <td style="font-size:0.82rem;">${(sl.items || []).map(it => `${esc(it.name)} × ${esc(it.qty)}${it.discountPercent ? ` <small style="color:var(--text-muted);">(-${esc(it.discountPercent)}%)</small>` : ''}`).join('<br>') || '—'}${sl.notes ? `<br><small style="color:var(--text-muted);">📝 ${esc(sl.notes)}</small>` : ''}</td>
                     <td><small>${esc(sl.km && sl.km !== 'Бичигдээгүй' ? sl.km : '—')}</small></td>
-                    <td><small>${esc(sl.paymentMethod || '')}${sl.isCredit && sl.status === 'credit_unpaid' ? '<br><span style="color:var(--warning);">Зээл: ' + fmtMoney(sl.creditRemaining) + '</span>' : ''}</small></td>
+                    <td><small>${esc(sl.paymentMethod || '')}${sl.isCredit && sl.status === 'credit_unpaid' ? '<br><span style="color:var(--warning);">Зээл: ' + fmtMoney(sl.creditRemaining) + '</span>' : (sl.isCredit && sl.status !== 'returned' ? '<br><span style="color:var(--success);">✅ Зээл төлөгдсөн</span>' : '')}</small></td>
                     <td style="text-align:right; font-weight:700;">${fmtMoney(sl.total)}${sl.vat ? '<br><span class="vat-badge">НӨАТ</span>' : ''}</td>
                 </tr>`).join('') : '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Худалдан авалт бүртгэгдээгүй байна.</td></tr>';
             document.getElementById('custSearchResults').innerHTML = '';
@@ -2542,25 +2563,71 @@
             if (!sale) return;
             document.getElementById('payCreditSaleId').value = saleId;
             document.getElementById('payCreditAmountInput').value = sale.creditRemaining;
-            document.getElementById('creditPaySummary').innerHTML = `Үлдэгдэл авлага: <strong>${sale.creditRemaining.toLocaleString()}₮</strong>`;
+            document.getElementById('creditPaySummary').innerHTML = `${esc(sale.customer || '')} (${esc(sale.carNo || '')}) · ${esc(sale.invoiceNum || '')}<br>Нийт: ${(sale.total || 0).toLocaleString()}₮ · Төлсөн: ${(sale.advancePaid || 0).toLocaleString()}₮ · Үлдэгдэл авлага: <strong>${sale.creditRemaining.toLocaleString()}₮</strong>`;
+            document.getElementById('payCreditHistory').innerHTML = (sale.payments || []).length
+                ? 'Өмнөх төлөлтүүд:<br>' + sale.payments.map(p => `• ${esc(p.date)} — ${(Number(p.amount) || 0).toLocaleString()}₮ (${esc(p.method || '')})`).join('<br>') : '';
             document.getElementById('payCreditModal').style.display = 'flex';
         }
         function closePayCreditModal() { document.getElementById('payCreditModal').style.display = 'none'; }
 
         async function confirmPayCredit() {
             const saleId = document.getElementById('payCreditSaleId').value;
-            const payAmount = parseFloat(document.getElementById('payCreditAmountInput').value);
+            let payAmount = parseFloat(document.getElementById('payCreditAmountInput').value);
             const sale = salesData.find(s => s.id === saleId);
-            if (!sale || payAmount <= 0) return alert('Дүн буруу!');
-
-            let newRemaining = sale.creditRemaining - payAmount;
-            await db.collection("sales").doc(saleId).update({
-                advancePaid: sale.advancePaid + payAmount,
-                creditRemaining: newRemaining < 0 ? 0 : newRemaining,
-                status: newRemaining <= 0 ? 'completed' : 'credit_unpaid'
-            });
-            alert('Зээл амжилттай төлөгдлөө!');
+            if (!sale || !(payAmount > 0)) return alert('Дүн буруу!');
+            const remaining = Number(sale.creditRemaining) || 0;
+            if (payAmount > remaining) {
+                if (!confirm(`Төлөх дүн (${payAmount.toLocaleString()}₮) үлдэгдлээс (${remaining.toLocaleString()}₮) их байна. Үлдэгдлийг бүтэн төлсөнд тооцох уу?`)) return;
+                payAmount = remaining;
+            }
+            const newRemaining = Math.max(0, remaining - payAmount);
+            const paidOff = newRemaining <= 0;
+            const now = new Date();
+            const payment = {
+                amount: payAmount,
+                method: document.getElementById('payCreditMethodSelect').value || '',
+                date: now.toLocaleString('mn-MN'),
+                at: now.toISOString(),
+                by: currentUserEmail,
+                remainingAfter: newRemaining
+            };
+            const update = {
+                advancePaid: (Number(sale.advancePaid) || 0) + payAmount,
+                creditRemaining: newRemaining,
+                status: paidOff ? 'completed' : 'credit_unpaid',
+                payments: firebase.firestore.FieldValue.arrayUnion(payment)
+            };
+            if (paidOff) update.creditPaidAt = now.toISOString();
+            try {
+                await db.collection("sales").doc(saleId).update(update);
+            } catch (err) {
+                return alert('Төлөлт хадгалагдсангүй: ' + err.message);
+            }
+            alert(paidOff ? 'Зээл бүрэн төлөгдлөө! Зээлийн самбараас хасагдаж, төлөлтийн жагсаалтад орлоо.' : `Төлөлт бүртгэгдлээ. Үлдэгдэл: ${newRemaining.toLocaleString()}₮`);
             closePayCreditModal();
+        }
+
+        // Бүх зээлийн төлөлтийн жагсаалт
+        function renderCreditPayments() {
+            const body = document.getElementById('creditPaymentsList');
+            if (!body) return;
+            const f = document.getElementById('creditPayFilter').value;
+            const now = new Date();
+            const from = f === 'today' ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) : f === 'month' ? new Date(now.getFullYear(), now.getMonth(), 1) : null;
+            const rows = [];
+            salesData.forEach(sl => (sl.payments || []).forEach(p => rows.push({ sl, p })));
+            const list = rows.filter(r => !from || new Date(r.p.at) >= from).sort((a, b) => String(b.p.at).localeCompare(String(a.p.at)));
+            const total = list.reduce((a, r) => a + (Number(r.p.amount) || 0), 0);
+            const byMethod = {};
+            list.forEach(r => byMethod[r.p.method || '—'] = (byMethod[r.p.method || '—'] || 0) + (Number(r.p.amount) || 0));
+            document.getElementById('creditPaySummaryLine').innerHTML = `Нийт орсон: ${total.toLocaleString()}₮ <small style="color:var(--text-muted); font-weight:500;">(${list.length} төлөлт${Object.keys(byMethod).length ? ' · ' + Object.entries(byMethod).map(([m, v]) => esc(m) + ' ' + v.toLocaleString() + '₮').join(' · ') : ''})</small>`;
+            body.innerHTML = list.length ? list.map(({ sl, p }) => `
+                <tr>
+                    <td><small>${esc(p.date || '')}</small><br><small style="color:var(--text-muted);">${esc(p.method || '')}</small></td>
+                    <td><strong>${esc(sl.customer || '')}</strong> (${esc(sl.carNo || '')})<br><small style="color:var(--text-muted);">${esc(sl.invoiceNum || '')} · ${esc(String(p.by || '').split('@')[0])}</small></td>
+                    <td style="text-align:right; font-weight:700; color:var(--success);">${(Number(p.amount) || 0).toLocaleString()}₮</td>
+                    <td>${p.remainingAfter > 0 ? `<small style="color:var(--warning);">Хэсэгчлэн<br>Үлдсэн ${Number(p.remainingAfter).toLocaleString()}₮</small>` : '<span class="vat-badge">✅ Зээл төлөгдсөн</span>'}</td>
+                </tr>`).join('') : '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Энэ хугацаанд зээлийн төлөлт алга.</td></tr>';
         }
 
         function reprintA4Document(saleId) {
@@ -2677,7 +2744,8 @@
                         <td><strong>${returned ? 'Буцаагдсан' : (sale.total || 0).toLocaleString() + '₮'}</strong>
                             ${currentUserRole === 'admin' && !returned
                                 ? `<br><button class="vat-badge ${sale.vat ? '' : 'off'}" title="НӨАТ-ын баримт олгосон эсэхийг өөрчлөх" onclick="toggleSaleVat('${sale.id}')">${sale.vat ? '✓ НӨАТ' : '+ НӨАТ'}</button>`
-                                : (sale.vat ? '<br><span class="vat-badge">НӨАТ</span>' : '')}</td>
+                                : (sale.vat ? '<br><span class="vat-badge">НӨАТ</span>' : '')}
+                            ${sale.isCredit && !returned ? (sale.status === 'credit_unpaid' ? `<br><small style="color:var(--warning);">Зээл: ${(sale.creditRemaining || 0).toLocaleString()}₮</small>` : '<br><small style="color:var(--success);">✅ Зээл төлөгдсөн</small>') : ''}</td>
                         <td>
                             <button class="btn-sm btn-primary" onclick="reprintA4Document('${sale.id}')">A4</button>
                             ${currentUserRole === 'admin' && !returned ? `<button class="btn-danger btn-sm" onclick="openReturnModal('${sale.id}')"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
