@@ -912,7 +912,18 @@
             try {
                 await auth.signInWithEmailAndPassword(email, password);
             } catch (err) {
-                errEl.textContent = 'И-мэйл эсвэл нууц үг буруу байна.';
+                const msgs = {
+                    'auth/invalid-credential': 'И-мэйл эсвэл нууц үг буруу байна.',
+                    'auth/wrong-password': 'Нууц үг буруу байна.',
+                    'auth/user-not-found': 'Ийм и-мэйлтэй хэрэглэгч бүртгэлгүй байна.',
+                    'auth/invalid-email': 'И-мэйлийн хаяг буруу бичигдсэн байна.',
+                    'auth/operation-not-allowed': 'Firebase дээр Email/Password нэвтрэлт идэвхжээгүй байна.',
+                    'auth/unauthorized-domain': 'Энэ вэб хаяг Firebase-ийн Authorized domains-д бүртгэгдээгүй байна.',
+                    'auth/too-many-requests': 'Олон удаа буруу оролдсон тул түр хаагдлаа. Хэдэн минутын дараа оролдоно уу.',
+                    'auth/network-request-failed': 'Интернэт холболтоо шалгана уу.',
+                    'auth/user-disabled': 'Энэ данс идэвхгүй болгогдсон байна.'
+                };
+                errEl.textContent = (msgs[err.code] || 'Нэвтрэхэд алдаа гарлаа.') + ' (' + err.code + ')';
             }
             document.getElementById('loginBtn').disabled = false;
         });
