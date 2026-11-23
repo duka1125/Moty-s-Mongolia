@@ -42,6 +42,11 @@
         @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
         tr.booking-new td { background: rgba(56,189,248,0.08); }
 
+        /* НӨАТ */
+        .vat-badge { display:inline-block; background:rgba(16,185,129,0.15); color:var(--success); border:1px solid var(--success); border-radius:6px; padding:1px 6px; font-size:0.68rem; font-weight:800; margin-left:4px; vertical-align:middle; }
+        .vat-badge.off { background:none; color:var(--text-muted); border-color:var(--border); font-weight:600; }
+        button.vat-badge { cursor:pointer; }
+
         /* Харилцагч хайлт */
         .cust-results { margin-top:6px; border:1px solid var(--border); border-radius:10px; max-height:240px; overflow-y:auto; background:var(--modal-bg); }
         .cust-results:empty { display:none; }
@@ -416,10 +421,16 @@
                     <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('month')">Энэ сар</button>
                     <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('year')">Жил</button>
                     <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('all')">Бүгд</button>
+                    <select id="salesVatFilter" onchange="filterSales(currentSalesFilter)" style="width:auto; padding:6px 10px; font-size:0.8rem;">
+                        <option value="all">🧾 НӨАТ: бүгд</option>
+                        <option value="vat">Зөвхөн НӨАТ-тэй</option>
+                        <option value="novat">НӨАТ-гүй</option>
+                    </select>
                 </div>
                 <div style="margin-bottom: 8px; font-weight: 700; color: var(--success); font-size: 1.05rem; font-family:'Space Grotesk', sans-serif;">
                     <span id="salesPeriodLabel">Бүгд</span> — Нийт Борлуулалт: <span id="totalRevenue">0</span> ₮
                 </div>
+                <div id="vatSummary" style="margin:-4px 0 8px; font-size:0.82rem; color:var(--text-muted);"></div>
                 <div style="max-height: 200px; overflow-y: auto;">
                     <table>
                         <thead>
@@ -880,6 +891,13 @@
                 <div class="form-group"><label>КМ:</label><input type="number" id="modalKm"></div>
             </div>
             <label id="modalSaveCustWrap" style="display:none; font-size:0.85rem; margin-bottom:10px; cursor:pointer;"><input type="checkbox" id="modalSaveCust" checked style="width:auto; margin-right:6px;">Шинэ харилцагч — автоматаар бүртгэж, энэ худалдан авалтыг түүхэнд нь нэмнэ</label>
+            <div style="background:rgba(16,185,129,0.08); border:1px solid var(--border); padding:10px 12px; border-radius:10px; margin-bottom:12px;">
+                <label style="cursor:pointer; margin:0; font-size:0.9rem; text-transform:none; color:var(--text-main);"><input type="checkbox" id="modalVat" onchange="toggleVatFields()" style="width:auto; margin-right:6px;">🧾 НӨАТ-ын баримт (И-баримт) олгосон</label>
+                <div id="modalVatFields" style="display:none; margin-top:8px;">
+                    <div class="form-group" style="margin-bottom:4px;"><label>Байгууллагын РД (байгууллагад олгосон бол)</label><input type="text" id="modalVatRegNo" maxlength="20" placeholder="1234567"></div>
+                    <small style="color:var(--text-muted);">НӨАТ (10%, үнэд багтсан): <strong id="modalVatAmount">0</strong> ₮</small>
+                </div>
+            </div>
             <div class="form-group"><label>Тэмдэглэл:</label><textarea id="modalNotes" rows="2"></textarea></div>
             <div style="margin-top: 14px; background:var(--input-bg); padding:14px; border-radius:12px; text-align:right;">
                 <span style="font-size:0.82rem; color:var(--text-muted);">Эцсийн дүн:</span>
@@ -1945,6 +1963,23 @@
             document.getElementById('custDupWarn').textContent = dup ? `⚠️ Энэ ${dup.reason} бүртгэлтэй: ${dup.c.name} — ${dup.c.carNo} (${dup.c.phone})` : '';
         }
 
+        // ===== НӨАТ =====
+        function toggleVatFields() {
+            const on = document.getElementById('modalVat').checked;
+            document.getElementById('modalVatFields').style.display = on ? 'block' : 'none';
+            const total = parseFloat(document.getElementById('cartTotal').innerText.replace(/,/g, '')) || 0;
+            document.getElementById('modalVatAmount').innerText = Math.round(total / 11).toLocaleString();
+        }
+        async function toggleSaleVat(id) {
+            const sale = salesData.find(x => x.id === id);
+            if (!sale) return;
+            const on = !sale.vat;
+            if (!confirm(on ? `${sale.invoiceNum || ''} борлуулалтыг НӨАТ-ын баримт олгосон гэж тэмдэглэх үү?` : `${sale.invoiceNum || ''} борлуулалтаас НӨАТ-ын тэмдэглэгээг хасах уу?`)) return;
+            try {
+                await db.collection("sales").doc(id).update({ vat: on, vatAmount: on ? Math.round((sale.total || 0) / 11) : 0, vatMarkedBy: currentUserEmail });
+            } catch (err) { alert('Хадгалагдсангүй: ' + err.message); }
+        }
+
         // ===== БҮХ ХАРИЛЦАГЧ / КАРТ / ТҮҮХ =====
         let profileCandidate = null;
 
@@ -2037,7 +2072,7 @@
                     <td style="font-size:0.82rem;">${(sl.items || []).map(it => `${esc(it.name)} × ${esc(it.qty)}${it.discountPercent ? ` <small style="color:var(--text-muted);">(-${esc(it.discountPercent)}%)</small>` : ''}`).join('<br>') || '—'}${sl.notes ? `<br><small style="color:var(--text-muted);">📝 ${esc(sl.notes)}</small>` : ''}</td>
                     <td><small>${esc(sl.km && sl.km !== 'Бичигдээгүй' ? sl.km : '—')}</small></td>
                     <td><small>${esc(sl.paymentMethod || '')}${sl.isCredit && sl.status === 'credit_unpaid' ? '<br><span style="color:var(--warning);">Зээл: ' + fmtMoney(sl.creditRemaining) + '</span>' : ''}</small></td>
-                    <td style="text-align:right; font-weight:700;">${fmtMoney(sl.total)}</td>
+                    <td style="text-align:right; font-weight:700;">${fmtMoney(sl.total)}${sl.vat ? '<br><span class="vat-badge">НӨАТ</span>' : ''}</td>
                 </tr>`).join('') : '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Худалдан авалт бүртгэгдээгүй байна.</td></tr>';
             document.getElementById('custSearchResults').innerHTML = '';
             document.getElementById('customerProfileModal').style.display = 'flex';
@@ -2236,6 +2271,7 @@
             toggleCreditOptions();
             document.getElementById('checkoutModal').style.display = 'flex';
             updateSaveCustomerOption();
+            toggleVatFields();
             if (!checkoutCustomerId) setTimeout(() => document.getElementById('modalCustomerSearch').focus(), 50);
         }
         function closeCheckoutModal() { document.getElementById('checkoutModal').style.display = 'none'; }
@@ -2253,6 +2289,7 @@
             const carNo = cleanCarNo(document.getElementById('modalCarNo').value) || 'Бүртгэлгүй';
             const currentKm = document.getElementById('modalKm').value || 'Бичигдээгүй';
             const notes = document.getElementById('modalNotes').value || '';
+            const vatIssued = document.getElementById('modalVat').checked;
 
             const subTotal = parseFloat(document.getElementById('subTotal').innerText.replace(/,/g, ''));
             const discountAmount = parseFloat(document.getElementById('discountAmount').innerText.replace(/,/g, ''));
@@ -2289,7 +2326,8 @@
             const saleRef = db.collection("sales").doc();
             batch.set(saleRef, {
                 invoiceNum: invNum, date: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                paymentMethod, docType, customer: custName, customerId: customerId || null, phone, carNo, km: currentKm, notes, items: cart,
+                paymentMethod, docType, customer: custName, customerId: customerId || null, phone, carNo,
+                vat: vatIssued, vatAmount: vatIssued ? Math.round(finalTotal / 11) : 0, vatRegNo: vatIssued ? document.getElementById('modalVatRegNo').value.trim() : '', km: currentKm, notes, items: cart,
                 subTotal, discount: discountAmount, total: finalTotal, isCredit, advancePaid, creditRemaining, dueDate,
                 status: isCredit ? (creditRemaining <= 0 ? 'completed' : 'credit_unpaid') : 'completed',
                 soldBy: currentUserEmail
@@ -2303,6 +2341,9 @@
             closeCheckoutModal();
             clearCheckoutCustomer();
             document.getElementById('modalNotes').value = '';
+            document.getElementById('modalVat').checked = false;
+            document.getElementById('modalVatRegNo').value = '';
+            toggleVatFields();
 
             if (docType === 'THERMAL') {
                 printThermalReceipt(dateStr, custName, carNo, cart, subTotal, discountAmount, finalTotal);
@@ -2613,10 +2654,18 @@
             };
             const labels = { today: 'Өнөөдөр', yesterday: 'Өчигдөр', month: 'Энэ сар', year: 'Энэ жил', all: 'Бүгд' };
             const [from, to] = ranges[type] || ranges.all;
-            const filtered = salesData.filter(sale => {
+            const vatF = (document.getElementById('salesVatFilter') || {}).value || 'all';
+            const inPeriod = salesData.filter(sale => {
                 const d = saleDate(sale);
                 return (!from || d >= from) && (!to || d < to);
             });
+            const filtered = inPeriod.filter(sale => vatF === 'all' || (vatF === 'vat' ? !!sale.vat : !sale.vat));
+            let vatTotal = 0, vatCount = 0, nonVatTotal = 0;
+            inPeriod.forEach(sale => {
+                if (sale.status === 'returned') return;
+                if (sale.vat) { vatTotal += (sale.total || 0); vatCount++; } else nonVatTotal += (sale.total || 0);
+            });
+            document.getElementById('vatSummary').innerHTML = `🧾 НӨАТ-тэй: <strong style="color:var(--text-main);">${vatTotal.toLocaleString()}₮</strong> (${vatCount} баримт, НӨАТ ${Math.round(vatTotal / 11).toLocaleString()}₮) · НӨАТ-гүй: <strong style="color:var(--text-main);">${nonVatTotal.toLocaleString()}₮</strong>`;
             let totalRev = 0;
             list.innerHTML = filtered.map(sale => {
                 const returned = sale.status === 'returned';
@@ -2625,7 +2674,10 @@
                     <tr style="${returned ? 'opacity:0.5;' : ''}">
                         <td style="font-size:0.75rem;">${esc(sale.date)}<br><small>${esc(sale.paymentMethod || '')}</small></td>
                         <td><strong>${esc(sale.carNo || '')}</strong> (${esc(sale.customer)})</td>
-                        <td><strong>${returned ? 'Буцаагдсан' : (sale.total || 0).toLocaleString() + '₮'}</strong></td>
+                        <td><strong>${returned ? 'Буцаагдсан' : (sale.total || 0).toLocaleString() + '₮'}</strong>
+                            ${currentUserRole === 'admin' && !returned
+                                ? `<br><button class="vat-badge ${sale.vat ? '' : 'off'}" title="НӨАТ-ын баримт олгосон эсэхийг өөрчлөх" onclick="toggleSaleVat('${sale.id}')">${sale.vat ? '✓ НӨАТ' : '+ НӨАТ'}</button>`
+                                : (sale.vat ? '<br><span class="vat-badge">НӨАТ</span>' : '')}</td>
                         <td>
                             <button class="btn-sm btn-primary" onclick="reprintA4Document('${sale.id}')">A4</button>
                             ${currentUserRole === 'admin' && !returned ? `<button class="btn-danger btn-sm" onclick="openReturnModal('${sale.id}')"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
@@ -2652,6 +2704,7 @@
                 "№": s.invoiceNum, "Огноо": s.date, "Харилцагч": s.customer, "Утас": s.phone || '', "Машин": s.carNo || '',
                 "Төлбөрийн хэлбэр": s.paymentMethod || '', "Дүн": s.total, "Хөнгөлөлт": s.discount || 0,
                 "Зээлийн үлдэгдэл": s.creditRemaining || 0, "Төлөв": s.status || '', "Зарсан": s.soldBy || '',
+                "НӨАТ баримт": s.vat ? 'Тийм' : 'Үгүй', "НӨАТ дүн": s.vat ? (s.vatAmount || Math.round((s.total || 0) / 11)) : 0, "Байгууллагын РД": s.vatRegNo || '',
                 "Бараа": (s.items || []).map(i => i.name + ' x' + i.qty).join('; ')
             }));
             const ws = XLSX.utils.json_to_sheet(rows);
