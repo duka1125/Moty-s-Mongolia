@@ -101,27 +101,20 @@
             </div>
             <div class="rec" id="smartRec">💡 <b>Зөвлөмж:</b> <span id="recText"></span></div>
             <div class="form-group">
-                <label>Тосны бүтээгдэхүүн</label>
-                <select id="oilSelect" onchange="calc()">
-                    <option value="">-- Тос сонгох --</option>
-                    <option data-price="54900">M100 (0W20) 1L - 54,900₮</option>
-                    <option data-price="219600">M100 (0W20) 4L - 219,600₮</option>
-                    <option data-price="54900">M100 (5W30) 1L - 54,900₮</option>
-                    <option data-price="219600">M100 (5W30) 4L - 219,600₮</option>
-                    <option data-price="235600">M100 (5W40) 4L - 235,600₮</option>
-                    <option data-price="239600">M103 (10W40) 4L - 239,600₮</option>
-                    <option data-price="259600">M110 (50) 4L - 259,600₮</option>
-                </select>
+                <label>Тосны төрөл (1 литрийн үнэ)</label>
+                <select id="oilSelect" onchange="calc()"><option value="">Ачаалж байна...</option></select>
             </div>
+            <div id="saleBanner" class="rec" style="background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.4);"></div>
             <div class="grid2">
-                <div class="form-group"><label>Тоо (сав)</label><input type="number" id="oilQty" value="1" min="1" oninput="calc()"></div>
+                <div class="form-group"><label>Авах литр</label><input type="number" id="oilQty" value="1" min="0.5" step="0.5" oninput="calc()"></div>
                 <div class="form-group">
                     <label>Шүүлтүүр</label>
                     <select id="filterCheck" onchange="calc()"><option value="yes">Тийм (18,000₮)</option><option value="no">Үгүй</option></select>
                 </div>
             </div>
             <div class="total-box">
-                <div class="row"><span>Тосны үнэ:</span><strong id="calcSub">0 ₮</strong></div>
+                <div class="row"><span id="calcSubLabel">Тосны үнэ:</span><strong id="calcSub">0 ₮</strong></div>
+                <div class="row" id="calcSaveRow" style="display:none; color:var(--success);"><span>Хямдралаар хэмнэсэн:</span><strong id="calcSave">0 ₮</strong></div>
                 <div class="row"><span>Шүүлтүүр:</span><strong id="calcFilter">18,000 ₮</strong></div>
                 <div class="row"><span>Тос солих ажлын хөлс:</span><strong style="color:var(--success);">ҮНЭГҮЙ</strong></div>
                 <div class="row final"><span><b>Нийт дүн:</b></span><strong id="calcTotal">0 ₮</strong></div>
@@ -195,7 +188,7 @@
             if (car) {
                 document.getElementById('carEngine').textContent = car.engine || '-';
                 document.getElementById('carCapacity').textContent = car.capacity + ' л';
-                const liters = Math.ceil(car.capacity);
+                const liters = Math.ceil((Number(car.capacity) || 0) * 2) / 2;
                 document.getElementById('recText').textContent = `Таны машинд ${car.capacity}л тос орно. Ойролцоогоор ${liters}л хэрэгтэй.`;
                 rec.style.display = 'block';
                 document.getElementById('oilQty').value = liters;
@@ -208,15 +201,54 @@
             calc();
         }
 
-        function calc() {
+        // ---- Тосны үнэ (менежер admin.html → "Тосны үнэ" цэснээс өөрчилнө) ----
+        const DEFAULT_OILS = [
+            { name: "M100 (0W20)", price: 54900 }, { name: "M100 (5W30)", price: 54900 },
+            { name: "M100 (5W40)", price: 58900 }, { name: "M103 (10W40)", price: 59900 }, { name: "M110 (50)", price: 64900 }
+        ];
+        let oilsList = DEFAULT_OILS, filterPrice = 18000;
+        const money = n => Math.round(n).toLocaleString() + ' ₮';
+        function todayStr() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+        function saleOn(o) { return !!(o.saleActive && o.salePrice > 0 && o.salePrice < o.price && (!o.saleUntil || o.saleUntil >= todayStr())); }
+        function unitPrice(o) { return saleOn(o) ? o.salePrice : o.price; }
+        function renderOilOptions() {
             const sel = document.getElementById('oilSelect');
-            const price = parseFloat(sel.options[sel.selectedIndex]?.dataset.price) || 0;
+            const prev = sel.value;
+            sel.innerHTML = '<option value="">-- Тос сонгох --</option>' + oilsList.map((o, i) =>
+                `<option value="${i}">${o.name} — ${saleOn(o) ? '🔥 ' + o.salePrice.toLocaleString() + '₮/л (' + o.price.toLocaleString() + '₮ биш)' : o.price.toLocaleString() + '₮/л'}</option>`).join('');
+            if (prev && oilsList[prev]) sel.value = prev;
+            const sales = oilsList.filter(saleOn);
+            const banner = document.getElementById('saleBanner');
+            banner.innerHTML = sales.length ? '🔥 <b>Урамшуулал:</b> ' + sales.map(o => `${o.name} 1л <b>${o.salePrice.toLocaleString()}₮</b>${o.saleNote ? ' (' + o.saleNote + ')' : ''}${o.saleUntil ? ' — ' + o.saleUntil + ' хүртэл' : ''}`).join('; ') : '';
+            banner.style.display = sales.length ? 'block' : 'none';
+            document.querySelector('#filterCheck option[value="yes"]').textContent = `Тийм (${filterPrice.toLocaleString()}₮)`;
+            calc();
+        }
+        db.collection("oilsDb").get().then(snap => {
+            const list = [];
+            snap.forEach(d => {
+                const o = d.data();
+                if (d.id === '_settings') { if (o.filterPrice >= 0) filterPrice = Number(o.filterPrice); return; }
+                if (o.active === false || !o.name || !(o.price > 0)) return;
+                list.push({ ...o, price: Number(o.price), salePrice: Number(o.salePrice) || 0 });
+            });
+            if (list.length) oilsList = list.sort((a, b) => (a.order || 0) - (b.order || 0) || a.name.localeCompare(b.name));
+            renderOilOptions();
+        }).catch(() => renderOilOptions());
+
+        function calc() {
+            const o = oilsList[document.getElementById('oilSelect').value];
             const qty = Math.max(0, parseFloat(document.getElementById('oilQty').value) || 0);
-            const sub = price * qty;
-            const filter = document.getElementById('filterCheck').value === 'yes' ? 18000 : 0;
-            document.getElementById('calcSub').textContent = sub.toLocaleString() + ' ₮';
-            document.getElementById('calcFilter').textContent = filter.toLocaleString() + ' ₮';
-            document.getElementById('calcTotal').textContent = (sub + filter).toLocaleString() + ' ₮';
+            const unit = o ? unitPrice(o) : 0;
+            const sub = unit * qty;
+            const save = o && saleOn(o) ? (o.price - o.salePrice) * qty : 0;
+            const filter = document.getElementById('filterCheck').value === 'yes' ? filterPrice : 0;
+            document.getElementById('calcSubLabel').textContent = o ? `Тос: ${qty} л × ${unit.toLocaleString()}₮` : 'Тосны үнэ:';
+            document.getElementById('calcSub').textContent = money(sub);
+            document.getElementById('calcSaveRow').style.display = save > 0 ? 'flex' : 'none';
+            document.getElementById('calcSave').textContent = money(save);
+            document.getElementById('calcFilter').textContent = money(filter);
+            document.getElementById('calcTotal').textContent = money(sub + filter);
         }
         calc();
 

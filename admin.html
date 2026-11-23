@@ -490,6 +490,7 @@
                     <button class="btn-sm" style="background:#8b5cf6; color:white;" onclick="openCategoryManager()"><i class="fa-solid fa-layer-group"></i> Ангилал</button>
                     <button class="btn-sm" style="background:#06b6d4; color:white;" onclick="openPaymentMethodManager()"><i class="fa-solid fa-credit-card"></i> Төлбөр</button>
                     <button class="btn-sm" style="background:#ec4899; color:white;" onclick="openOilCalcManagerModal()"><i class="fa-solid fa-calculator"></i> Дата</button>
+                    <button class="btn-sm" style="background:#22c55e; color:white;" onclick="openOilPriceModal()"><i class="fa-solid fa-oil-can"></i> Тосны үнэ & Урамшуулал</button>
                     <button class="btn-sm" style="background:#10b981; color:white;" onclick="openDocumentsManagerModal()"><i class="fa-solid fa-folder-open"></i> Бичиг баримт</button>
                     <button class="btn-sm" style="background:#f59e0b; color:white;" onclick="openReceiptSettingsModal()"><i class="fa-solid fa-gear"></i> Тохиргоо</button>
                     <button class="btn-sm" style="background:#0ea5e9; color:white;" onclick="openBookingSettingsModal()"><i class="fa-solid fa-clock"></i> Цагийн хуваарь</button>
@@ -709,29 +710,21 @@
             </div>
 
             <div class="form-group">
-                <label>Тосны бүтээгдэхүүн (Савлагаа):</label>
-                <select id="oilSelect" onchange="calculateOilCalcTotal()">
-                    <option value="">-- Тос сонгох --</option>
-                    <option value="M100 (0W20) 1L" data-price="54900">M100 (0W20) 1L - 54,900₮</option>
-                    <option value="M100 (0W20) 4L" data-price="219600">M100 (0W20) 4L - 219,600₮</option>
-                    <option value="M100 (5W30) 1L" data-price="54900">M100 (5W30) 1L - 54,900₮</option>
-                    <option value="M100 (5W30) 4L" data-price="219600">M100 (5W30) 4L - 219,600₮</option>
-                    <option value="M100 (5W40) 4L" data-price="235600">M100 (5W40) 4L - 235,600₮</option>
-                    <option value="M103 (10W40) 4L" data-price="239600">M103 (10W40) 4L - 239,600₮</option>
-                    <option value="M110 (50) 4L" data-price="259600">M110 (50) 4L - 259,600₮</option>
-                </select>
+                <label>Тосны төрөл (1 литрийн үнэ):</label>
+                <select id="oilSelect" onchange="calculateOilCalcTotal()"><option value="">-- Тос сонгох --</option></select>
             </div>
+            <div id="calcSaleNote" style="display:none; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.4); padding:8px 10px; border-radius:10px; font-size:0.8rem; margin-bottom:12px;"></div>
 
             <div class="form-group">
-                <label>Литр / Савлагааны тоо:</label>
-                <input type="number" id="oilQty" value="1" min="1" oninput="calculateOilCalcTotal()">
+                <label>Авах литр:</label>
+                <input type="number" id="oilQty" value="1" min="0.5" step="0.5" oninput="calculateOilCalcTotal()">
             </div>
 
             <div class="flex-grid" style="margin-bottom: 12px;">
                 <div class="form-group">
                     <label>Шүүлтүүр авах эсэх:</label>
                     <select id="calcFilterCheck" onchange="calculateOilCalcTotal()">
-                        <option value="yes">Тийм (18,000₮)</option>
+                        <option value="yes" id="calcFilterYesOpt">Тийм (18,000₮)</option>
                         <option value="no">Үгүй (0₮)</option>
                     </select>
                 </div>
@@ -751,8 +744,12 @@
 
             <div style="background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border); margin-top: 15px;">
                 <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
-                    <span>Тосны үндсэн үнэ:</span>
+                    <span id="calcSubLabel">Тосны үндсэн үнэ:</span>
                     <strong id="calcSubTotal">0 ₮</strong>
+                </div>
+                <div id="calcSaveRow" style="display:none; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; color:var(--success);">
+                    <span>Урамшууллаар хэмнэсэн:</span>
+                    <strong id="calcSaveAmount">0 ₮</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
                     <span>Шүүлтүүрийн үнэ:</span>
@@ -872,6 +869,32 @@
     </div>
 
     <div id="toastBox" class="toast-box"></div>
+
+    <!-- ТОСНЫ ҮНЭ & УРАМШУУЛАЛ -->
+    <div class="modal-overlay" id="oilPriceModal">
+        <div class="modal" style="max-width:1100px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-oil-can" style="color:#22c55e;"></i> ТОСНЫ ҮНЭ (1 ЛИТР) & УРАМШУУЛАЛ</h2>
+                <button onclick="closeOilPriceModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Бүх тосыг 1 литрийн үнээр бүртгэнэ. Урамшуулал зарлахдаа "Урамшуулал" чагтыг тэмдэглээд урамшууллын үнийг оруулна. Дуусах өдөр оруулбал тэр өдрийн дараа үндсэн үнэ рүүгээ автоматаар буцна. Мөр бүрийг өөрчилсний дараа 💾 дарж хадгална.</p>
+            <div class="scroll-box" style="max-height:50vh;">
+                <table>
+                    <thead><tr><th>Тосны нэр</th><th>1л үнэ (₮)</th><th>Урамшуулал</th><th>Урамшууллын 1л үнэ</th><th>Тайлбар</th><th>Дуусах өдөр</th><th>Харуулах</th><th></th></tr></thead>
+                    <tbody id="oilPriceBody"></tbody>
+                </table>
+            </div>
+            <form onsubmit="addOilPrice(event)" style="display:flex; gap:8px; align-items:end; flex-wrap:wrap; margin-top:12px; background:var(--input-bg); padding:12px; border-radius:12px;">
+                <div class="form-group" style="flex:2; margin:0;"><label>Шинэ тос нэмэх</label><input type="text" id="opNewName" placeholder="Жишээ: M100 (5W20)"></div>
+                <div class="form-group" style="flex:1; margin:0;"><label>1л үнэ (₮)</label><input type="number" id="opNewPrice" min="0" step="100" placeholder="54900"></div>
+                <button type="submit" class="btn-brand" style="padding:11px 18px;"><i class="fa-solid fa-plus"></i> Нэмэх</button>
+            </form>
+            <div style="display:flex; gap:8px; align-items:end; margin-top:12px;">
+                <div class="form-group" style="margin:0; max-width:220px;"><label>Шүүлтүүрийн үнэ (₮)</label><input type="number" id="opFilterPrice" min="0" step="100"></div>
+                <button class="btn-sm btn-primary" style="padding:10px 16px;" onclick="saveFilterPrice()">Хадгалах</button>
+            </div>
+        </div>
+    </div>
 
     <!-- БҮХ ХАРИЛЦАГЧ -->
     <div class="modal-overlay" id="customerListModal">
@@ -1321,6 +1344,7 @@
             document.getElementById('loginPassword').value = '';
             unsubscribers.forEach(u => u()); unsubscribers = [];
             loadCarsFromFirestore();
+            loadOilsFromFirestore();
             if (currentUserRole === 'admin') loadDocumentsFromFirestore();
             setupFirestoreListeners();
             calculateOilCalcTotal();
@@ -1396,9 +1420,9 @@
             if (car) {
                 document.getElementById("carEngine").textContent = car.engine;
                 document.getElementById("carCapacity").textContent = car.capacity + " л";
-                let recommendedLiters = Math.ceil(car.capacity);
+                let recommendedLiters = Math.ceil((Number(car.capacity) || 0) * 2) / 2;
                 document.getElementById("smartRec").style.display = "block";
-                document.getElementById("recText").textContent = `Ягштал хэмжээ ${car.capacity}л тул хамгийн ойрын бүтэн савлагаа (${recommendedLiters}л)-аар тооцлоо.`;
+                document.getElementById("recText").textContent = `Ягштал хэмжээ ${car.capacity}л тул ${recommendedLiters}л-ээр тооцлоо. Шаардлагатай бол литрийг өөрчилнө үү.`;
                 document.getElementById("oilQty").value = recommendedLiters;
             } else {
                 document.getElementById("carEngine").textContent = "-";
@@ -1409,21 +1433,128 @@
             calculateOilCalcTotal();
         }
 
+        // ===== ТОСНЫ ҮНЭ (1 литр) + УРАМШУУЛАЛ =====
+        const DEFAULT_OILS = [
+            { name: "M100 (0W20)", price: 54900, order: 1 }, { name: "M100 (5W30)", price: 54900, order: 2 },
+            { name: "M100 (5W40)", price: 58900, order: 3 }, { name: "M103 (10W40)", price: 59900, order: 4 }, { name: "M110 (50)", price: 64900, order: 5 }
+        ];
+        let oilsList = DEFAULT_OILS.map((o, i) => ({ id: 'default' + i, ...o })), oilFilterPrice = 18000;
+        function oilSaleOn(o) { return !!(o.saleActive && Number(o.salePrice) > 0 && Number(o.salePrice) < Number(o.price) && (!o.saleUntil || o.saleUntil >= localISODate(new Date()))); }
+        function oilUnit(o) { return oilSaleOn(o) ? Number(o.salePrice) : Number(o.price); }
+
+        function loadOilsFromFirestore() {
+            unsubscribers.push(db.collection("oilsDb").onSnapshot(snap => {
+                const list = [];
+                snap.forEach(d => {
+                    const o = d.data();
+                    if (d.id === '_settings') { if (o.filterPrice >= 0) oilFilterPrice = Number(o.filterPrice); return; }
+                    list.push({ id: d.id, ...o, price: Number(o.price) || 0, salePrice: Number(o.salePrice) || 0 });
+                });
+                if (!list.length && currentUserRole === 'admin') {
+                    const bt = db.batch();
+                    DEFAULT_OILS.forEach(o => bt.set(db.collection("oilsDb").doc(), { ...o, active: true, saleActive: false, salePrice: 0, saleNote: '', saleUntil: '' }));
+                    bt.set(db.collection("oilsDb").doc('_settings'), { filterPrice: 18000 });
+                    bt.commit().catch(err => console.warn('Тосны үнэ үүсгэж чадсангүй:', err));
+                    return;
+                }
+                if (list.length) oilsList = list.sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.name).localeCompare(String(b.name)));
+                renderOilOptions(); renderOilPriceTable();
+            }, err => { console.warn('Тосны үнэ уншиж чадсангүй (Rules шинэчлэх хэрэгтэй байж магадгүй):', err); renderOilOptions(); }));
+        }
+
+        function renderOilOptions() {
+            const sel = document.getElementById('oilSelect');
+            if (!sel) return;
+            const prev = sel.value;
+            sel.innerHTML = '<option value="">-- Тос сонгох --</option>' + oilsList.filter(o => o.active !== false).map(o =>
+                `<option value="${esc(o.id)}">${esc(o.name)} — ${oilSaleOn(o) ? '🔥 ' + Number(o.salePrice).toLocaleString() + '₮/л (үндсэн ' + Number(o.price).toLocaleString() + '₮)' : Number(o.price).toLocaleString() + '₮/л'}</option>`).join('');
+            if (prev) sel.value = prev;
+            const opt = document.getElementById('calcFilterYesOpt');
+            if (opt) opt.textContent = `Тийм (${oilFilterPrice.toLocaleString()}₮)`;
+            calculateOilCalcTotal();
+        }
+
         function calculateOilCalcTotal() {
             const oilSelect = document.getElementById("oilSelect");
-            if(!oilSelect) return;
-            const selectedOpt = oilSelect.options[oilSelect.selectedIndex];
-            const unitPrice = selectedOpt ? parseFloat(selectedOpt.getAttribute('data-price')) || 0 : 0;
+            if (!oilSelect) return;
+            const o = oilsList.find(x => x.id === oilSelect.value);
+            const unitPrice = o ? oilUnit(o) : 0;
             const qty = parseFloat(document.getElementById("oilQty").value) || 0;
             let subTotal = unitPrice * qty;
+            const save = o && oilSaleOn(o) ? (o.price - o.salePrice) * qty : 0;
             let discount = parseFloat(document.getElementById("calcDiscount").value) || 0;
             let discountedOil = subTotal * (1 - discount / 100);
-            let filterPrice = document.getElementById("calcFilterCheck").value === "yes" ? 18000 : 0;
-            let finalTotal = discountedOil + filterPrice;
+            let filterPrice = document.getElementById("calcFilterCheck").value === "yes" ? oilFilterPrice : 0;
+            let finalTotal = Math.round(discountedOil + filterPrice);
 
-            document.getElementById("calcSubTotal").textContent = subTotal.toLocaleString() + " ₮";
+            document.getElementById("calcSubLabel").textContent = o ? `Тос: ${qty} л × ${unitPrice.toLocaleString()}₮` : 'Тосны үндсэн үнэ:';
+            document.getElementById("calcSubTotal").textContent = Math.round(subTotal).toLocaleString() + " ₮";
+            document.getElementById("calcSaveRow").style.display = save > 0 ? 'flex' : 'none';
+            document.getElementById("calcSaveAmount").textContent = Math.round(save).toLocaleString() + " ₮";
+            const note = document.getElementById("calcSaleNote");
+            note.style.display = o && oilSaleOn(o) ? 'block' : 'none';
+            if (o && oilSaleOn(o)) note.innerHTML = `🔥 <b>Урамшуулал:</b> ${esc(o.name)} 1л ${Number(o.salePrice).toLocaleString()}₮${o.saleNote ? ' — ' + esc(o.saleNote) : ''}${o.saleUntil ? ' (' + esc(o.saleUntil) + ' хүртэл)' : ''}`;
             document.getElementById("calcFilterPrice").textContent = filterPrice.toLocaleString() + " ₮";
             document.getElementById("calcFinalTotal").textContent = finalTotal.toLocaleString() + " ₮";
+        }
+
+        // --- Менежер: тосны үнэ удирдах ---
+        function openOilPriceModal() { renderOilPriceTable(); document.getElementById('oilPriceModal').style.display = 'flex'; }
+        function closeOilPriceModal() { document.getElementById('oilPriceModal').style.display = 'none'; }
+        function renderOilPriceTable() {
+            const body = document.getElementById('oilPriceBody');
+            if (!body) return;
+            document.getElementById('opFilterPrice').value = oilFilterPrice;
+            const real = oilsList.filter(o => !String(o.id).startsWith('default'));
+            body.innerHTML = real.length ? real.map(o => `
+                <tr>
+                    <td><input type="text" id="opName_${o.id}" value="${esc(o.name)}" style="min-width:120px;"></td>
+                    <td><input type="number" id="opPrice_${o.id}" value="${esc(o.price)}" min="0" step="100" style="min-width:90px;"></td>
+                    <td style="text-align:center;"><input type="checkbox" id="opSale_${o.id}" ${o.saleActive ? 'checked' : ''} style="width:auto;"></td>
+                    <td><input type="number" id="opSalePrice_${o.id}" value="${o.salePrice || ''}" min="0" step="100" placeholder="—" style="min-width:90px;"></td>
+                    <td><input type="text" id="opSaleNote_${o.id}" value="${esc(o.saleNote || '')}" placeholder="Жишээ: 11-р сарын урамшуулал" style="min-width:120px;"></td>
+                    <td><input type="date" id="opSaleUntil_${o.id}" value="${esc(o.saleUntil || '')}"></td>
+                    <td style="text-align:center;"><input type="checkbox" id="opActive_${o.id}" ${o.active !== false ? 'checked' : ''} style="width:auto;"></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-sm btn-primary" onclick="saveOilPrice('${o.id}')" title="Хадгалах"><i class="fa-solid fa-floppy-disk"></i></button>
+                        <button class="btn-sm btn-danger" onclick="deleteOilPrice('${o.id}')" title="Устгах"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                <tr><td colspan="8" style="padding-top:0; font-size:0.75rem; color:${oilSaleOn(o) ? 'var(--success)' : 'var(--text-muted)'};">${oilSaleOn(o) ? '🔥 Одоо урамшууллын үнэ ' + Number(o.salePrice).toLocaleString() + '₮/л үйлчилж байна' : 'Үндсэн үнэ ' + Number(o.price).toLocaleString() + '₮/л үйлчилж байна'}</td></tr>`).join('')
+                : '<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Тос бүртгэгдээгүй. (Firestore Rules шинэчлэгдсэн эсэхийг шалгана уу.)</td></tr>';
+        }
+        async function saveOilPrice(id) {
+            const g = k => document.getElementById(`op${k}_${id}`);
+            const price = parseFloat(g('Price').value) || 0, salePrice = parseFloat(g('SalePrice').value) || 0, saleActive = g('Sale').checked;
+            if (!g('Name').value.trim() || price <= 0) return alert('Тосны нэр, 1 литрийн үнийг зөв оруулна уу.');
+            if (saleActive && (salePrice <= 0 || salePrice >= price)) return alert('Урамшууллын үнэ үндсэн үнээс бага байх ёстой.');
+            try {
+                await db.collection("oilsDb").doc(id).update({
+                    name: g('Name').value.trim(), price, salePrice, saleActive,
+                    saleNote: g('SaleNote').value.trim(), saleUntil: g('SaleUntil').value, active: g('Active').checked, updatedBy: currentUserEmail
+                });
+                alert('Хадгалагдлаа. Тооцоолуур болон цаг захиалгын хуудсанд шууд шинэчлэгдэнэ.');
+            } catch (err) { alert('Хадгалагдсангүй: ' + err.message); }
+        }
+        async function deleteOilPrice(id) {
+            const o = oilsList.find(x => x.id === id);
+            if (!confirm(`${o ? o.name : ''} тосыг жагсаалтаас устгах уу?`)) return;
+            try { await db.collection("oilsDb").doc(id).delete(); } catch (err) { alert('Устгаж чадсангүй: ' + err.message); }
+        }
+        async function addOilPrice(e) {
+            e.preventDefault();
+            const name = document.getElementById('opNewName').value.trim(), price = parseFloat(document.getElementById('opNewPrice').value) || 0;
+            if (!name || price <= 0) return alert('Нэр, 1 литрийн үнийг оруулна уу.');
+            try {
+                await db.collection("oilsDb").add({ name, price, order: oilsList.length + 1, active: true, saleActive: false, salePrice: 0, saleNote: '', saleUntil: '' });
+                document.getElementById('opNewName').value = ''; document.getElementById('opNewPrice').value = '';
+            } catch (err) { alert('Нэмж чадсангүй: ' + err.message); }
+        }
+        async function saveFilterPrice() {
+            const v = parseFloat(document.getElementById('opFilterPrice').value);
+            if (!(v >= 0)) return alert('Шүүлтүүрийн үнийг зөв оруулна уу.');
+            try { await db.collection("oilsDb").doc('_settings').set({ filterPrice: v }, { merge: true }); alert('Шүүлтүүрийн үнэ хадгалагдлаа.'); }
+            catch (err) { alert('Хадгалагдсангүй: ' + err.message); }
         }
 
         function resetOilCalculator() {
@@ -1434,6 +1565,7 @@
             document.getElementById("oilSelect").selectedIndex = 0;
             document.getElementById("oilQty").value = 1;
             document.getElementById("calcFilterCheck").value = "yes";
+            renderOilOptions();
             document.getElementById("calcDiscount").value = "0";
             calculateOilCalcTotal();
         }
