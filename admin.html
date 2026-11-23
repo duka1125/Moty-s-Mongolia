@@ -1782,11 +1782,39 @@
             return m ? m[1] + ' ' + m[2] : String(v || '').toUpperCase().trim().replace(/\s+/g, ' ');
         }
 
+        // Бүртгэлтэй харилцагч + борлуулалт, цаг захиалгын түүхэнд байгаа үйлчлүүлэгчид
+        function allCustomerCandidates() {
+            const list = customers.map(c => ({ ...c, registered: true }));
+            const seen = new Set();
+            const mark = c => {
+                const p = normKey(c.phone), car = normKey(c.carNo), n = normKey(c.name);
+                if (p) seen.add('p' + p);
+                if (car) seen.add('c' + car);
+                if (!p && !car && n) seen.add('n' + n);
+            };
+            const known = c => {
+                const p = normKey(c.phone), car = normKey(c.carNo), n = normKey(c.name);
+                return (p && seen.has('p' + p)) || (car && seen.has('c' + car)) || (!p && !car && seen.has('n' + n));
+            };
+            list.forEach(mark);
+            const addHistory = (c) => {
+                if (normKey(c.carNo) === 'бүртгэлгүй') c.carNo = '';
+                if (normKey(c.name) === normKey('Энгийн үйлчлүүлэгч')) c.name = '';
+                if (!normKey(c.phone) && !normKey(c.carNo) && !normKey(c.name)) return;
+                if (known(c)) return;
+                mark(c); list.push(c);
+            };
+            salesData.forEach(sl => addHistory({ id: 'sale:' + sl.id, name: sl.customer || '', phone: sl.phone || '', carNo: sl.carNo || '', source: 'sale' }));
+            bookingsList.forEach(b => addHistory({ id: 'booking:' + b.id, name: b.name || '', phone: b.phone || '', carNo: ((String(b.car || '').match(/\d{4}\s*[А-ЯӨҮЁа-яөүё]{2,3}/) || [])[0] || b.car || ''), source: 'booking' }));
+            return list;
+        }
+        function findCandidate(id) { return allCustomerCandidates().find(x => x.id === id); }
+
         function searchCustomers(q, limit = 8) {
             const k = normKey(q);
             if (!k) return [];
             const scored = [];
-            customers.forEach(c => {
+            allCustomerCandidates().forEach(c => {
                 const phone = normKey(c.phone), car = normKey(c.carNo), name = normKey(c.name);
                 let score = 0;
                 if (phone === k || car === k) score = 100;
@@ -1796,7 +1824,7 @@
                 else if (name.includes(k)) score = 30;
                 if (score) scored.push({ c, score });
             });
-            return scored.sort((a, b) => b.score - a.score).slice(0, limit).map(x => x.c);
+            return scored.sort((a, b) => (b.score - a.score) || ((b.c.registered ? 1 : 0) - (a.c.registered ? 1 : 0))).slice(0, limit).map(x => x.c);
         }
 
         // Харилцагчийн нийт үйлчлүүлсэн тоо, сүүлийн огноо
@@ -1809,7 +1837,8 @@
         function customerItemHtml(c, onclick) {
             const st = customerStats(c);
             const extra = st.count ? ` · ${st.count} удаа · сүүлд ${esc(String(st.last || '').split(' ')[0])}` : ' · үйлчлүүлээгүй';
-            return `<div class="cust-item" onclick="${onclick}('${c.id}')"><strong>${esc(c.name)}</strong> — ${esc(c.carNo)}<div class="cust-sub">📞 ${esc(c.phone)}${c.type === 'Байгууллага' ? ' · Байгууллага' : ''}${extra}</div></div>`;
+            const tag = c.registered ? '' : ` <span style="color:var(--warning); font-size:0.75rem;">(${c.source === 'booking' ? 'цаг захиалгаас' : 'борлуулалтаас'} · бүртгэлгүй)</span>`;
+            return `<div class="cust-item" onclick="${onclick}('${esc(c.id)}')"><strong>${esc(c.name || '—')}</strong> — ${esc(c.carNo || '—')}${tag}<div class="cust-sub">📞 ${esc(c.phone || '—')}${c.type === 'Байгууллага' ? ' · Байгууллага' : ''}${extra}</div></div>`;
         }
 
         // Бүртгэлийн хэсгийн хайлт
@@ -1824,8 +1853,20 @@
         }
 
         function showCustomerInfo(id) {
-            const c = customers.find(x => x.id === id);
+            const c = findCandidate(id);
             if (!c) return;
+            if (!c.registered) {
+                if (confirm(`${c.name || '—'} | ${c.phone || '—'} | ${c.carNo || '—'}\n\nЭнэ үйлчлүүлэгч байнгын харилцагчаар бүртгэлгүй байна. Одоо бүртгэх үү?`)) {
+                    document.getElementById('custName').value = c.name || '';
+                    document.getElementById('custPhone').value = cleanPhone(c.phone);
+                    document.getElementById('custCarNo').value = cleanCarNo(c.carNo);
+                    document.getElementById('custSearchResults').innerHTML = '';
+                    checkCustomerDuplicate();
+                    const firstEmpty = ['custName', 'custPhone', 'custCarNo'].map(i => document.getElementById(i)).find(el => !el.value);
+                    (firstEmpty || document.getElementById('custName')).focus();
+                }
+                return;
+            }
             const st = customerStats(c);
             alert(`${c.name} (${c.type || 'Хувь хүн'})\nУтас: ${c.phone}\nМашин: ${c.carNo}\nҮйлчлүүлсэн: ${st.count} удаа${st.last ? '\nСүүлд: ' + st.last : ''}`);
         }
@@ -1873,16 +1914,16 @@
         }
 
         function pickCheckoutCustomer(id) {
-            const c = customers.find(x => x.id === id);
+            const c = findCandidate(id);
             if (!c) return;
-            checkoutCustomerId = c.id;
+            checkoutCustomerId = c.registered ? c.id : null;
             document.getElementById('modalCustName').value = c.name || '';
             document.getElementById('modalCustPhone').value = c.phone || '';
             document.getElementById('modalCarNo').value = c.carNo || '';
             document.getElementById('modalCustomerSearch').value = '';
             document.getElementById('modalCustomerResults').innerHTML = '';
             const picked = document.getElementById('modalCustomerPicked');
-            picked.innerHTML = `<span>✅ <strong>${esc(c.name)}</strong> — ${esc(c.carNo)} · ${esc(c.phone)}</span><button type="button" title="Цуцлах" onclick="clearCheckoutCustomer()">✕</button>`;
+            picked.innerHTML = `<span>✅ <strong>${esc(c.name || '—')}</strong> — ${esc(c.carNo || '—')} · ${esc(c.phone || '—')}${c.registered ? '' : ' <small style="color:var(--warning);">(бүртгэлгүй)</small>'}</span><button type="button" title="Цуцлах" onclick="clearCheckoutCustomer()">✕</button>`;
             picked.style.display = 'flex';
             updateSaveCustomerOption();
             document.getElementById('modalKm').focus();
