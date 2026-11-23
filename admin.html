@@ -130,7 +130,7 @@
         
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; }
-        input[type="text"], input[type="number"], input[type="password"], input[type="date"], input[type="file"], textarea, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: var(--input-bg); color: var(--text-main); }
+        input[type="text"], input[type="tel"], input[type="number"], input[type="password"], input[type="date"], input[type="file"], textarea, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: var(--input-bg); color: var(--text-main); }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--moty-red); box-shadow: 0 0 10px var(--moty-red-glow); }
         select option { background: var(--bg-card); color: var(--text-main); }
 
@@ -257,6 +257,7 @@
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-id-card"></i> Байнгын Харилцагч Бүртгэх</h2>
+                    <button class="btn-sm" style="background:#0ea5e9; color:white;" onclick="openCustomerListModal()"><i class="fa-solid fa-address-book"></i> Бүх харилцагч (<span id="custCountBadge">0</span>)</button>
                 </div>
                 <div class="form-group">
                     <label>Хайх (утас, машины №, нэр)</label>
@@ -660,6 +661,53 @@
 
     <div id="toastBox" class="toast-box"></div>
 
+    <!-- БҮХ ХАРИЛЦАГЧ -->
+    <div class="modal-overlay" id="customerListModal">
+        <div class="modal" style="max-width:900px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-address-book" style="color:#0ea5e9;"></i> БҮХ ХАРИЛЦАГЧ</h2>
+                <button onclick="closeCustomerListModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div id="custImportBox" class="admin-only" style="display:none; background:rgba(245,158,11,0.1); border:1px solid var(--warning); padding:10px 12px; border-radius:10px; margin-bottom:12px; font-size:0.85rem;"></div>
+            <input type="text" id="custListSearch" placeholder="🔍 Утас, машины №, нэрээр шүүх" autocomplete="off" oninput="renderCustomerList()" style="margin-bottom:10px;">
+            <div class="scroll-box" style="max-height:60vh;">
+                <table>
+                    <thead><tr><th>Харилцагч</th><th>Машин</th><th>Утас</th><th style="text-align:center;">Ирсэн</th><th style="text-align:right;">Нийт дүн</th><th>Сүүлд</th></tr></thead>
+                    <tbody id="custListBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ХАРИЛЦАГЧИЙН КАРТ / ХУДАЛДАН АВАЛТЫН ТҮҮХ -->
+    <div class="modal-overlay" id="customerProfileModal" style="z-index:2100;">
+        <div class="modal" style="max-width:900px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-id-card" style="color:#0ea5e9;"></i> <span id="cpTitle">ХАРИЛЦАГЧ</span></h2>
+                <button onclick="closeCustomerProfile()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="flex-grid">
+                <div class="form-group"><label>Төрөл</label><select id="cpType"><option value="Хувь хүн">Хувь хүн</option><option value="Байгууллага">Байгууллага</option></select></div>
+                <div class="form-group"><label>Нэр / Байгууллага</label><input type="text" id="cpName"></div>
+                <div class="form-group"><label>Утас</label><input type="tel" id="cpPhone"></div>
+                <div class="form-group"><label>Машины №</label><input type="text" id="cpCarNo"></div>
+            </div>
+            <div class="form-group"><label>Тэмдэглэл</label><input type="text" id="cpNote" maxlength="200" placeholder="Жишээ: 5W30 тос хэрэглэдэг"></div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                <button class="btn-sm btn-primary" id="cpSaveBtn" onclick="saveCustomerProfile()"><i class="fa-solid fa-floppy-disk"></i> Хадгалах</button>
+                <button class="btn-sm btn-danger admin-only" id="cpDeleteBtn" style="display:none;" onclick="deleteCustomerProfile()"><i class="fa-solid fa-trash"></i> Устгах</button>
+            </div>
+            <div id="cpStats" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin-bottom:12px;"></div>
+            <label style="font-weight:700;">Худалдан авалтын түүх</label>
+            <div class="scroll-box" style="max-height:45vh;">
+                <table>
+                    <thead><tr><th>Огноо</th><th>Бараа / Үйлчилгээ</th><th>КМ</th><th>Төлбөр</th><th style="text-align:right;">Дүн</th></tr></thead>
+                    <tbody id="cpHistory"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="receiptSettingsModal">
         <div class="modal">
             <div class="modal-header">
@@ -831,7 +879,7 @@
                 <div class="form-group"><label>Машины №:</label><input type="text" id="modalCarNo" oninput="onCheckoutCustomerFieldEdit()"></div>
                 <div class="form-group"><label>КМ:</label><input type="number" id="modalKm"></div>
             </div>
-            <label id="modalSaveCustWrap" style="display:none; font-size:0.85rem; margin-bottom:10px; cursor:pointer;"><input type="checkbox" id="modalSaveCust" checked style="width:auto; margin-right:6px;">Энэ харилцагчийг байнгын харилцагчаар хадгалах</label>
+            <label id="modalSaveCustWrap" style="display:none; font-size:0.85rem; margin-bottom:10px; cursor:pointer;"><input type="checkbox" id="modalSaveCust" checked style="width:auto; margin-right:6px;">Шинэ харилцагч — автоматаар бүртгэж, энэ худалдан авалтыг түүхэнд нь нэмнэ</label>
             <div class="form-group"><label>Тэмдэглэл:</label><textarea id="modalNotes" rows="2"></textarea></div>
             <div style="margin-top: 14px; background:var(--input-bg); padding:14px; border-radius:12px; text-align:right;">
                 <span style="font-size:0.82rem; color:var(--text-muted);">Эцсийн дүн:</span>
@@ -1292,6 +1340,8 @@
                 customers = [];
                 snapshot.forEach(doc => customers.push({ id: doc.id, ...doc.data() }));
                 renderCustomersModal();
+                const cb = document.getElementById('custCountBadge'); if (cb) cb.textContent = customers.length;
+                if (document.getElementById('customerListModal').style.display === 'flex') renderCustomerList();
             });
 
             L(db.collection("sales").orderBy("timestamp", "desc"), snapshot => {
@@ -1828,11 +1878,25 @@
         }
 
         // Харилцагчийн нийт үйлчлүүлсэн тоо, сүүлийн огноо
-        function customerStats(c) {
-            const p = normKey(c.phone), car = normKey(c.carNo);
-            const list = salesData.filter(s => s.customerId === c.id || (p && normKey(s.phone) === p) || (car && normKey(s.carNo) === car));
-            return { count: list.length, last: list[0] ? list[0].date : null };
+        // Тухайн харилцагчийн бүх худалдан авалт (шинээс хуучин руу)
+        function customerSales(c) {
+            const regIds = new Set(customers.map(x => x.id));
+            const p = normKey(c.phone), car = normKey(c.carNo), n = normKey(c.name);
+            return salesData.filter(s => {
+                if (s.customerId && regIds.has(s.customerId)) return s.customerId === c.id;
+                const sp = normKey(s.phone), sc = normKey(s.carNo);
+                if (p && sp === p) return true;
+                if (car && car !== 'бүртгэлгүй' && sc === car) return true;
+                return !p && !car && n && !sp && normKey(s.customer) === n;
+            });
         }
+        function customerStats(c) {
+            const list = customerSales(c);
+            const total = list.reduce((a, s) => a + (Number(s.total) || 0), 0);
+            const debt = list.filter(s => s.isCredit && s.status === 'credit_unpaid').reduce((a, s) => a + (Number(s.creditRemaining) || 0), 0);
+            return { count: list.length, last: list[0] ? list[0].date : null, total, debt, list };
+        }
+        const fmtMoney = n => (Number(n) || 0).toLocaleString('en-US') + '₮';
 
         function customerItemHtml(c, onclick) {
             const st = customerStats(c);
@@ -1852,24 +1916,7 @@
             box.innerHTML = html;
         }
 
-        function showCustomerInfo(id) {
-            const c = findCandidate(id);
-            if (!c) return;
-            if (!c.registered) {
-                if (confirm(`${c.name || '—'} | ${c.phone || '—'} | ${c.carNo || '—'}\n\nЭнэ үйлчлүүлэгч байнгын харилцагчаар бүртгэлгүй байна. Одоо бүртгэх үү?`)) {
-                    document.getElementById('custName').value = c.name || '';
-                    document.getElementById('custPhone').value = cleanPhone(c.phone);
-                    document.getElementById('custCarNo').value = cleanCarNo(c.carNo);
-                    document.getElementById('custSearchResults').innerHTML = '';
-                    checkCustomerDuplicate();
-                    const firstEmpty = ['custName', 'custPhone', 'custCarNo'].map(i => document.getElementById(i)).find(el => !el.value);
-                    (firstEmpty || document.getElementById('custName')).focus();
-                }
-                return;
-            }
-            const st = customerStats(c);
-            alert(`${c.name} (${c.type || 'Хувь хүн'})\nУтас: ${c.phone}\nМашин: ${c.carNo}\nҮйлчлүүлсэн: ${st.count} удаа${st.last ? '\nСүүлд: ' + st.last : ''}`);
-        }
+        function showCustomerInfo(id) { openCustomerProfile(id); }
 
         // Хайсан утгаар бүртгэлийн маягтыг урьдчилан бөглөх
         function prefillNewCustomer() {
@@ -1896,6 +1943,139 @@
         function checkCustomerDuplicate() {
             const dup = findDuplicateCustomer(document.getElementById('custPhone').value, document.getElementById('custCarNo').value);
             document.getElementById('custDupWarn').textContent = dup ? `⚠️ Энэ ${dup.reason} бүртгэлтэй: ${dup.c.name} — ${dup.c.carNo} (${dup.c.phone})` : '';
+        }
+
+        // ===== БҮХ ХАРИЛЦАГЧ / КАРТ / ТҮҮХ =====
+        let profileCandidate = null;
+
+        function openCustomerListModal() {
+            document.getElementById('custListSearch').value = '';
+            renderCustomerList();
+            document.getElementById('customerListModal').style.display = 'flex';
+        }
+        function closeCustomerListModal() { document.getElementById('customerListModal').style.display = 'none'; }
+
+        function renderCustomerList() {
+            const q = document.getElementById('custListSearch').value;
+            const rows = (q.trim() ? searchCustomers(q, 500).filter(c => c.registered) : customers.slice())
+                .map(c => ({ c, st: customerStats(c) }))
+                .map(r => ({ ...r, recent: r.st.list[0] ? salesData.indexOf(r.st.list[0]) : Infinity }))
+                .sort((a, b) => (a.recent - b.recent) || String(a.c.name || '').localeCompare(String(b.c.name || '')));
+            document.getElementById('custListBody').innerHTML = rows.length ? rows.map(({ c, st }) => `
+                <tr style="cursor:pointer;" onclick="openCustomerProfile('${esc(c.id)}')">
+                    <td><strong>${esc(c.name || '—')}</strong>${c.type === 'Байгууллага' ? '<br><small style="color:var(--text-muted);">Байгууллага</small>' : ''}</td>
+                    <td>${esc(c.carNo || '—')}</td><td>${esc(c.phone || '—')}</td>
+                    <td style="text-align:center;">${st.count}</td>
+                    <td style="text-align:right;">${fmtMoney(st.total)}${st.debt ? `<br><small style="color:var(--warning);">Зээл ${fmtMoney(st.debt)}</small>` : ''}</td>
+                    <td><small>${esc(String(st.last || '—').split(' ')[0])}</small></td>
+                </tr>`).join('') : '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Харилцагч олдсонгүй.</td></tr>';
+            const box = document.getElementById('custImportBox');
+            if (currentUserRole === 'admin') {
+                const pending = allCustomerCandidates().filter(c => !c.registered).length;
+                const unlinked = salesData.filter(s => !s.customerId).length;
+                box.style.display = (pending || unlinked) ? 'block' : 'none';
+                box.innerHTML = `📥 Борлуулалт, цаг захиалгын түүхэнд <strong>${pending}</strong> бүртгэлгүй үйлчлүүлэгч, харилцагчтай холбогдоогүй <strong>${unlinked}</strong> борлуулалт байна.
+                    <button class="btn-sm btn-primary" style="margin-left:6px;" onclick="importCustomersFromHistory()">Бүгдийг бүртгэж холбох</button>`;
+            }
+        }
+
+        // Түүхэнд байгаа бүх үйлчлүүлэгчийг бүртгэж, хуучин борлуулалтыг харилцагчтай нь холбоно
+        async function importCustomersFromHistory() {
+            const pending = allCustomerCandidates().filter(c => !c.registered);
+            if (!confirm(`${pending.length} үйлчлүүлэгчийг байнгын харилцагчаар бүртгэж, хуучин борлуулалтыг тэдэнтэй холбох уу?`)) return;
+            const box = document.getElementById('custImportBox');
+            box.innerHTML = '⏳ Бүртгэж байна... Цонхоо хааж болохгүй.';
+            try {
+                const ops = [];
+                const newCustomers = [];
+                pending.forEach(c => {
+                    const ref = db.collection("customers").doc();
+                    const doc = { type: 'Хувь хүн', name: c.name || 'Нэргүй', phone: cleanPhone(c.phone), carNo: cleanCarNo(c.carNo), importedFrom: c.source, createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+                    ops.push(bt => bt.set(ref, doc));
+                    newCustomers.push({ id: ref.id, ...doc });
+                });
+                const all = customers.concat(newCustomers);
+                const byPhone = {}, byCar = {};
+                all.forEach(c => { const p = normKey(c.phone), car = normKey(c.carNo); if (p && !byPhone[p]) byPhone[p] = c.id; if (car && !byCar[car]) byCar[car] = c.id; });
+                let linked = 0;
+                salesData.forEach(sl => {
+                    if (sl.customerId) return;
+                    const id = byPhone[normKey(sl.phone)] || byCar[normKey(sl.carNo)];
+                    if (id) { ops.push(bt => bt.update(db.collection("sales").doc(sl.id), { customerId: id })); linked++; }
+                });
+                for (let i = 0; i < ops.length; i += 400) {
+                    const bt = db.batch();
+                    ops.slice(i, i + 400).forEach(f => f(bt));
+                    await bt.commit();
+                }
+                alert(`Дууслаа: ${newCustomers.length} харилцагч бүртгэгдэж, ${linked} борлуулалт холбогдлоо.`);
+            } catch (err) { alert('Алдаа гарлаа: ' + err.message); }
+            renderCustomerList();
+        }
+
+        function openCustomerProfile(id) {
+            const c = findCandidate(id);
+            if (!c) return;
+            profileCandidate = c;
+            document.getElementById('cpTitle').textContent = c.registered ? (c.name || 'ХАРИЛЦАГЧ') : (c.name || 'ҮЙЛЧЛҮҮЛЭГЧ') + ' (бүртгэлгүй)';
+            document.getElementById('cpType').value = c.type || 'Хувь хүн';
+            document.getElementById('cpName').value = c.name || '';
+            document.getElementById('cpPhone').value = c.phone || '';
+            document.getElementById('cpCarNo').value = c.carNo || '';
+            document.getElementById('cpNote').value = c.note || '';
+            document.getElementById('cpSaveBtn').innerHTML = c.registered ? '<i class="fa-solid fa-floppy-disk"></i> Хадгалах' : '<i class="fa-solid fa-user-plus"></i> Харилцагчаар бүртгэх';
+            document.getElementById('cpDeleteBtn').style.display = (c.registered && currentUserRole === 'admin') ? 'inline-block' : 'none';
+            const st = customerStats(c);
+            const tile = (label, val, color) => `<div style="background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:10px;"><div style="font-size:0.72rem; color:var(--text-muted);">${label}</div><div style="font-weight:800; font-size:1.05rem; ${color ? 'color:' + color : ''}">${val}</div></div>`;
+            const lastKm = (st.list.find(s => s.km && s.km !== 'Бичигдээгүй') || {}).km;
+            document.getElementById('cpStats').innerHTML = tile('Ирсэн удаа', st.count) + tile('Нийт худалдан авалт', fmtMoney(st.total), 'var(--success)')
+                + tile('Сүүлд ирсэн', esc(String(st.last || '—').split(' ')[0])) + tile('Сүүлийн КМ', esc(lastKm || '—'))
+                + (st.debt ? tile('Төлөгдөөгүй зээл', fmtMoney(st.debt), 'var(--warning)') : '');
+            document.getElementById('cpHistory').innerHTML = st.list.length ? st.list.map(sl => `
+                <tr>
+                    <td><small>${esc(sl.date || '')}</small><br><small style="color:var(--text-muted);">${esc(sl.invoiceNum || '')}</small></td>
+                    <td style="font-size:0.82rem;">${(sl.items || []).map(it => `${esc(it.name)} × ${esc(it.qty)}${it.discountPercent ? ` <small style="color:var(--text-muted);">(-${esc(it.discountPercent)}%)</small>` : ''}`).join('<br>') || '—'}${sl.notes ? `<br><small style="color:var(--text-muted);">📝 ${esc(sl.notes)}</small>` : ''}</td>
+                    <td><small>${esc(sl.km && sl.km !== 'Бичигдээгүй' ? sl.km : '—')}</small></td>
+                    <td><small>${esc(sl.paymentMethod || '')}${sl.isCredit && sl.status === 'credit_unpaid' ? '<br><span style="color:var(--warning);">Зээл: ' + fmtMoney(sl.creditRemaining) + '</span>' : ''}</small></td>
+                    <td style="text-align:right; font-weight:700;">${fmtMoney(sl.total)}</td>
+                </tr>`).join('') : '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Худалдан авалт бүртгэгдээгүй байна.</td></tr>';
+            document.getElementById('custSearchResults').innerHTML = '';
+            document.getElementById('customerProfileModal').style.display = 'flex';
+        }
+        function closeCustomerProfile() { document.getElementById('customerProfileModal').style.display = 'none'; }
+
+        async function saveCustomerProfile() {
+            const c = profileCandidate; if (!c) return;
+            const data = {
+                type: document.getElementById('cpType').value,
+                name: document.getElementById('cpName').value.trim(),
+                phone: cleanPhone(document.getElementById('cpPhone').value),
+                carNo: cleanCarNo(document.getElementById('cpCarNo').value),
+                note: document.getElementById('cpNote').value.trim()
+            };
+            if (!data.name && !data.phone && !data.carNo) return alert('Нэр, утас, машины дугаарын аль нэгийг бөглөнө үү.');
+            try {
+                if (c.registered) {
+                    await db.collection("customers").doc(c.id).update({ ...data, updatedBy: currentUserEmail });
+                } else {
+                    const dup = findDuplicateCustomer(data.phone, data.carNo);
+                    if (dup && !confirm(`Энэ ${dup.reason} аль хэдийн бүртгэлтэй (${dup.c.name}). Дахин бүртгэх үү?`)) return;
+                    const ref = db.collection("customers").doc();
+                    const bt = db.batch();
+                    bt.set(ref, { ...data, createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    customerSales(c).filter(sl => !sl.customerId).slice(0, 400).forEach(sl => bt.update(db.collection("sales").doc(sl.id), { customerId: ref.id }));
+                    await bt.commit();
+                }
+                alert('Хадгалагдлаа.');
+                closeCustomerProfile();
+            } catch (err) { alert('Хадгалагдсангүй: ' + err.message); }
+        }
+
+        async function deleteCustomerProfile() {
+            const c = profileCandidate; if (!c || !c.registered) return;
+            if (!confirm(`${c.name} харилцагчийг устгах уу? (Борлуулалтын түүх устахгүй)`)) return;
+            try { await db.collection("customers").doc(c.id).delete(); closeCustomerProfile(); }
+            catch (err) { alert('Устгаж чадсангүй: ' + err.message); }
         }
 
         // Төлбөрийн цонхны хайлт
