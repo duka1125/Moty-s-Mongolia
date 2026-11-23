@@ -61,6 +61,10 @@
         .success { text-align: center; padding: 24px 10px; color: var(--success); font-weight: 700; display: none; }
         .success i { font-size: 2.4rem; margin-bottom: 10px; }
         .hidden { display: none; }
+        .notice { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.4); color: #fcd34d; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 14px; white-space: pre-line; }
+        .day-msg { background: rgba(230,25,36,0.1); border: 1px solid rgba(230,25,36,0.4); color: #fca5a5; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 12px; }
+        .hours-info { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+        select option:disabled { color: #555; }
         @media (max-width: 480px) { .grid2, .options { grid-template-columns: 1fr; } }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -132,6 +136,7 @@
                 <h2><i class="fa-solid fa-calendar-check"></i> Үйлчилгээний цаг захиалга</h2>
                 <button class="back" onclick="show('viewHome')">&larr; Буцах</button>
             </div>
+            <div id="bookingNotice" class="notice" style="display:none;"></div>
             <form id="bookingForm">
                 <div class="form-group"><label>Таны нэр</label><input type="text" id="bookName" required maxlength="60" placeholder="Бат"></div>
                 <div class="form-group"><label>Утасны дугаар</label><input type="tel" id="bookPhone" required pattern="[0-9]{8}" maxlength="8" placeholder="99112233" title="8 оронтой утасны дугаар"></div>
@@ -143,6 +148,8 @@
                         <select id="bookTime" required></select>
                     </div>
                 </div>
+                <div id="bookDayMsg" class="day-msg" style="display:none;"></div>
+                <div id="bookHoursInfo" class="hours-info"></div>
                 <div class="form-group"><label>Авах үйлчилгээ</label><textarea id="bookService" rows="2" required maxlength="300" placeholder="Moty's M100 тос солих"></textarea></div>
                 <button type="submit" class="btn" id="bookBtn">Захиалга илгээх</button>
             </form>
@@ -214,39 +221,128 @@
         calc();
 
         // ---- Цаг захиалга ----
-        (function initBooking() {
+        // ===== ЦАГ ЗАХИАЛГА: хуваарь, дүүргэлт, амралтын өдөр =====
+        // Менежер admin.html → "Цагийн хуваарь" цэснээс эдгээрийг өөрчилнө.
+        const DEFAULT_BOOKING_CFG = {
+            hours: {
+                '1': { open: true, from: '09:00', to: '18:00' }, '2': { open: true, from: '09:00', to: '18:00' },
+                '3': { open: true, from: '09:00', to: '18:00' }, '4': { open: true, from: '09:00', to: '18:00' },
+                '5': { open: true, from: '09:00', to: '18:00' }, '6': { open: true, from: '09:00', to: '18:00' },
+                '0': { open: true, from: '09:00', to: '18:00' }
+            },
+            slotMinutes: 30, perSlot: 2, maxDaysAhead: 30, notice: '', closedDays: []
+        };
+        const WEEKDAYS = ['Ням', 'Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба'];
+        let bookingCfg = DEFAULT_BOOKING_CFG;
+        let timesToken = 0;
+
+        function localISO(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+        function toMin(hm) { const [h, m] = String(hm || '0:0').split(':').map(Number); return h * 60 + (m || 0); }
+        function toHM(min) { return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0'); }
+        function closedInfo(date) { return (bookingCfg.closedDays || []).find(c => date >= c.from && date <= (c.to || c.from)); }
+        function daySlots(date) {
+            const h = (bookingCfg.hours || {})[String(new Date(date + 'T00:00:00').getDay())];
+            if (!h || !h.open) return null;
+            const step = Math.max(10, Number(bookingCfg.slotMinutes) || 30), out = [];
+            for (let m = toMin(h.from); m <= toMin(h.to); m += step) out.push(toHM(m));
+            return out;
+        }
+
+        function initBookingDate() {
             const d = document.getElementById('bookDate');
-            const today = new Date();
-            const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-            d.value = iso; d.min = iso;
-            const t = document.getElementById('bookTime');
-            t.innerHTML = '<option value="">-- Цаг сонгох --</option>';
-            for (let h = 9; h <= 18; h++) ['00', '30'].forEach(m => {
-                if (h === 18 && m === '30') return;
-                const v = `${String(h).padStart(2, '0')}:${m}`;
-                t.innerHTML += `<option value="${v}">${v}</option>`;
+            const today = localISO(new Date());
+            d.min = today;
+            d.max = localISO(new Date(Date.now() + (Number(bookingCfg.maxDaysAhead) || 30) * 86400000));
+            if (!d.value || d.value < today) d.value = today;
+        }
+
+        function renderHoursInfo() {
+            const order = ['1', '2', '3', '4', '5', '6', '0'], parts = [];
+            order.forEach(k => {
+                const h = bookingCfg.hours[k] || {};
+                parts.push(`${WEEKDAYS[+k]}: ${h.open ? h.from + '–' + h.to : 'амарна'}`);
             });
-        })();
+            document.getElementById('bookHoursInfo').innerHTML = '🕘 Ажлын цаг — ' + parts.join(' · ');
+            const n = document.getElementById('bookingNotice');
+            n.textContent = bookingCfg.notice || '';
+            n.style.display = bookingCfg.notice ? 'block' : 'none';
+        }
+
+        async function refreshTimes() {
+            const my = ++timesToken;
+            const date = document.getElementById('bookDate').value;
+            const t = document.getElementById('bookTime');
+            const msg = document.getElementById('bookDayMsg');
+            const btn = document.getElementById('bookBtn');
+            const block = (text) => {
+                t.innerHTML = '<option value="">—</option>'; t.disabled = true; btn.disabled = true;
+                msg.textContent = text; msg.style.display = 'block';
+            };
+            msg.style.display = 'none'; t.disabled = false; btn.disabled = false;
+            if (!date) { t.innerHTML = '<option value="">-- Эхлээд өдөр сонгоно уу --</option>'; return; }
+            const closed = closedInfo(date);
+            if (closed) return block(`📅 ${date}: ${closed.reason || 'Захиалга авахгүй'}. Өөр өдөр сонгоно уу.`);
+            const slots = daySlots(date);
+            if (!slots) return block(`📅 ${WEEKDAYS[new Date(date + 'T00:00:00').getDay()]} гарагт бид амардаг. Өөр өдөр сонгоно уу.`);
+            t.innerHTML = '<option value="">Ачаалж байна...</option>';
+            let taken = {};
+            try { const doc = await db.collection('bookingSlots').doc(date).get(); if (doc.exists) taken = doc.data(); } catch (e) { console.warn(e); }
+            if (my !== timesToken) return;
+            const per = Math.max(1, Number(bookingCfg.perSlot) || 1);
+            const now = new Date(), isToday = date === localISO(now), nowMin = now.getHours() * 60 + now.getMinutes();
+            let html = '<option value="">-- Цаг сонгох --</option>', free = 0;
+            slots.forEach(v => {
+                if (isToday && toMin(v) <= nowMin) return;
+                const full = (taken[v] || 0) >= per;
+                if (!full) free++;
+                html += `<option value="${v}" ${full ? 'disabled' : ''}>${v}${full ? ' — дүүрсэн' : ''}</option>`;
+            });
+            if (!free) return block('😔 Энэ өдрийн цаг бүгд дүүрсэн байна. Өөр өдөр сонгоно уу.');
+            t.innerHTML = html;
+        }
+
+        async function loadBookingCfg() {
+            try {
+                const doc = await db.collection('settings').doc('booking').get();
+                if (doc.exists) bookingCfg = Object.assign({}, DEFAULT_BOOKING_CFG, doc.data());
+            } catch (e) { console.warn('Тохиргоо уншиж чадсангүй', e); }
+            initBookingDate(); renderHoursInfo(); refreshTimes();
+        }
+        initBookingDate();
+        document.getElementById('bookDate').addEventListener('change', refreshTimes);
+        loadBookingCfg();
 
         document.getElementById('bookingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('bookBtn');
+            const date = document.getElementById('bookDate').value;
+            const time = document.getElementById('bookTime').value;
+            if (!time) return alert('Цагаа сонгоно уу.');
             btn.disabled = true; btn.textContent = 'Илгээж байна...';
             try {
-                await db.collection("bookings").add({
+                // Захиалга болон тухайн цагийн дүүргэлтийг хамт хадгална
+                const batch = db.batch();
+                batch.set(db.collection("bookings").doc(), {
                     name: document.getElementById('bookName').value.trim(),
                     phone: document.getElementById('bookPhone').value.trim(),
                     car: document.getElementById('bookCar').value.trim(),
-                    date: document.getElementById('bookDate').value,
-                    time: document.getElementById('bookTime').value,
+                    date, time,
                     service: document.getElementById('bookService').value.trim(),
                     status: 'new',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                batch.set(db.collection("bookingSlots").doc(date), { [time]: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+                await batch.commit();
                 document.getElementById('bookingForm').style.display = 'none';
                 document.getElementById('bookingSuccess').style.display = 'block';
             } catch (err) {
-                alert('Захиалга илгээхэд алдаа гарлаа. Дахин оролдоно уу эсвэл утсаар холбогдоно уу.');
+                console.error(err);
+                if (err.code === 'permission-denied') {
+                    alert('Уучлаарай, энэ цаг дөнгөж сая дүүрчихлээ. Өөр цаг сонгоно уу.');
+                    refreshTimes();
+                } else {
+                    alert('Захиалга илгээхэд алдаа гарлаа. Дахин оролдоно уу эсвэл утсаар холбогдоно уу.');
+                }
             }
             btn.disabled = false; btn.textContent = 'Захиалга илгээх';
         });
@@ -255,6 +351,7 @@
             document.getElementById('bookingForm').reset();
             document.getElementById('bookingForm').style.display = 'block';
             document.getElementById('bookingSuccess').style.display = 'none';
+            initBookingDate(); refreshTimes();
         }
     </script>
 </body>

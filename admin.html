@@ -32,6 +32,16 @@
         .scroll-box table { margin-top: 0; }
         .scroll-box thead th { position: sticky; top: 0; z-index: 1; background: var(--modal-bg); }
 
+        /* Цагийн хуваарь, мэдэгдэл */
+        .hours-table td, .hours-table th { padding: 6px 8px; }
+        .hours-table input[type=time] { padding: 6px 8px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; }
+        body:not(.light-theme) input[type=time], body:not(.light-theme) input[type=date] { color-scheme: dark; }
+        .closed-item { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--border); border-radius:10px; margin-bottom:6px; font-size:0.85rem; }
+        .toast-box { position: fixed; right: 18px; bottom: 18px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; max-width: 340px; }
+        .toast { background: var(--modal-bg); border: 1px solid var(--accent-blue); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.86rem; cursor: pointer; animation: toastIn .3s ease; }
+        @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+        tr.booking-new td { background: rgba(56,189,248,0.08); }
+
         /* Харилцагч хайлт */
         .cust-results { margin-top:6px; border:1px solid var(--border); border-radius:10px; max-height:240px; overflow-y:auto; background:var(--modal-bg); }
         .cust-results:empty { display:none; }
@@ -295,6 +305,7 @@
                     <button class="btn-sm" style="background:#ec4899; color:white;" onclick="openOilCalcManagerModal()"><i class="fa-solid fa-calculator"></i> Дата</button>
                     <button class="btn-sm" style="background:#10b981; color:white;" onclick="openDocumentsManagerModal()"><i class="fa-solid fa-folder-open"></i> Бичиг баримт</button>
                     <button class="btn-sm" style="background:#f59e0b; color:white;" onclick="openReceiptSettingsModal()"><i class="fa-solid fa-gear"></i> Тохиргоо</button>
+                    <button class="btn-sm" style="background:#0ea5e9; color:white;" onclick="openBookingSettingsModal()"><i class="fa-solid fa-clock"></i> Цагийн хуваарь</button>
                     <button class="btn-sm btn-danger" onclick="openResetDataModal()"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <form id="stockInForm" style="margin-top:14px;" onsubmit="submitStockIn(event)">
@@ -356,8 +367,13 @@
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fa-solid fa-calendar-check" style="color:var(--accent-blue);"></i> Ирсэн Цаг Захиалгууд</h2>
-                    <span id="bookingCountBadge" style="font-size:0.8rem; color:var(--text-muted);"></span>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <span id="bookingCountBadge" style="font-size:0.8rem; color:var(--text-muted);"></span>
+                        <button id="notifyEnableBtn" class="btn-sm" style="display:none; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="enableBookingNotifications()">🔔 Мэдэгдэл асаах</button>
+                        <button class="btn-sm admin-only" style="display:none; background:#0ea5e9; color:white;" onclick="openBookingSettingsModal()"><i class="fa-solid fa-clock"></i> Хуваарь</button>
+                    </div>
                 </div>
+                <div id="bookingTodayInfo" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;"></div>
                 <div style="max-height: 220px; overflow-y: auto;">
                     <table>
                         <thead><tr><th>Огноо / Цаг</th><th>Үйлчлүүлэгч</th><th>Үйлчилгээ</th><th>Үйлдэл</th></tr></thead>
@@ -607,6 +623,43 @@
     </div>
 
     <!-- OTHER MODALS -->
+    <!-- ЦАГИЙН ХУВААРЬ / ЗАХИАЛГЫН ТОХИРГОО -->
+    <div class="modal-overlay" id="bookingSettingsModal">
+        <div class="modal" style="max-width:680px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-clock" style="color:#0ea5e9;"></i> ЦАГИЙН ХУВААРЬ & ЗАХИАЛГА</h2>
+                <button onclick="closeBookingSettingsModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <label style="font-weight:700;">1. Долоо хоногийн ажлын цаг</label>
+            <table class="hours-table">
+                <thead><tr><th>Гараг</th><th>Ажиллах</th><th>Эхний цаг</th><th>Сүүлийн цаг</th></tr></thead>
+                <tbody id="bsHoursBody"></tbody>
+            </table>
+            <div class="flex-grid" style="margin-top:12px;">
+                <div class="form-group"><label>Захиалгын алхам (минут)</label>
+                    <select id="bsSlotMinutes"><option value="15">15 минут</option><option value="30">30 минут</option><option value="60">1 цаг</option><option value="90">1.5 цаг</option><option value="120">2 цаг</option></select></div>
+                <div class="form-group"><label>Нэг цагт авах машин</label><input type="number" id="bsPerSlot" min="1" max="20"></div>
+                <div class="form-group"><label>Хэдэн өдрийн өмнөөс</label><input type="number" id="bsMaxDays" min="1" max="365"></div>
+            </div>
+            <div class="form-group"><label>2. Үйлчлүүлэгчдэд харагдах мэдэгдэл (хоосон бол харагдахгүй)</label>
+                <textarea id="bsNotice" rows="2" maxlength="300" placeholder="Жишээ: 12/29–01/02 хооронд шинэ жилийн баяраар амарна."></textarea></div>
+
+            <label style="font-weight:700;">3. Захиалга авахгүй өдрүүд (баяр, дүүрсэн өдөр)</label>
+            <div class="flex-grid" style="align-items:end;">
+                <div class="form-group"><label>Эхлэх өдөр</label><input type="date" id="bsClosedFrom"></div>
+                <div class="form-group"><label>Дуусах өдөр (нэг өдөр бол хоосон)</label><input type="date" id="bsClosedTo"></div>
+            </div>
+            <div class="form-group"><label>Шалтгаан (үйлчлүүлэгчид харагдана)</label>
+                <input type="text" id="bsClosedReason" list="bsReasonList" maxlength="100" placeholder="Захиалга дүүрсэн">
+                <datalist id="bsReasonList"><option value="Захиалга дүүрсэн"><option value="Баярын өдөр — амарна"><option value="Цагаан сарын баяр — амарна"><option value="Наадмын баяр — амарна"><option value="Шинэ жилийн баяр — амарна"></datalist></div>
+            <button type="button" class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border); margin-bottom:10px;" onclick="addClosedDay()"><i class="fa-solid fa-plus"></i> Өдөр нэмэх</button>
+            <div id="bsClosedList"></div>
+            <button class="btn-brand" style="width:100%; padding:12px; margin-top:14px;" onclick="saveBookingSettings()">Хадгалах</button>
+        </div>
+    </div>
+
+    <div id="toastBox" class="toast-box"></div>
+
     <div class="modal-overlay" id="receiptSettingsModal">
         <div class="modal">
             <div class="modal-header">
@@ -1248,11 +1301,29 @@
                 renderCreditSalesList();
             });
 
+            L(db.collection("settings").doc("booking"), doc => {
+                if (doc.exists) bookingCfg = Object.assign({}, DEFAULT_BOOKING_CFG, doc.data());
+                else {
+                    bookingCfg = JSON.parse(JSON.stringify(DEFAULT_BOOKING_CFG));
+                    if (isAdmin) db.collection("settings").doc("booking").set(bookingCfg);
+                }
+            });
+
+            let bookingsLoaded = false;
             L(db.collection("bookings").orderBy("timestamp", "desc"), snapshot => {
                 bookingsList = [];
                 snapshot.forEach(doc => bookingsList.push({ id: doc.id, ...doc.data() }));
+                if (bookingsLoaded) {
+                    snapshot.docChanges().forEach(ch => {
+                        if (ch.type === 'added' && !ch.doc.metadata.hasPendingWrites && ch.doc.data().status === 'new') notifyNewBooking({ id: ch.doc.id, ...ch.doc.data() });
+                    });
+                } else {
+                    bookingsLoaded = true;
+                    if (isAdmin) syncBookingSlots();
+                }
                 renderBookingsList();
             });
+            updateNotifyButton();
         }
 
         // ===== ЦАГ ЗАХИАЛГА =====
@@ -1261,12 +1332,17 @@
             if (!list) return;
             const pending = bookingsList.filter(b => b.status !== 'done');
             document.getElementById('bookingCountBadge').innerText = pending.length ? pending.length + ' шинэ' : '';
+            const today = localISODate(new Date());
+            const todayList = bookingsList.filter(b => b.date === today && b.status !== 'done').sort((a, b) => String(a.time).localeCompare(String(b.time)));
+            const closedToday = closedDayInfo(today);
+            document.getElementById('bookingTodayInfo').innerHTML = (closedToday ? `🔒 Өнөөдөр захиалга хаалттай: ${esc(closedToday.reason || '')} · ` : '')
+                + (todayList.length ? `📅 Өнөөдөр ${todayList.length} машин: ` + todayList.map(b => `${esc(b.time)} ${esc(b.car)}`).join(', ') : '📅 Өнөөдөр хүлээгдэж буй захиалга алга.');
             if (bookingsList.length === 0) {
                 list.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Захиалга алга.</td></tr>';
                 return;
             }
             list.innerHTML = bookingsList.slice(0, 100).map(b => `
-                <tr style="${b.status === 'done' ? 'opacity:0.45;' : ''}">
+                <tr class="${b.status === 'new' ? 'booking-new' : ''}" style="${b.status === 'done' ? 'opacity:0.45;' : ''}">
                     <td>${esc(b.date)}<br><small style="color:var(--text-muted);">${esc(b.time || '')}</small></td>
                     <td><strong>${esc(b.name)}</strong><br><small>${esc(b.phone)}</small><br><small style="color:var(--text-muted);">${esc(b.car)}</small></td>
                     <td style="font-size:0.8rem;">${esc(b.service)}</td>
@@ -1277,7 +1353,168 @@
                 </tr>`).join('');
         }
         async function markBookingDone(id) { await db.collection("bookings").doc(id).update({ status: 'done', handledBy: currentUserEmail }); }
-        async function deleteBooking(id) { if (confirm('Захиалгыг устгах уу?')) await db.collection("bookings").doc(id).delete(); }
+        async function deleteBooking(id) {
+            if (!confirm('Захиалгыг устгах уу? (Тухайн цаг дахин чөлөөлөгдөнө)')) return;
+            const b = bookingsList.find(x => x.id === id);
+            const batch = db.batch();
+            batch.delete(db.collection("bookings").doc(id));
+            if (b && b.date && b.time && b.date >= localISODate(new Date())) {
+                let used = 0;
+                try { const sd = await db.collection("bookingSlots").doc(b.date).get(); used = sd.exists ? (sd.data()[b.time] || 0) : 0; } catch (e) { }
+                if (used > 0) batch.set(db.collection("bookingSlots").doc(b.date), { [b.time]: firebase.firestore.FieldValue.increment(-1) }, { merge: true });
+            }
+            try { await batch.commit(); } catch (err) { alert('Устгаж чадсангүй: ' + err.message); }
+        }
+
+        // ===== ЦАГИЙН ХУВААРЬ =====
+        const DEFAULT_BOOKING_CFG = {
+            hours: {
+                '1': { open: true, from: '09:00', to: '18:00' }, '2': { open: true, from: '09:00', to: '18:00' },
+                '3': { open: true, from: '09:00', to: '18:00' }, '4': { open: true, from: '09:00', to: '18:00' },
+                '5': { open: true, from: '09:00', to: '18:00' }, '6': { open: true, from: '09:00', to: '18:00' },
+                '0': { open: true, from: '09:00', to: '18:00' }
+            },
+            slotMinutes: 30, perSlot: 2, maxDaysAhead: 30, notice: '', closedDays: []
+        };
+        const WEEKDAY_NAMES = ['Ням', 'Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба'];
+        let bookingCfg = JSON.parse(JSON.stringify(DEFAULT_BOOKING_CFG));
+        let editClosedDays = [];
+
+        function localISODate(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+        function closedDayInfo(date) { return (bookingCfg.closedDays || []).find(c => date >= c.from && date <= (c.to || c.from)); }
+
+        function openBookingSettingsModal() {
+            const body = document.getElementById('bsHoursBody');
+            body.innerHTML = ['1', '2', '3', '4', '5', '6', '0'].map(k => {
+                const h = (bookingCfg.hours || {})[k] || { open: false, from: '09:00', to: '18:00' };
+                return `<tr><td>${WEEKDAY_NAMES[+k]}</td>
+                    <td><input type="checkbox" id="bsOpen${k}" ${h.open ? 'checked' : ''} style="width:auto;"></td>
+                    <td><input type="time" id="bsFrom${k}" value="${esc(h.from || '09:00')}"></td>
+                    <td><input type="time" id="bsTo${k}" value="${esc(h.to || '18:00')}"></td></tr>`;
+            }).join('');
+            document.getElementById('bsSlotMinutes').value = String(bookingCfg.slotMinutes || 30);
+            document.getElementById('bsPerSlot').value = bookingCfg.perSlot || 1;
+            document.getElementById('bsMaxDays').value = bookingCfg.maxDaysAhead || 30;
+            document.getElementById('bsNotice').value = bookingCfg.notice || '';
+            const today = localISODate(new Date());
+            editClosedDays = (bookingCfg.closedDays || []).filter(c => (c.to || c.from) >= today);  // өнгөрсөн өдрүүдийг цэвэрлэнэ
+            document.getElementById('bsClosedFrom').value = today;
+            document.getElementById('bsClosedTo').value = '';
+            document.getElementById('bsClosedReason').value = '';
+            renderClosedDays();
+            document.getElementById('bookingSettingsModal').style.display = 'flex';
+        }
+        function closeBookingSettingsModal() { document.getElementById('bookingSettingsModal').style.display = 'none'; }
+
+        function renderClosedDays() {
+            const box = document.getElementById('bsClosedList');
+            const list = editClosedDays.slice().sort((a, b) => a.from.localeCompare(b.from));
+            box.innerHTML = list.length ? list.map(c => `<div class="closed-item"><span>📅 <strong>${esc(c.from)}${c.to && c.to !== c.from ? ' → ' + esc(c.to) : ''}</strong> — ${esc(c.reason)}</span>
+                <button type="button" class="btn-sm btn-danger" onclick="removeClosedDay('${esc(c.from)}','${esc(c.to || '')}')"><i class="fa-solid fa-trash"></i></button></div>`).join('')
+                : '<div style="color:var(--text-muted); font-size:0.85rem;">Хаалттай өдөр алга.</div>';
+        }
+
+        function addClosedDay() {
+            const from = document.getElementById('bsClosedFrom').value;
+            let to = document.getElementById('bsClosedTo').value || from;
+            const reason = document.getElementById('bsClosedReason').value.trim() || 'Захиалга дүүрсэн';
+            if (!from) return alert('Эхлэх өдрөө сонгоно уу.');
+            if (to < from) return alert('Дуусах өдөр эхлэх өдрөөс өмнө байж болохгүй.');
+            editClosedDays.push({ from, to, reason });
+            document.getElementById('bsClosedTo').value = '';
+            document.getElementById('bsClosedReason').value = '';
+            renderClosedDays();
+        }
+        function removeClosedDay(from, to) {
+            editClosedDays = editClosedDays.filter(c => !(c.from === from && (c.to || '') === to));
+            renderClosedDays();
+        }
+
+        async function saveBookingSettings() {
+            const hours = {};
+            for (const k of ['0', '1', '2', '3', '4', '5', '6']) {
+                const from = document.getElementById('bsFrom' + k).value, to = document.getElementById('bsTo' + k).value;
+                const open = document.getElementById('bsOpen' + k).checked;
+                if (open && (!from || !to || to < from)) return alert(WEEKDAY_NAMES[+k] + ' гарагийн цаг буруу байна.');
+                hours[k] = { open, from: from || '09:00', to: to || '18:00' };
+            }
+            const perSlot = Math.max(1, parseInt(document.getElementById('bsPerSlot').value) || 1);
+            const cfg = {
+                hours, perSlot,
+                slotMinutes: parseInt(document.getElementById('bsSlotMinutes').value) || 30,
+                maxDaysAhead: Math.max(1, parseInt(document.getElementById('bsMaxDays').value) || 30),
+                notice: document.getElementById('bsNotice').value.trim(),
+                closedDays: editClosedDays,
+                updatedBy: currentUserEmail
+            };
+            try {
+                await db.collection("settings").doc("booking").set(cfg);
+                alert('Хуваарь хадгалагдлаа. Цаг захиалгын хуудсанд шууд харагдана.');
+                closeBookingSettingsModal();
+            } catch (err) { alert('Хадгалагдсангүй: ' + err.message); }
+        }
+
+        // Цаг бүрийн дүүргэлтийг захиалгуудаас дахин тоолж засна (менежер нэвтрэх бүрт)
+        async function syncBookingSlots() {
+            try {
+                const today = localISODate(new Date());
+                const counts = {};
+                bookingsList.forEach(b => {
+                    if (!b.date || !b.time || b.date < today) return;
+                    (counts[b.date] = counts[b.date] || {})[b.time] = (counts[b.date][b.time] || 0) + 1;
+                });
+                const existing = await db.collection("bookingSlots").get();
+                const batch = db.batch(); let n = 0;
+                existing.forEach(doc => {
+                    if (doc.id < today) { batch.delete(doc.ref); n++; }
+                    else if (!counts[doc.id]) { batch.delete(doc.ref); n++; }
+                });
+                Object.entries(counts).forEach(([date, slots]) => { batch.set(db.collection("bookingSlots").doc(date), slots); n++; });
+                if (n) await batch.commit();
+            } catch (err) { console.warn('Дүүргэлт тоолоход алдаа:', err); }
+        }
+
+        // ===== ШИНЭ ЗАХИАЛГЫН МЭДЭГДЭЛ =====
+        let unseenBookings = 0;
+        const baseTitle = document.title;
+
+        function updateNotifyButton() {
+            const btn = document.getElementById('notifyEnableBtn');
+            if (btn) btn.style.display = ('Notification' in window && Notification.permission === 'default') ? 'inline-block' : 'none';
+        }
+        async function enableBookingNotifications() {
+            if (!('Notification' in window)) return alert('Энэ браузер мэдэгдэл дэмждэггүй.');
+            const res = await Notification.requestPermission();
+            updateNotifyButton();
+            if (res === 'granted') { playBookingSound(); new Notification('Мэдэгдэл асаалаа', { body: 'Шинэ цаг захиалга ирэхэд энд мэдэгдэнэ.' }); }
+        }
+        function playBookingSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                [0, 0.18, 0.36].forEach((t, i) => {
+                    const o = ctx.createOscillator(), g = ctx.createGain();
+                    o.frequency.value = [880, 1100, 1320][i]; o.connect(g); g.connect(ctx.destination);
+                    g.gain.setValueAtTime(0.25, ctx.currentTime + t); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.16);
+                    o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.17);
+                });
+            } catch (e) { }
+        }
+        function notifyNewBooking(b) {
+            const text = `${b.date} ${b.time} — ${b.car}\n${b.name} (${b.phone})\n${b.service || ''}`;
+            playBookingSound();
+            const box = document.getElementById('toastBox');
+            const el = document.createElement('div');
+            el.className = 'toast';
+            el.innerHTML = `<strong>🚗 Шинэ цаг захиалга</strong><br>${esc(b.date)} <strong>${esc(b.time)}</strong> — ${esc(b.car)}<br><small>${esc(b.name)} · ${esc(b.phone)}</small>`;
+            el.onclick = () => el.remove();
+            box.appendChild(el);
+            setTimeout(() => el.remove(), 60000);
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try { const n = new Notification('🚗 Шинэ цаг захиалга', { body: text, tag: 'booking-' + b.id }); n.onclick = () => { window.focus(); n.close(); }; } catch (e) { }
+            }
+            if (document.hidden) { unseenBookings++; document.title = `(${unseenBookings}) Шинэ захиалга — ${baseTitle}`; }
+        }
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) { unseenBookings = 0; document.title = baseTitle; } });
 
         function openReceiptSettingsModal() {
             document.getElementById('cfgStoreName').value = receiptConfig.storeName || '';
