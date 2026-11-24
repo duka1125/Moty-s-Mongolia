@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#3A060C">
+    <meta name="description" content="Moty's тос солих үнээ шууд тооцоолж, онлайнаар цаг захиалаарай. Ажлын хөлс үнэгүй.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://duka1125.github.io/Moty-s-Mongolia/">
+    <meta property="og:title" content="Moty's Mongolia — Тосны тооцоолуур ба цаг захиалга">
+    <meta property="og:description" content="Тос солих үнээ шууд мэдэж, 30 секундэд цаг аваарай. Ажлын хөлс үнэгүй.">
+    <meta property="og:image" content="https://duka1125.github.io/Moty-s-Mongolia/hero.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="681">
+    <meta property="og:locale" content="mn_MN">
     <title>Moty's Mongolia — Тосны тооцоолуур & Цаг захиалга</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -173,7 +182,6 @@
                 <span class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </button>
             <p class="note" style="margin-top:10px;">Үнэ мэдээллийн чанартай. Эцсийн үнийг үйлчилгээний төв баталгаажуулна.</p>
-            <a class="staff" href="admin.html">Ажилтан нэвтрэх</a>
         </div>
     </section>
 
@@ -510,8 +518,7 @@
         if (closed) { slotsEl.innerHTML = ''; msg.textContent = `${niceDate(date)}: ${closed.reason || 'захиалга авахгүй'}.`; msg.classList.remove('hidden'); return; }
         const slots = daySlots(date) || [];
         slotsEl.innerHTML = '<span class="muted" style="grid-column:1/-1; font-size:13px;">Ачаалж байна...</span>';
-        let taken = {};
-        try { const doc = await db.collection('bookingSlots').doc(date).get(); if (doc.exists) taken = doc.data() || {}; } catch (e) { console.warn(e); }
+        const taken = await takenFor(date);
         if (my !== timesToken) return;
         const per = Math.max(1, Number(bookingCfg.perSlot) || 1);
         const now = new Date(), isToday = date === localISO(now), nowMin = now.getHours() * 60 + now.getMinutes();
@@ -527,6 +534,17 @@
         slotsEl.innerHTML = html;
         $('freeCount').textContent = free + ' сул';
         updateTitle();
+    }
+
+    // Цаг бүрийн дүүргэлт: slotCounts/{огноо_цаг} → { date, time, count }
+    const slotId = (date, time) => date + '_' + time;
+    async function takenFor(date) {
+        const taken = {};
+        try {
+            const snap = await db.collection('slotCounts').where('date', '==', date).get();
+            snap.forEach(d => { const x = d.data(); if (x && x.time) taken[x.time] = Number(x.count) || 0; });
+        } catch (e) { console.warn(e); }
+        return taken;
     }
 
     function renderHoursInfo() {
@@ -600,7 +618,7 @@
                 status: 'new',
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            batch.set(db.collection("bookingSlots").doc(date), { [time]: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+            batch.set(db.collection("slotCounts").doc(slotId(date, time)), { date, time, count: firebase.firestore.FieldValue.increment(1) }, { merge: true });
             await batch.commit();
 
             store.set('motys_phone', $('bookPhone').value);
@@ -617,9 +635,13 @@
             go('viewDone');
         } catch (ex) {
             console.error(ex);
-            if (ex.code === 'permission-denied') {
+            const per = Math.max(1, Number(bookingCfg.perSlot) || 1);
+            const nowTaken = await takenFor(date);
+            if (ex.code === 'permission-denied' && (nowTaken[time] || 0) >= per) {
                 showErr('Уучлаарай, энэ цаг дөнгөж сая дүүрчихлээ. Өөр цаг сонгоно уу.');
                 selTime = ''; refreshTimes();
+            } else if (ex.code === 'permission-denied') {
+                showErr('Захиалга хадгалахад алдаа гарлаа. Бидэн рүү ' + (SHOP_PHONE || '') + ' дугаараар залгаж цагаа аваарай.');
             } else {
                 showErr('Захиалга илгээхэд алдаа гарлаа. Интернэтээ шалгаад дахин оролдоно уу.');
             }

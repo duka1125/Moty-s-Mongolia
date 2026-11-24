@@ -1855,8 +1855,9 @@
             batch.delete(db.collection("bookings").doc(id));
             if (b && b.date && b.time && b.date >= localISODate(new Date())) {
                 let used = 0;
-                try { const sd = await db.collection("bookingSlots").doc(b.date).get(); used = sd.exists ? (sd.data()[b.time] || 0) : 0; } catch (e) { }
-                if (used > 0) batch.set(db.collection("bookingSlots").doc(b.date), { [b.time]: firebase.firestore.FieldValue.increment(-1) }, { merge: true });
+                const slotRef = db.collection("slotCounts").doc(b.date + '_' + b.time);
+                try { const sd = await slotRef.get(); used = sd.exists ? (Number(sd.data().count) || 0) : 0; } catch (e) { }
+                if (used > 0) batch.update(slotRef, { count: firebase.firestore.FieldValue.increment(-1) });
             }
             try { await batch.commit(); logAudit('booking_delete', `Цаг захиалга устгав: ${b ? b.date + ' ' + b.time + ' ' + b.car + ' ' + b.name : id}`); } catch (err) { alert('Устгаж чадсангүй: ' + err.message); }
         }
@@ -1959,14 +1960,24 @@
                     if (!b.date || !b.time || b.date < today) return;
                     (counts[b.date] = counts[b.date] || {})[b.time] = (counts[b.date][b.time] || 0) + 1;
                 });
-                const existing = await db.collection("bookingSlots").get();
-                const batch = db.batch(); let n = 0;
+                // Шинэ бүтэц: slotCounts/{огноо_цаг} → { date, time, count }
+                const want = {};
+                Object.entries(counts).forEach(([date, slots]) => Object.entries(slots).forEach(([time, c]) => { want[date + '_' + time] = { date, time, count: c }; }));
+                const existing = await db.collection("slotCounts").get();
+                const ops = [];
                 existing.forEach(doc => {
-                    if (doc.id < today) { batch.delete(doc.ref); n++; }
-                    else if (!counts[doc.id]) { batch.delete(doc.ref); n++; }
+                    const w = want[doc.id];
+                    if (!w) ops.push(bt => bt.delete(doc.ref));
+                    else if ((doc.data().count || 0) !== w.count) ops.push(bt => bt.set(doc.ref, w));
+                    delete want[doc.id];
                 });
-                Object.entries(counts).forEach(([date, slots]) => { batch.set(db.collection("bookingSlots").doc(date), slots); n++; });
-                if (n) await batch.commit();
+                Object.entries(want).forEach(([id, w]) => ops.push(bt => bt.set(db.collection("slotCounts").doc(id), w)));
+                // Хуучин бүтцийг (bookingSlots) цэвэрлэнэ
+                const old = await db.collection("bookingSlots").get();
+                old.forEach(doc => ops.push(bt => bt.delete(doc.ref)));
+                for (let i = 0; i < ops.length; i += 400) {
+                    const batch = db.batch(); ops.slice(i, i + 400).forEach(f => f(batch)); await batch.commit();
+                }
             } catch (err) { console.warn('Дүүргэлт тоолоход алдаа:', err); }
         }
 
@@ -3579,7 +3590,7 @@
         // ================= БҮРЭН НӨӨЦ ТАТАХ =================
         async function downloadFullBackup() {
             if (currentUserRole !== 'admin') return alert('Зөвхөн менежер.');
-            const cols = ['customers', 'sales', 'inventory', 'bookings', 'bookingSlots', 'categories', 'paymentMethods', 'packingLists', 'settings', 'oilsDb', 'carsDb', 'attachments', 'users'];
+            const cols = ['customers', 'sales', 'inventory', 'bookings', 'slotCounts', 'categories', 'paymentMethods', 'packingLists', 'settings', 'oilsDb', 'carsDb', 'attachments', 'users'];
             const out = { exportedAt: new Date().toISOString(), exportedBy: currentUserEmail, collections: {} };
             try {
                 for (const c of cols) {
