@@ -415,7 +415,10 @@
             if (o.active === false || !o.name || !(o.price > 0)) return;
             list.push({ ...o, price: Number(o.price), salePrice: Number(o.salePrice) || 0 });
         });
-        if (list.length) oilsList = list.sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.name).localeCompare(String(b.name)));
+        // Ижил нэртэй тос давхардсан бол нэгийг нь л харуулна
+        const seen = new Set();
+        const uniq = list.filter(o => { const k = String(o.name).toLowerCase().replace(/\s+/g, ''); if (seen.has(k)) return false; seen.add(k); return true; });
+        if (uniq.length) oilsList = uniq.sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.name).localeCompare(String(b.name)));
         oilIdx = -1; renderOils();
     }).catch(() => renderOils());
 

@@ -1533,9 +1533,10 @@
                     if (d.id === '_settings') { if (o.filterPrice >= 0) oilFilterPrice = Number(o.filterPrice); return; }
                     list.push({ id: d.id, ...o, price: Number(o.price) || 0, salePrice: Number(o.salePrice) || 0 });
                 });
-                if (!list.length && currentUserRole === 'admin') {
+                if (!list.length && currentUserRole === 'admin' && !snap.metadata.fromCache) {
+                    // Тогтмол ID ашигладаг тул хэд дахин ажилласан ч давхардахгүй
                     const bt = db.batch();
-                    DEFAULT_OILS.forEach(o => bt.set(db.collection("oilsDb").doc(), { ...o, active: true, saleActive: false, salePrice: 0, saleNote: '', saleUntil: '' }));
+                    DEFAULT_OILS.forEach(o => bt.set(db.collection("oilsDb").doc('default-' + String(o.name).toLowerCase().replace(/[^a-z0-9]+/g, '')), { ...o, active: true, saleActive: false, salePrice: 0, saleNote: '', saleUntil: '' }));
                     bt.set(db.collection("oilsDb").doc('_settings'), { filterPrice: 18000 });
                     bt.commit().catch(err => console.warn('Тосны үнэ үүсгэж чадсангүй:', err));
                     return;
