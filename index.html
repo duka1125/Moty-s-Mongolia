@@ -2,389 +2,632 @@
 <html lang="mn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Runs Automotive Mongolia - Тосны тооцоолуур & Цаг захиалга</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3A060C">
+    <title>Moty's Mongolia — Тосны тооцоолуур & Цаг захиалга</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #050507; --card: rgba(12, 12, 15, 0.95); --red: #e61924; --red-glow: rgba(230, 25, 36, 0.35);
-            --text: #f8fafc; --muted: #94a3b8; --border: rgba(255, 255, 255, 0.1); --input: rgba(255, 255, 255, 0.05);
-            --success: #10b981; --warning: #f59e0b;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { background: #0A0A0C; }
         body {
-            min-height: 100vh; color: var(--text); display: flex; justify-content: center; align-items: center; padding: 70px 16px 30px;
-            background: linear-gradient(180deg, rgba(5,5,7,0.92) 0%, rgba(5,5,7,0.99) 100%), url("Moty's_logo.webp") center/cover no-repeat fixed, var(--bg);
+            min-height: 100vh; color: #fff; font-family: Inter, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 400;
+            background: linear-gradient(180deg, #5A0810 0%, #2A0508 32%, #0A0A0C 62%) no-repeat, #0A0A0C;
+            -webkit-font-smoothing: antialiased;
         }
-        .staff-link {
-            position: fixed; top: 16px; left: 16px; background: rgba(255,255,255,0.08); border: 1px solid var(--border);
-            color: var(--text); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; text-decoration: none; display: flex; gap: 8px; align-items: center;
-        }
-        .staff-link:hover { border-color: var(--red); color: var(--red); }
-        .card {
-            background: var(--card); backdrop-filter: blur(30px); width: 100%; max-width: 540px; padding: 32px 26px; border-radius: 24px;
-            border: 1px solid var(--border); box-shadow: 0 30px 60px rgba(0,0,0,0.9), 0 0 40px var(--red-glow);
-        }
-        .logo { display: block; max-width: 200px; margin: 0 auto 14px; filter: drop-shadow(0 0 15px var(--red-glow)); }
-        h1 { text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; }
-        h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; display: flex; gap: 10px; align-items: center; }
-        h2 i { color: var(--red); }
-        .sub { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 24px; }
-        .opt {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 16px; padding: 22px 12px; color: #fff; cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; transition: all .25s;
-        }
-        .opt i { font-size: 2rem; color: var(--red); }
-        .opt:hover { background: rgba(230,25,36,0.15); border-color: var(--red); transform: translateY(-3px); }
-        .head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 16px; }
-        .back { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; }
-        input, select, textarea {
-            width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.95rem; background: var(--input); color: var(--text);
-        }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--red); box-shadow: 0 0 10px var(--red-glow); }
-        select option { background: #121216; }
-        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .info { background: var(--input); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-        .info span { display: block; font-size: 0.72rem; color: var(--muted); }
-        .rec { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); padding: 10px; border-radius: 10px; font-size: 0.82rem; margin-bottom: 12px; display: none; }
-        .total-box { background: var(--input); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-top: 6px; }
-        .row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 5px; }
-        .final { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 6px; align-items: center; }
-        .final strong { font-size: 1.35rem; color: var(--red); }
-        .btn { width: 100%; padding: 13px; border: none; border-radius: 12px; background: var(--red); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; margin-top: 8px; }
-        .btn:disabled { opacity: 0.6; cursor: wait; }
-        .note { font-size: 0.75rem; color: var(--muted); margin-top: 10px; text-align: center; }
-        .success { text-align: center; padding: 24px 10px; color: var(--success); font-weight: 700; display: none; }
-        .success i { font-size: 2.4rem; margin-bottom: 10px; }
-        .hidden { display: none; }
-        .notice { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.4); color: #fcd34d; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 14px; white-space: pre-line; }
-        .day-msg { background: rgba(230,25,36,0.1); border: 1px solid rgba(230,25,36,0.4); color: #fca5a5; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 12px; }
-        .hours-info { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
-        select option:disabled { color: #555; }
-        @media (max-width: 480px) { .grid2, .options { grid-template-columns: 1fr; } }
+        b, strong { font-weight: 500; }
+        button, input, select { font: inherit; color: inherit; }
+        button { cursor: pointer; }
+        a { color: #fff; }
+        .app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+        .hidden { display: none !important; }
+        .g { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+        .muted { color: rgba(255,255,255,0.65); }
+        .pill { border-radius: 999px; }
+        .round-btn { width: 44px; height: 44px; border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; flex: none; }
+        .logo-pill { border-radius: 999px; padding: 8px 14px; display: flex; align-items: center; }
+        .logo-pill img { height: 20px; width: auto; display: block; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; }
+        .big { font-size: 46px; font-weight: 300; letter-spacing: -0.035em; line-height: 1.1; }
+        .big small { font-size: 30px; }
+        .h-sec { font-size: 18px; font-weight: 500; }
+        .pad { padding: 0 20px; }
+
+        /* Нүүр зураг */
+        .hero { height: 300px; padding: 20px 20px 18px; display: flex; flex-direction: column; justify-content: space-between;
+            background: linear-gradient(180deg, rgba(10,10,12,0.15) 0%, rgba(90,8,16,0.55) 60%, #5A0810 100%), url("hero.jpg") 62% 40% / cover no-repeat; }
+        .about-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 7px 12px; font-size: 12px; text-decoration: none; }
+
+        /* Тооцоолуур */
+        .stack { display: flex; flex-direction: column; gap: 16px; padding: 16px 20px 0; }
+        .car-box { position: relative; border-radius: 18px; padding: 12px 16px; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .car-box select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+        .car-box .lbl { display: block; font-size: 12px; color: rgba(255,255,255,0.6); }
+        .car-box .val { font-size: 16px; font-weight: 500; }
+        .oils { display: flex; gap: 10px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px; scroll-snap-type: x mandatory; scroll-padding-left: 20px; scrollbar-width: none; align-items: stretch; }
+        .oils::-webkit-scrollbar { display: none; }
+        .oil { flex: none; width: 118px; border-radius: 20px; padding: 10px; text-align: left; display: flex; flex-direction: column; gap: 8px; scroll-snap-align: start; color: #fff; }
+        .oil .pic { height: 92px; border-radius: 14px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; position: relative; }
+        .oil .pic img { height: 84px; width: auto; }
+        .oil .nm { display: block; font-size: 14px; font-weight: 500; }
+        .oil .pr { font-size: 12px; color: rgba(255,255,255,0.65); }
+        .oil .old { display: block; text-decoration: line-through; opacity: 0.6; }
+        .oil .tag { position: absolute; top: 6px; left: 6px; font-size: 10px; background: #E11D2A; color: #fff; border-radius: 999px; padding: 2px 7px; }
+        .oil.sel { background: #fff; border: 1px solid #fff; color: #111114; backdrop-filter: none; }
+        .oil.sel .pic { background: #F4F4F5; }
+        .oil.sel .pr { color: #B91C1C; }
+        .row2 { display: flex; gap: 10px; }
+        .stepper { flex: 1; border-radius: 999px; padding: 6px; display: flex; align-items: center; justify-content: space-between; }
+        .stepper button { width: 40px; height: 40px; border-radius: 999px; border: none; background: rgba(255,255,255,0.1); font-size: 18px; }
+        .toggle { flex: 1; border-radius: 999px; padding: 6px 12px 6px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .toggle input { width: 22px; height: 22px; accent-color: #E11D2A; }
+        .sale-banner { border-radius: 16px; padding: 10px 14px; font-size: 13px; line-height: 1.5; background: rgba(134,239,172,0.08); border: 1px solid rgba(134,239,172,0.3); }
+        .note { font-size: 12px; text-align: center; color: rgba(255,255,255,0.5); }
+
+        /* Доод товч */
+        .cta-wrap { padding: 14px 20px calc(24px + env(safe-area-inset-bottom)); margin-top: auto; }
+        .cta { width: 100%; display: flex; align-items: center; justify-content: space-between; background: #fff; color: #111114; text-decoration: none; border: none;
+            border-radius: 999px; height: 60px; padding: 0 8px 0 24px; font-size: 16px; font-weight: 500; }
+        .cta .dot { width: 46px; height: 46px; border-radius: 999px; background: #E11D2A; display: flex; align-items: center; justify-content: center; color: #fff; }
+        .cta:disabled { opacity: 0.55; cursor: not-allowed; }
+        .cta-2 { display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 999px; text-decoration: none; font-size: 15px; margin-top: 10px; }
+
+        /* Цаг захиалга */
+        .summary { border-radius: 20px; padding: 10px 14px 10px 10px; display: flex; align-items: center; gap: 12px; }
+        .summary .pic { width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; flex: none; }
+        .summary .pic img { height: 44px; width: auto; }
+        .days { display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px; scrollbar-width: none; }
+        .days::-webkit-scrollbar { display: none; }
+        .day { flex: none; width: 58px; height: 68px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #fff; }
+        .day span { font-size: 11px; color: rgba(255,255,255,0.65); }
+        .day b, .day i { font-size: 18px; font-style: normal; }
+        .day.sel { background: #fff; border: 1px solid #fff; color: #111114; }
+        .day.sel span { color: #B91C1C; }
+        .day:disabled, .slot:disabled { background: transparent; border: 1px dashed rgba(255,255,255,0.18); color: rgba(255,255,255,0.4); cursor: not-allowed; backdrop-filter: none; }
+        .day:disabled i, .slot:disabled { text-decoration: line-through; }
+        .slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+        .slot { height: 46px; border-radius: 999px; font-size: 15px; color: #fff; }
+        .slot.sel { background: #fff; border: 1px solid #fff; color: #111114; font-weight: 500; }
+        .msg { border-radius: 16px; padding: 12px 14px; font-size: 13px; line-height: 1.5; }
+        .msg.warn { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35); color: #FCD34D; white-space: pre-line; }
+        .msg.err { background: rgba(225,29,42,0.12); border: 1px solid rgba(225,29,42,0.4); color: #FCA5A5; }
+        .field { width: 100%; height: 54px; border-radius: 999px; padding: 0 22px; font-size: 18px; letter-spacing: 0.05em; outline: none; }
+        .field.sm { height: 46px; font-size: 14px; letter-spacing: 0; padding: 0 16px; min-width: 0; }
+        .field:focus { border-color: rgba(255,255,255,0.45); }
+        .field::placeholder { color: rgba(255,255,255,0.45); letter-spacing: 0; }
+        .field.bad { border-color: #F87171; }
+
+        /* Баталгаа */
+        .check { width: 88px; height: 88px; border-radius: 999px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .check span { width: 60px; height: 60px; border-radius: 999px; background: #fff; display: flex; align-items: center; justify-content: center; }
+
+        /* Тухай */
+        .about-hero { height: 340px; padding: 20px 20px 22px; display: flex; flex-direction: column; justify-content: space-between;
+            background: linear-gradient(180deg, rgba(10,10,12,0.1) 0%, rgba(10,10,12,0.25) 55%, #3A060C 100%), url("about-hero.jpg") 58% 55% / cover no-repeat; }
+        .why { border-radius: 20px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+        .why .n { font-size: 22px; font-weight: 300; color: #FCA5A5; line-height: 1; }
+        .why b { display: block; font-size: 15px; }
+        .why small { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.7); }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chips span { border-radius: 999px; padding: 9px 14px; font-size: 13px; }
+        .staff { display: block; text-align: center; font-size: 12px; color: rgba(255,255,255,0.35); text-decoration: none; padding: 6px 0 0; }
+        @media (min-width: 481px) { .hero, .about-hero { border-radius: 0 0 28px 28px; } }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <a class="staff-link" href="admin.html"><i class="fa-solid fa-lock" style="color:var(--red);"></i> Ажилтан</a>
+<div class="app">
 
-    <div class="card">
-        <!-- НҮҮР -->
-        <section id="viewHome">
-            <img src="Moty's_logo.webp" alt="Moty's" class="logo" onerror="this.style.display='none'">
-            <h1>Runs Automotive Mongolia</h1>
-            <p class="sub">Албан ёсны дистрибьютор & Үйлчилгээний төв</p>
-            <div class="options">
-                <button class="opt" onclick="show('viewCalc')"><i class="fa-solid fa-calculator"></i>Тосны тооцоолуур</button>
-                <button class="opt" onclick="show('viewBooking')"><i class="fa-solid fa-calendar-check"></i>Цаг захиалга</button>
+    <!-- 1. ТООЦООЛУУР -->
+    <section id="viewCalc" style="display:flex; flex-direction:column; min-height:100vh;">
+        <div class="hero">
+            <div class="topbar">
+                <div class="g logo-pill"><img src="moty-logo.png" alt="Moty's"></div>
+                <a class="g round-btn js-call hidden" href="#" aria-label="Залгах">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+                </a>
             </div>
-        </section>
+            <div>
+                <div style="font-size:14px; color:rgba(255,255,255,0.8);">Тос солих нийт дүн</div>
+                <div class="big" id="calcTotal">0<small>₮</small></div>
+                <div style="font-size:13px; margin-top:4px; color:rgba(255,255,255,0.75);"><span style="color:#86EFAC;">Ажлын хөлс үнэгүй</span> · Японд үйлдвэрлэсэн premium тос</div>
+                <a href="#" class="g pill about-link" onclick="go('viewAbout'); return false;">Moty's-ийн тухай
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+        </div>
 
-        <!-- ТОСНЫ ТООЦООЛУУР -->
-        <section id="viewCalc" class="hidden">
-            <div class="head">
-                <h2><i class="fa-solid fa-calculator"></i> Тосны тооцоолуур</h2>
-                <button class="back" onclick="show('viewHome')">&larr; Буцах</button>
+        <div class="stack">
+            <label class="g car-box">
+                <span><span class="lbl">Таны машин</span><span class="val" id="carLabel">Машинаа сонгоно уу</span></span>
+                <span class="muted" id="carCap" style="font-size:13px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </span>
+                <select id="carSelect" aria-label="Таны машин" onchange="onCarChange()"><option value="">Ачаалж байна...</option></select>
+            </label>
+
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+                    <span class="h-sec">Тос сонгох</span><span class="muted" style="font-size:13px;" id="oilCount"></span>
+                </div>
+                <div class="oils" id="oilCards" role="radiogroup" aria-label="Тос сонгох"></div>
             </div>
-            <div class="form-group">
-                <label>Машины марк / загвар</label>
-                <select id="carSelect" onchange="onCarChange()"><option value="">Ачаалж байна...</option></select>
+            <div id="saleBanner" class="sale-banner hidden"></div>
+
+            <div class="row2">
+                <div class="g stepper">
+                    <button type="button" aria-label="Литр хасах" onclick="stepQty(-0.5)">−</button>
+                    <span style="font-size:15px;"><span id="qtyVal">4</span> л</span>
+                    <button type="button" aria-label="Литр нэмэх" onclick="stepQty(0.5)">+</button>
+                </div>
+                <label class="g toggle">
+                    <span style="font-size:14px; line-height:1.2;">Шүүлтүүр<br><span class="muted" style="font-size:12px;" id="filterLabel">+18,000₮</span></span>
+                    <input type="checkbox" id="filterCheck" checked onchange="calc()">
+                </label>
             </div>
-            <div class="grid2" style="margin-bottom:12px;">
-                <div class="info"><span>Хөдөлгүүр</span><strong id="carEngine">-</strong></div>
-                <div class="info"><span>Тосны хэмжээ</span><strong id="carCapacity" style="color:var(--red);">0.0 л</strong></div>
+            <div class="muted" style="font-size:13px; line-height:1.5;" id="calcBreak"></div>
+        </div>
+
+        <div class="cta-wrap">
+            <button class="cta" onclick="goBooking()">Цаг захиалах
+                <span class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </button>
+            <p class="note" style="margin-top:10px;">Үнэ мэдээллийн чанартай. Эцсийн үнийг үйлчилгээний төв баталгаажуулна.</p>
+            <a class="staff" href="admin.html">Ажилтан нэвтрэх</a>
+        </div>
+    </section>
+
+    <!-- 2. ЦАГ СОНГОХ -->
+    <section id="viewBooking" class="hidden" style="flex-direction:column; min-height:100vh;">
+        <div class="topbar" style="padding:20px 20px 4px;">
+            <button class="g round-btn" aria-label="Буцах" onclick="go('viewCalc')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <span class="muted" style="font-size:13px;">Алхам 2 / 2</span>
+        </div>
+        <div class="pad" style="padding-top:14px;">
+            <div style="font-size:14px; color:rgba(255,255,255,0.75);">Цагаа сонгоорой</div>
+            <div style="font-size:38px; font-weight:300; letter-spacing:-0.035em; line-height:1.15; margin-top:2px;" id="pickTitle">—</div>
+        </div>
+
+        <form id="bookingForm" class="stack" style="gap:18px; padding-top:18px;" novalidate>
+            <div class="g summary">
+                <span class="pic"><img id="sumImg" src="can-generic.png" alt=""></span>
+                <span style="flex:1; font-size:13px; line-height:1.45; color:rgba(255,255,255,0.7);"><b style="color:#fff; font-size:14px;" id="sumCar">—</b><br><span id="sumOil">—</span></span>
+                <span style="text-align:right;"><b style="display:block; font-size:16px;" id="sumTotal">0₮</b><a href="#" style="font-size:12px; color:rgba(255,255,255,0.7);" onclick="go('viewCalc'); return false;">Засах</a></span>
             </div>
-            <div class="rec" id="smartRec">💡 <b>Зөвлөмж:</b> <span id="recText"></span></div>
-            <div class="form-group">
-                <label>Тосны төрөл (1 литрийн үнэ)</label>
-                <select id="oilSelect" onchange="calc()"><option value="">Ачаалж байна...</option></select>
+            <div id="bookingNotice" class="msg warn hidden"></div>
+
+            <div>
+                <div class="h-sec" style="font-size:16px; margin-bottom:10px;">Өдөр</div>
+                <div class="days" id="days"></div>
             </div>
-            <div id="saleBanner" class="rec" style="background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.4);"></div>
-            <div class="grid2">
-                <div class="form-group"><label>Авах литр</label><input type="number" id="oilQty" value="1" min="0.5" step="0.5" oninput="calc()"></div>
-                <div class="form-group">
-                    <label>Шүүлтүүр</label>
-                    <select id="filterCheck" onchange="calc()"><option value="yes">Тийм (18,000₮)</option><option value="no">Үгүй</option></select>
+
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+                    <span class="h-sec" style="font-size:16px;">Цаг</span><span class="muted" style="font-size:13px;" id="freeCount"></span>
+                </div>
+                <div id="dayMsg" class="msg err hidden"></div>
+                <div class="slots" id="slots"></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <label for="bookPhone" class="h-sec" style="font-size:16px;">Утасны дугаар</label>
+                <input id="bookPhone" class="g field" type="tel" inputmode="numeric" autocomplete="tel" placeholder="9911 2233" maxlength="9">
+                <div style="display:flex; gap:8px;">
+                    <input id="bookName" class="g field sm" style="flex:1;" maxlength="60" autocomplete="name" placeholder="Нэр (заавал биш)" aria-label="Нэр (заавал биш)">
+                    <input id="bookPlate" class="g field sm" style="flex:1;" maxlength="20" placeholder="Улсын дугаар" aria-label="Улсын дугаар (заавал биш)">
+                </div>
+                <div id="formErr" class="msg err hidden"></div>
+            </div>
+        </form>
+
+        <div class="cta-wrap">
+            <button class="cta" id="bookBtn" form="bookingForm" type="submit"><span id="bookBtnText">Захиалга илгээх</span>
+                <span class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+            </button>
+            <p class="note" style="margin-top:10px;" id="hoursInfo"></p>
+        </div>
+    </section>
+
+    <!-- 3. БАТАЛГАА -->
+    <section id="viewDone" class="hidden" style="flex-direction:column; min-height:100vh;">
+        <div style="padding:22px 20px 0; display:flex; justify-content:center;"><div class="g logo-pill"><img src="moty-logo.png" alt="Moty's"></div></div>
+        <div class="pad" style="padding-top:40px; text-align:center;">
+            <div class="g check"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E11D2A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></div>
+            <div style="margin-top:22px; font-size:14px; color:rgba(255,255,255,0.75);">Захиалга хүлээн авлаа</div>
+            <div style="font-size:38px; font-weight:300; letter-spacing:-0.035em; line-height:1.15; margin-top:2px;" id="doneWhen">—</div>
+            <p style="margin-top:10px; font-size:14px; line-height:1.5; color:rgba(255,255,255,0.7);">Бид <span style="color:#fff;" id="donePhone"></span> дугаар руу залгаж баталгаажуулна</p>
+            <div class="g" style="margin-top:26px; border-radius:22px; padding:14px; display:flex; align-items:center; gap:14px; text-align:left;">
+                <span style="width:72px; height:84px; border-radius:16px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; flex:none;"><img id="doneImg" src="can-generic.png" alt="" style="height:70px; width:auto;"></span>
+                <span style="flex:1; font-size:13px; line-height:1.6; color:rgba(255,255,255,0.7);"><b style="color:#fff; font-size:15px;" id="doneOil">—</b><br><span id="doneCar"></span><br>Ажлын хөлс үнэгүй</span>
+                <b style="font-size:17px;" id="doneTotal"></b>
+            </div>
+            <div style="margin-top:14px; font-size:13px; line-height:1.5; color:rgba(255,255,255,0.6);" class="js-addr hidden"></div>
+        </div>
+        <div class="cta-wrap">
+            <a class="cta js-call hidden" href="#" style="justify-content:center; padding:0;">Бидэн рүү залгах</a>
+            <button class="g cta-2" style="width:100%;" onclick="newBooking()">Нүүр хуудас</button>
+        </div>
+    </section>
+
+    <!-- 4. MOTY'S-ИЙН ТУХАЙ -->
+    <section id="viewAbout" class="hidden" style="flex-direction:column; min-height:100vh;">
+        <div class="about-hero">
+            <div class="topbar">
+                <button class="g round-btn" aria-label="Буцах" onclick="go('viewCalc')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+                </button>
+                <div class="g logo-pill"><img src="moty-logo.png" alt="Moty's"></div>
+            </div>
+            <div>
+                <div style="font-size:13px; color:rgba(255,255,255,0.8);">Tribo Japan Co., Ltd.</div>
+                <div style="font-size:34px; font-weight:300; letter-spacing:-0.035em; line-height:1.15; margin-top:4px;">Зөвхөн Японд<br>үйлдвэрлэгддэг</div>
+            </div>
+        </div>
+        <div class="stack" style="padding-top:22px; gap:26px;">
+            <p style="font-size:15px; line-height:1.6; color:rgba(255,255,255,0.8);">Moty's бол масс үйлдвэрлэлийн бус, химийн инженерүүдийн нарийн жор, дэвшилтэт технологид суурилсан <span style="color:#fff;">премиум зэрэглэлийн</span> тос юм.</p>
+            <div>
+                <div class="h-sec" style="margin-bottom:12px;">Яагаад үнэтэй вэ?</div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div class="g why"><span class="n">01</span><span><b>Синтетик суурь тос</b><small>Химийн аргаар тусгайлан цэвэршүүлсэн хамгийн өндөр чанарын суурь тос</small></span></div>
+                    <div class="g why"><span class="n">02</span><span><b>Тусгай химийн нэмэлтүүд</b><small>Зах зээлд ховор олддог, өндөр өртөгтэй дэвшилтэт нэмэлтүүд</small></span></div>
+                    <div class="g why"><span class="n">03</span><span><b>Чанараа хямдруулдаггүй</b><small>Өртөг бууруулахын тулд түүхий эдээ хэзээ ч орлуулдаггүй</small></span></div>
                 </div>
             </div>
-            <div class="total-box">
-                <div class="row"><span id="calcSubLabel">Тосны үнэ:</span><strong id="calcSub">0 ₮</strong></div>
-                <div class="row" id="calcSaveRow" style="display:none; color:var(--success);"><span>Хямдралаар хэмнэсэн:</span><strong id="calcSave">0 ₮</strong></div>
-                <div class="row"><span>Шүүлтүүр:</span><strong id="calcFilter">18,000 ₮</strong></div>
-                <div class="row"><span>Тос солих ажлын хөлс:</span><strong style="color:var(--success);">ҮНЭГҮЙ</strong></div>
-                <div class="row final"><span><b>Нийт дүн:</b></span><strong id="calcTotal">0 ₮</strong></div>
+            <div>
+                <div class="h-sec" style="margin-bottom:4px;">Уралдааны багуудын сонголт</div>
+                <p class="muted" style="margin-bottom:12px; font-size:13px; line-height:1.5;">1000+ морины хүчтэй хөдөлгүүр, ралли, дрифт, трек уралдаанд</p>
+                <div class="chips"><span class="g">Toyota Gazoo Racing</span><span class="g">Ralliart · Mitsubishi</span><span class="g">Top Secret</span><span class="g">Kazama</span><span class="g">Cusco Racing</span></div>
             </div>
-            <button class="btn" onclick="show('viewBooking')"><i class="fa-solid fa-calendar-check"></i> Цаг захиалах</button>
-            <p class="note">Үнэ мэдээллийн чанартай. Эцсийн үнийг үйлчилгээний төвөөс баталгаажуулна.</p>
-        </section>
-
-        <!-- ЦАГ ЗАХИАЛГА -->
-        <section id="viewBooking" class="hidden">
-            <div class="head">
-                <h2><i class="fa-solid fa-calendar-check"></i> Үйлчилгээний цаг захиалга</h2>
-                <button class="back" onclick="show('viewHome')">&larr; Буцах</button>
+            <div class="g" style="border-radius:24px; padding:18px 16px 16px; display:flex; flex-direction:column; align-items:center; gap:10px;">
+                <img src="family.png" alt="Moty's 1, 4, 20 литрийн сав" style="width:100%; height:auto;" loading="lazy">
+                <div class="muted" style="font-size:13px;">1 л · 4 л · 20 л</div>
             </div>
-            <div id="bookingNotice" class="notice" style="display:none;"></div>
-            <form id="bookingForm">
-                <div class="form-group"><label>Таны нэр</label><input type="text" id="bookName" required maxlength="60" placeholder="Бат"></div>
-                <div class="form-group"><label>Утасны дугаар</label><input type="tel" id="bookPhone" required pattern="[0-9]{8}" maxlength="8" placeholder="99112233" title="8 оронтой утасны дугаар"></div>
-                <div class="form-group"><label>Машины марк, улсын дугаар</label><input type="text" id="bookCar" required maxlength="80" placeholder="Toyota Prius, 1234 УБН"></div>
-                <div class="grid2">
-                    <div class="form-group"><label>Огноо</label><input type="date" id="bookDate" required></div>
-                    <div class="form-group">
-                        <label>Цаг</label>
-                        <select id="bookTime" required></select>
-                    </div>
-                </div>
-                <div id="bookDayMsg" class="day-msg" style="display:none;"></div>
-                <div id="bookHoursInfo" class="hours-info"></div>
-                <div class="form-group"><label>Авах үйлчилгээ</label><textarea id="bookService" rows="2" required maxlength="300" placeholder="Moty's M100 тос солих"></textarea></div>
-                <button type="submit" class="btn" id="bookBtn">Захиалга илгээх</button>
-            </form>
-            <div class="success" id="bookingSuccess">
-                <i class="fa-solid fa-circle-check"></i><br>
-                Таны захиалга амжилттай илгээгдлээ!<br>
-                <span style="color:var(--muted); font-weight:500; font-size:0.88rem;">Бид тантай удахгүй холбогдож цагийг баталгаажуулна.</span>
-                <button class="btn" style="margin-top:18px;" onclick="newBooking()">Өөр захиалга өгөх</button>
-            </div>
-        </section>
-    </div>
+            <div style="text-align:center; font-size:13px; line-height:1.6; color:rgba(255,255,255,0.65);">Монгол дахь албан ёсны онцгой эрхт дистрибьютор<br><span style="color:#fff; font-size:15px;">Эвримоторс ХХК</span></div>
+        </div>
+        <div class="cta-wrap" style="padding-top:26px;">
+            <button class="cta" onclick="go('viewCalc')">Тосоо сонгох
+                <span class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </button>
+        </div>
+    </section>
+</div>
 
-    <script>
-        // Firebase-ийн энэ тохиргоо нууц биш — хамгаалалтыг Firestore Rules хийдэг.
-        firebase.initializeApp({
-            apiKey: "AIzaSyAmXOVgAXPqwCjlJ1YKNu0RwV_XH1iNEJs",
-            authDomain: "moty-s-mongolia.firebaseapp.com",
-            projectId: "moty-s-mongolia",
-            storageBucket: "moty-s-mongolia.firebasestorage.app",
-            messagingSenderId: "737644728583",
-            appId: "1:737644728583:web:15b20a7c208db1856a75a2"
-        });
-        const db = firebase.firestore();
-        let carsDb = [];
+<script>
+    // ====== ЭНД ӨӨРИЙН МЭДЭЭЛЛЭЭ БИЧНЭ ======
+    // Утас, хаягаа бичвэл "Залгах" товч болон хаяг автоматаар гарч ирнэ. Хоосон бол харагдахгүй.
+    const SHOP_PHONE = '75751595';
+    const SHOP_ADDRESS = 'БГД, 25-р эмийн сангаас Гэмтлийн эмнэлэг явах дунд зам дагуу, CU-ийн эсрэг талд RUNS house';
+    // =========================================
 
-        function show(id) {
-            ['viewHome', 'viewCalc', 'viewBooking'].forEach(v => document.getElementById(v).classList.toggle('hidden', v !== id));
-        }
+    // Firebase-ийн энэ тохиргоо нууц биш — хамгаалалтыг Firestore Rules хийдэг.
+    firebase.initializeApp({
+        apiKey: "AIzaSyAmXOVgAXPqwCjlJ1YKNu0RwV_XH1iNEJs",
+        authDomain: "moty-s-mongolia.firebaseapp.com",
+        projectId: "moty-s-mongolia",
+        storageBucket: "moty-s-mongolia.firebasestorage.app",
+        messagingSenderId: "737644728583",
+        appId: "1:737644728583:web:15b20a7c208db1856a75a2"
+    });
+    const db = firebase.firestore();
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const fmt = n => Math.round(n).toLocaleString('en-US');
+    const store = {
+        get(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } },
+        set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    };
 
-        // ---- Тооцоолуур ----
-        db.collection("carsDb").get().then(snap => {
-            carsDb = snap.docs.map(d => d.data()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            const sel = document.getElementById('carSelect');
-            sel.innerHTML = '<option value="">-- Машинаа сонгоно уу --</option>';
-            carsDb.forEach((c, i) => { const o = document.createElement('option'); o.value = i; o.textContent = c.name; sel.appendChild(o); });
-        }).catch(() => {
-            document.getElementById('carSelect').innerHTML = '<option value="">Машины жагсаалт ачаалж чадсангүй</option>';
-        });
+    // Утас, хаяг
+    document.querySelectorAll('.js-call').forEach(a => {
+        if (SHOP_PHONE) { a.href = 'tel:' + SHOP_PHONE.replace(/\s/g, ''); a.classList.remove('hidden'); }
+    });
+    document.querySelectorAll('.js-addr').forEach(el => {
+        if (SHOP_ADDRESS) { el.textContent = 'Хаяг: ' + SHOP_ADDRESS; el.classList.remove('hidden'); }
+    });
 
-        function onCarChange() {
-            const car = carsDb[document.getElementById('carSelect').value];
-            const rec = document.getElementById('smartRec');
-            if (car) {
-                document.getElementById('carEngine').textContent = car.engine || '-';
-                document.getElementById('carCapacity').textContent = car.capacity + ' л';
-                const liters = Math.ceil((Number(car.capacity) || 0) * 2) / 2;
-                document.getElementById('recText').textContent = `Таны машинд ${car.capacity}л тос орно. Ойролцоогоор ${liters}л хэрэгтэй.`;
-                rec.style.display = 'block';
-                document.getElementById('oilQty').value = liters;
-            } else {
-                document.getElementById('carEngine').textContent = '-';
-                document.getElementById('carCapacity').textContent = '0.0 л';
-                rec.style.display = 'none';
-                document.getElementById('oilQty').value = 1;
-            }
-            calc();
-        }
+    // Дэлгэц солих
+    const VIEWS = ['viewCalc', 'viewBooking', 'viewDone', 'viewAbout'];
+    function go(id) {
+        VIEWS.forEach(v => { const el = $(v); el.classList.toggle('hidden', v !== id); if (v === id) el.style.display = 'flex'; });
+        window.scrollTo(0, 0);
+    }
 
-        // ---- Тосны үнэ (менежер admin.html → "Тосны үнэ" цэснээс өөрчилнө) ----
-        const DEFAULT_OILS = [
-            { name: "M100 (0W20)", price: 54900 }, { name: "M100 (5W30)", price: 54900 },
-            { name: "M100 (5W40)", price: 58900 }, { name: "M103 (10W40)", price: 59900 }, { name: "M110 (50)", price: 64900 }
-        ];
-        let oilsList = DEFAULT_OILS, filterPrice = 18000;
-        const money = n => Math.round(n).toLocaleString() + ' ₮';
-        function todayStr() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
-        function saleOn(o) { return !!(o.saleActive && o.salePrice > 0 && o.salePrice < o.price && (!o.saleUntil || o.saleUntil >= todayStr())); }
-        function unitPrice(o) { return saleOn(o) ? o.salePrice : o.price; }
-        function renderOilOptions() {
-            const sel = document.getElementById('oilSelect');
-            const prev = sel.value;
-            sel.innerHTML = '<option value="">-- Тос сонгох --</option>' + oilsList.map((o, i) =>
-                `<option value="${i}">${o.name} — ${saleOn(o) ? '🔥 ' + o.salePrice.toLocaleString() + '₮/л (' + o.price.toLocaleString() + '₮ биш)' : o.price.toLocaleString() + '₮/л'}</option>`).join('');
-            if (prev && oilsList[prev]) sel.value = prev;
-            const sales = oilsList.filter(saleOn);
-            const banner = document.getElementById('saleBanner');
-            banner.innerHTML = sales.length ? '🔥 <b>Урамшуулал:</b> ' + sales.map(o => `${o.name} 1л <b>${o.salePrice.toLocaleString()}₮</b>${o.saleNote ? ' (' + o.saleNote + ')' : ''}${o.saleUntil ? ' — ' + o.saleUntil + ' хүртэл' : ''}`).join('; ') : '';
-            banner.style.display = sales.length ? 'block' : 'none';
-            document.querySelector('#filterCheck option[value="yes"]').textContent = `Тийм (${filterPrice.toLocaleString()}₮)`;
-            calc();
-        }
-        db.collection("oilsDb").get().then(snap => {
-            const list = [];
-            snap.forEach(d => {
-                const o = d.data();
-                if (d.id === '_settings') { if (o.filterPrice >= 0) filterPrice = Number(o.filterPrice); return; }
-                if (o.active === false || !o.name || !(o.price > 0)) return;
-                list.push({ ...o, price: Number(o.price), salePrice: Number(o.salePrice) || 0 });
-            });
-            if (list.length) oilsList = list.sort((a, b) => (a.order || 0) - (b.order || 0) || a.name.localeCompare(b.name));
-            renderOilOptions();
-        }).catch(() => renderOilOptions());
+    // ====== 1. ТООЦООЛУУР ======
+    let carsDb = [];
+    const DEFAULT_OILS = [
+        { name: "M100 (0W20)", price: 54900 }, { name: "M100 (5W30)", price: 54900 },
+        { name: "M100 (5W40)", price: 58900 }, { name: "M103 (10W40)", price: 59900 }, { name: "M110 (50)", price: 64900 }
+    ];
+    let oilsList = DEFAULT_OILS, filterPrice = 18000, oilIdx = -1, qty = 4;
 
-        function calc() {
-            const o = oilsList[document.getElementById('oilSelect').value];
-            const qty = Math.max(0, parseFloat(document.getElementById('oilQty').value) || 0);
-            const unit = o ? unitPrice(o) : 0;
-            const sub = unit * qty;
-            const save = o && saleOn(o) ? (o.price - o.salePrice) * qty : 0;
-            const filter = document.getElementById('filterCheck').value === 'yes' ? filterPrice : 0;
-            document.getElementById('calcSubLabel').textContent = o ? `Тос: ${qty} л × ${unit.toLocaleString()}₮` : 'Тосны үнэ:';
-            document.getElementById('calcSub').textContent = money(sub);
-            document.getElementById('calcSaveRow').style.display = save > 0 ? 'flex' : 'none';
-            document.getElementById('calcSave').textContent = money(save);
-            document.getElementById('calcFilter').textContent = money(filter);
-            document.getElementById('calcTotal').textContent = money(sub + filter);
+    // Тосны нэрээс савны зургийг олно: "M100 (5W30)" → can-m100-5w30.png
+    const CAN_IMAGES = ['m100-0w20', 'm100-5w30', 'm100-5w40', 'm103-10w40', 'm110-50'];
+    function oilImage(o) {
+        if (!o) return 'can-generic.png';
+        const key = String(o.name).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').join('-');
+        return CAN_IMAGES.includes(key) ? 'can-' + key + '.png' : 'can-generic.png';
+    }
+    function oilTitle(o) { return String(o.name).replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim(); }
+    function todayStr() { return localISO(new Date()); }
+    function saleOn(o) { return !!(o && o.saleActive && o.salePrice > 0 && o.salePrice < o.price && (!o.saleUntil || o.saleUntil >= todayStr())); }
+    function unitPrice(o) { return saleOn(o) ? o.salePrice : o.price; }
+    function currentOil() { return oilsList[oilIdx]; }
+    function currentCar() { return carsDb[$('carSelect').value]; }
+
+    db.collection("carsDb").get().then(snap => {
+        carsDb = snap.docs.map(d => d.data()).filter(c => c && c.name).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+        const sel = $('carSelect');
+        sel.innerHTML = '<option value="">-- Машинаа сонгоно уу --</option>';
+        carsDb.forEach((c, i) => { const o = document.createElement('option'); o.value = i; o.textContent = c.name; sel.appendChild(o); });
+        const saved = store.get('motys_car');
+        if (saved) { const i = carsDb.findIndex(c => c.name === saved); if (i >= 0) { sel.value = i; onCarChange(true); } }
+    }).catch(() => {
+        $('carSelect').innerHTML = '<option value="">Машины жагсаалт ачаалж чадсангүй</option>';
+        $('carLabel').textContent = 'Жагсаалт ачаалсангүй';
+    });
+
+    function onCarChange(silent) {
+        const car = currentCar();
+        if (car) {
+            $('carLabel').textContent = car.name + (car.engine ? ' · ' + car.engine : '');
+            $('carCap').textContent = car.capacity ? car.capacity + ' л' : '';
+            const liters = Math.ceil((Number(car.capacity) || 0) * 2) / 2;
+            if (liters > 0) qty = liters;
+            if (!silent) store.set('motys_car', car.name);
+        } else {
+            $('carLabel').textContent = 'Машинаа сонгоно уу';
+            $('carCap').textContent = '';
         }
         calc();
+    }
 
-        // ---- Цаг захиалга ----
-        // ===== ЦАГ ЗАХИАЛГА: хуваарь, дүүргэлт, амралтын өдөр =====
-        // Менежер admin.html → "Цагийн хуваарь" цэснээс эдгээрийг өөрчилнө.
-        const DEFAULT_BOOKING_CFG = {
-            hours: {
-                '1': { open: true, from: '09:00', to: '18:00' }, '2': { open: true, from: '09:00', to: '18:00' },
-                '3': { open: true, from: '09:00', to: '18:00' }, '4': { open: true, from: '09:00', to: '18:00' },
-                '5': { open: true, from: '09:00', to: '18:00' }, '6': { open: true, from: '09:00', to: '18:00' },
-                '0': { open: true, from: '09:00', to: '18:00' }
-            },
-            slotMinutes: 30, perSlot: 2, maxDaysAhead: 30, notice: '', closedDays: []
-        };
-        const WEEKDAYS = ['Ням', 'Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба'];
-        let bookingCfg = DEFAULT_BOOKING_CFG;
-        let timesToken = 0;
-
-        function localISO(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
-        function toMin(hm) { const [h, m] = String(hm || '0:0').split(':').map(Number); return h * 60 + (m || 0); }
-        function toHM(min) { return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0'); }
-        function closedInfo(date) { return (bookingCfg.closedDays || []).find(c => date >= c.from && date <= (c.to || c.from)); }
-        function daySlots(date) {
-            const h = (bookingCfg.hours || {})[String(new Date(date + 'T00:00:00').getDay())];
-            if (!h || !h.open) return null;
-            const step = Math.max(10, Number(bookingCfg.slotMinutes) || 30), out = [];
-            for (let m = toMin(h.from); m <= toMin(h.to); m += step) out.push(toHM(m));
-            return out;
+    function renderOils() {
+        if (oilIdx >= oilsList.length) oilIdx = -1;
+        if (oilIdx < 0 && oilsList.length) {
+            const i = oilsList.findIndex(o => /5w-?30/i.test(o.name));
+            oilIdx = i >= 0 ? i : 0;
         }
+        $('oilCount').textContent = oilsList.length + ' төрөл';
+        $('oilCards').innerHTML = oilsList.map((o, i) => {
+            const on = saleOn(o);
+            return `<button type="button" role="radio" aria-checked="${i === oilIdx}" class="oil ${i === oilIdx ? 'sel' : 'g'}" onclick="pickOil(${i})">
+                <span class="pic">${on ? '<span class="tag">Хямдрал</span>' : ''}<img src="${oilImage(o)}" alt="${esc(oilTitle(o))}" loading="lazy"></span>
+                <span><span class="nm">${esc(oilTitle(o))}</span><span class="pr">${fmt(unitPrice(o))}₮/л${on ? '<span class="old">' + fmt(o.price) + '</span>' : ''}</span></span>
+            </button>`;
+        }).join('');
+        const sales = oilsList.filter(saleOn);
+        const banner = $('saleBanner');
+        banner.innerHTML = sales.map(o => `🔥 <b>${esc(oilTitle(o))}</b> 1л ${fmt(o.salePrice)}₮${o.saleNote ? ' · ' + esc(o.saleNote) : ''}${o.saleUntil ? ' · ' + esc(o.saleUntil) + ' хүртэл' : ''}`).join('<br>');
+        banner.classList.toggle('hidden', !sales.length);
+        $('filterLabel').textContent = '+' + fmt(filterPrice) + '₮';
+        calc();
+    }
+    function pickOil(i) { oilIdx = i; renderOils(); }
+    function stepQty(d) { qty = Math.min(30, Math.max(0.5, Math.round((qty + d) * 2) / 2)); calc(); }
 
-        function initBookingDate() {
-            const d = document.getElementById('bookDate');
-            const today = localISO(new Date());
-            d.min = today;
-            d.max = localISO(new Date(Date.now() + (Number(bookingCfg.maxDaysAhead) || 30) * 86400000));
-            if (!d.value || d.value < today) d.value = today;
-        }
-
-        function renderHoursInfo() {
-            const order = ['1', '2', '3', '4', '5', '6', '0'], parts = [];
-            order.forEach(k => {
-                const h = bookingCfg.hours[k] || {};
-                parts.push(`${WEEKDAYS[+k]}: ${h.open ? h.from + '–' + h.to : 'амарна'}`);
-            });
-            document.getElementById('bookHoursInfo').innerHTML = '🕘 Ажлын цаг — ' + parts.join(' · ');
-            const n = document.getElementById('bookingNotice');
-            n.textContent = bookingCfg.notice || '';
-            n.style.display = bookingCfg.notice ? 'block' : 'none';
-        }
-
-        async function refreshTimes() {
-            const my = ++timesToken;
-            const date = document.getElementById('bookDate').value;
-            const t = document.getElementById('bookTime');
-            const msg = document.getElementById('bookDayMsg');
-            const btn = document.getElementById('bookBtn');
-            const block = (text) => {
-                t.innerHTML = '<option value="">—</option>'; t.disabled = true; btn.disabled = true;
-                msg.textContent = text; msg.style.display = 'block';
-            };
-            msg.style.display = 'none'; t.disabled = false; btn.disabled = false;
-            if (!date) { t.innerHTML = '<option value="">-- Эхлээд өдөр сонгоно уу --</option>'; return; }
-            const closed = closedInfo(date);
-            if (closed) return block(`📅 ${date}: ${closed.reason || 'Захиалга авахгүй'}. Өөр өдөр сонгоно уу.`);
-            const slots = daySlots(date);
-            if (!slots) return block(`📅 ${WEEKDAYS[new Date(date + 'T00:00:00').getDay()]} гарагт бид амардаг. Өөр өдөр сонгоно уу.`);
-            t.innerHTML = '<option value="">Ачаалж байна...</option>';
-            let taken = {};
-            try { const doc = await db.collection('bookingSlots').doc(date).get(); if (doc.exists) taken = doc.data(); } catch (e) { console.warn(e); }
-            if (my !== timesToken) return;
-            const per = Math.max(1, Number(bookingCfg.perSlot) || 1);
-            const now = new Date(), isToday = date === localISO(now), nowMin = now.getHours() * 60 + now.getMinutes();
-            let html = '<option value="">-- Цаг сонгох --</option>', free = 0;
-            slots.forEach(v => {
-                if (isToday && toMin(v) <= nowMin) return;
-                const full = (taken[v] || 0) >= per;
-                if (!full) free++;
-                html += `<option value="${v}" ${full ? 'disabled' : ''}>${v}${full ? ' — дүүрсэн' : ''}</option>`;
-            });
-            if (!free) return block('😔 Энэ өдрийн цаг бүгд дүүрсэн байна. Өөр өдөр сонгоно уу.');
-            t.innerHTML = html;
-        }
-
-        async function loadBookingCfg() {
-            try {
-                const doc = await db.collection('settings').doc('booking').get();
-                if (doc.exists) bookingCfg = Object.assign({}, DEFAULT_BOOKING_CFG, doc.data());
-            } catch (e) { console.warn('Тохиргоо уншиж чадсангүй', e); }
-            initBookingDate(); renderHoursInfo(); refreshTimes();
-        }
-        initBookingDate();
-        document.getElementById('bookDate').addEventListener('change', refreshTimes);
-        loadBookingCfg();
-
-        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('bookBtn');
-            const date = document.getElementById('bookDate').value;
-            const time = document.getElementById('bookTime').value;
-            if (!time) return alert('Цагаа сонгоно уу.');
-            btn.disabled = true; btn.textContent = 'Илгээж байна...';
-            try {
-                // Захиалга болон тухайн цагийн дүүргэлтийг хамт хадгална
-                const batch = db.batch();
-                batch.set(db.collection("bookings").doc(), {
-                    name: document.getElementById('bookName').value.trim(),
-                    phone: document.getElementById('bookPhone').value.trim(),
-                    car: document.getElementById('bookCar').value.trim(),
-                    date, time,
-                    service: document.getElementById('bookService').value.trim(),
-                    status: 'new',
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                batch.set(db.collection("bookingSlots").doc(date), { [time]: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-                await batch.commit();
-                document.getElementById('bookingForm').style.display = 'none';
-                document.getElementById('bookingSuccess').style.display = 'block';
-            } catch (err) {
-                console.error(err);
-                if (err.code === 'permission-denied') {
-                    alert('Уучлаарай, энэ цаг дөнгөж сая дүүрчихлээ. Өөр цаг сонгоно уу.');
-                    refreshTimes();
-                } else {
-                    alert('Захиалга илгээхэд алдаа гарлаа. Дахин оролдоно уу эсвэл утсаар холбогдоно уу.');
-                }
-            }
-            btn.disabled = false; btn.textContent = 'Захиалга илгээх';
+    db.collection("oilsDb").get().then(snap => {
+        const list = [];
+        snap.forEach(d => {
+            const o = d.data();
+            if (d.id === '_settings') { if (o.filterPrice >= 0) filterPrice = Number(o.filterPrice); return; }
+            if (o.active === false || !o.name || !(o.price > 0)) return;
+            list.push({ ...o, price: Number(o.price), salePrice: Number(o.salePrice) || 0 });
         });
+        if (list.length) oilsList = list.sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.name).localeCompare(String(b.name)));
+        oilIdx = -1; renderOils();
+    }).catch(() => renderOils());
 
-        function newBooking() {
-            document.getElementById('bookingForm').reset();
-            document.getElementById('bookingForm').style.display = 'block';
-            document.getElementById('bookingSuccess').style.display = 'none';
-            initBookingDate(); refreshTimes();
+    function totals() {
+        const o = currentOil();
+        const unit = o ? unitPrice(o) : 0;
+        const sub = unit * qty;
+        const filter = $('filterCheck').checked ? filterPrice : 0;
+        const save = saleOn(o) ? (o.price - o.salePrice) * qty : 0;
+        return { o, unit, sub, filter, save, total: sub + filter };
+    }
+    function calc() {
+        const t = totals();
+        $('qtyVal').textContent = qty;
+        $('calcTotal').innerHTML = fmt(t.total) + '<small>₮</small>';
+        $('calcBreak').innerHTML = t.o
+            ? `Тос ${qty} л × ${fmt(t.unit)}₮ = ${fmt(t.sub)}₮` + (t.filter ? `<br>Шүүлтүүр ${fmt(t.filter)}₮` : '') + (t.save > 0 ? `<br><span style="color:#86EFAC;">Хямдралаар ${fmt(t.save)}₮ хэмнэлээ</span>` : '')
+            : '';
+    }
+    renderOils();
+
+    // ====== 2. ЦАГ ЗАХИАЛГА ======
+    // Менежер admin.html → "Цагийн хуваарь" цэснээс эдгээрийг өөрчилнө.
+    const DEFAULT_BOOKING_CFG = {
+        hours: {
+            '1': { open: true, from: '09:00', to: '18:00' }, '2': { open: true, from: '09:00', to: '18:00' },
+            '3': { open: true, from: '09:00', to: '18:00' }, '4': { open: true, from: '09:00', to: '18:00' },
+            '5': { open: true, from: '09:00', to: '18:00' }, '6': { open: true, from: '09:00', to: '18:00' },
+            '0': { open: true, from: '09:00', to: '18:00' }
+        },
+        slotMinutes: 30, perSlot: 2, maxDaysAhead: 30, notice: '', closedDays: []
+    };
+    const WEEKDAYS = ['Ням', 'Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба'];
+    const WD_SHORT = ['Ня', 'Да', 'Мя', 'Лх', 'Пү', 'Ба', 'Бя'];
+    let bookingCfg = DEFAULT_BOOKING_CFG, selDate = '', selTime = '', timesToken = 0;
+
+    function localISO(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+    function toMin(hm) { const [h, m] = String(hm || '0:0').split(':').map(Number); return h * 60 + (m || 0); }
+    function toHM(min) { return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0'); }
+    function closedInfo(date) { return (bookingCfg.closedDays || []).find(c => c && date >= c.from && date <= (c.to || c.from)); }
+    function weekday(date) { return new Date(date + 'T00:00:00').getDay(); }
+    function daySlots(date) {
+        const h = (bookingCfg.hours || {})[String(weekday(date))];
+        if (!h || !h.open) return null;
+        const step = Math.max(10, Number(bookingCfg.slotMinutes) || 30), out = [];
+        for (let m = toMin(h.from); m <= toMin(h.to); m += step) out.push(toHM(m));
+        return out;
+    }
+    function dayOpen(date) {
+        if (closedInfo(date) || !daySlots(date)) return false;
+        if (date === localISO(new Date())) {
+            const now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
+            return daySlots(date).some(v => toMin(v) > nowMin);
         }
-    </script>
+        return true;
+    }
+    function niceDate(date) {
+        const d = new Date(date + 'T00:00:00');
+        return `${WEEKDAYS[d.getDay()]}, ${d.getMonth() + 1}/${d.getDate()}`;
+    }
+    function updateTitle() {
+        $('pickTitle').textContent = selDate ? (WEEKDAYS[weekday(selDate)] + (selTime ? ', ' + selTime : '')) : '—';
+        $('bookBtnText').textContent = selDate && selTime ? `${WEEKDAYS[weekday(selDate)]} ${selTime} цагт захиалах` : 'Захиалга илгээх';
+    }
+
+    function renderDays() {
+        const n = Math.min(60, Math.max(1, Number(bookingCfg.maxDaysAhead) || 30));
+        const today = new Date(); let html = '', firstOpen = '';
+        for (let i = 0; i <= n; i++) {
+            const dt = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+            const iso = localISO(dt), open = dayOpen(iso);
+            if (open && !firstOpen) firstOpen = iso;
+            const label = i === 0 ? 'Өнөөдөр' : (i === 1 ? 'Маргааш' : WD_SHORT[dt.getDay()]);
+            html += `<button type="button" class="day ${iso === selDate ? 'sel' : 'g'}" ${open ? '' : 'disabled'} onclick="pickDay('${iso}')" aria-label="${niceDate(iso)}${open ? '' : ' — захиалга авахгүй'}"><span>${label}</span>${open ? '<b>' + dt.getDate() + '</b>' : '<i>' + dt.getDate() + '</i>'}</button>`;
+        }
+        $('days').innerHTML = html;
+        if (!selDate || !dayOpen(selDate)) { selDate = firstOpen; selTime = ''; if (selDate) return renderDays(), refreshTimes(); }
+    }
+    function pickDay(iso) { selDate = iso; selTime = ''; renderDays(); refreshTimes(); }
+    function pickTime(v) { selTime = v; document.querySelectorAll('.slot').forEach(b => { const on = b.dataset.t === v; b.classList.toggle('sel', on); b.classList.toggle('g', !on); }); updateTitle(); }
+
+    async function refreshTimes() {
+        const my = ++timesToken, date = selDate;
+        const slotsEl = $('slots'), msg = $('dayMsg');
+        msg.classList.add('hidden'); $('freeCount').textContent = '';
+        updateTitle();
+        if (!date) { slotsEl.innerHTML = ''; msg.textContent = 'Ойрын өдрүүдэд сул цаг алга. Утсаар холбогдоно уу.'; msg.classList.remove('hidden'); return; }
+        const closed = closedInfo(date);
+        if (closed) { slotsEl.innerHTML = ''; msg.textContent = `${niceDate(date)}: ${closed.reason || 'захиалга авахгүй'}.`; msg.classList.remove('hidden'); return; }
+        const slots = daySlots(date) || [];
+        slotsEl.innerHTML = '<span class="muted" style="grid-column:1/-1; font-size:13px;">Ачаалж байна...</span>';
+        let taken = {};
+        try { const doc = await db.collection('bookingSlots').doc(date).get(); if (doc.exists) taken = doc.data() || {}; } catch (e) { console.warn(e); }
+        if (my !== timesToken) return;
+        const per = Math.max(1, Number(bookingCfg.perSlot) || 1);
+        const now = new Date(), isToday = date === localISO(now), nowMin = now.getHours() * 60 + now.getMinutes();
+        let html = '', free = 0;
+        slots.forEach(v => {
+            if (isToday && toMin(v) <= nowMin) return;
+            const full = (taken[v] || 0) >= per;
+            if (!full) free++;
+            if (full && v === selTime) selTime = '';
+            html += `<button type="button" class="slot ${v === selTime ? 'sel' : 'g'}" data-t="${v}" ${full ? 'disabled aria-label="' + v + ' — дүүрсэн"' : ''} onclick="pickTime('${v}')">${v}</button>`;
+        });
+        if (!free) { slotsEl.innerHTML = ''; msg.textContent = 'Энэ өдрийн цаг бүгд дүүрсэн байна. Өөр өдөр сонгоно уу.'; msg.classList.remove('hidden'); selTime = ''; updateTitle(); return; }
+        slotsEl.innerHTML = html;
+        $('freeCount').textContent = free + ' сул';
+        updateTitle();
+    }
+
+    function renderHoursInfo() {
+        const parts = ['1', '2', '3', '4', '5', '6', '0'].map(k => {
+            const h = (bookingCfg.hours || {})[k] || {};
+            return `${WD_SHORT[+k]} ${h.open ? h.from + '–' + h.to : 'амарна'}`;
+        });
+        $('hoursInfo').textContent = 'Ажлын цаг: ' + parts.join(' · ');
+        const n = $('bookingNotice');
+        n.textContent = bookingCfg.notice || '';
+        n.classList.toggle('hidden', !bookingCfg.notice);
+    }
+    async function loadBookingCfg() {
+        try {
+            const doc = await db.collection('settings').doc('booking').get();
+            if (doc.exists) bookingCfg = Object.assign({}, DEFAULT_BOOKING_CFG, doc.data());
+        } catch (e) { console.warn('Тохиргоо уншиж чадсангүй', e); }
+        renderHoursInfo();
+        if (!$('viewBooking').classList.contains('hidden')) { renderDays(); refreshTimes(); }
+    }
+    loadBookingCfg();
+
+    function serviceText() {
+        const t = totals();
+        if (!t.o) return 'Тос солих (тос сонгоогүй)';
+        return `${oilTitle(t.o)} ${qty}л` + (t.filter ? ' + шүүлтүүр' : '') + ` · ${fmt(t.total)}₮`;
+    }
+    function goBooking() {
+        const t = totals(), car = currentCar();
+        $('sumCar').textContent = car ? car.name : 'Машин сонгоогүй';
+        $('sumOil').textContent = t.o ? `${oilTitle(t.o)} · ${qty} л${t.filter ? ' · шүүлтүүр' : ''}` : 'Тос сонгоогүй';
+        $('sumTotal').textContent = fmt(t.total) + '₮';
+        $('sumImg').src = oilImage(t.o);
+        if (!$('bookPhone').value) $('bookPhone').value = store.get('motys_phone');
+        if (!$('bookName').value) $('bookName').value = store.get('motys_name');
+        if (!$('bookPlate').value) $('bookPlate').value = store.get('motys_plate');
+        $('formErr').classList.add('hidden');
+        go('viewBooking');
+        renderDays(); refreshTimes();
+    }
+
+    $('bookPhone').addEventListener('input', e => {
+        const d = e.target.value.replace(/\D/g, '').slice(0, 8);
+        e.target.value = d.length > 4 ? d.slice(0, 4) + ' ' + d.slice(4) : d;
+        e.target.classList.remove('bad'); $('formErr').classList.add('hidden');
+    });
+
+    let sending = false;
+    $('bookingForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (sending) return;
+        const err = $('formErr'), showErr = m => { err.textContent = m; err.classList.remove('hidden'); };
+        err.classList.add('hidden');
+        const phone = $('bookPhone').value.replace(/\D/g, '');
+        if (!selDate) return showErr('Өдрөө сонгоно уу.');
+        if (!selTime) return showErr('Цагаа сонгоно уу.');
+        if (!/^[0-9]{8}$/.test(phone)) { $('bookPhone').classList.add('bad'); $('bookPhone').focus(); return showErr('8 оронтой утасны дугаараа бичнэ үү.'); }
+        const car = currentCar(), plate = $('bookPlate').value.trim();
+        const carText = [car ? car.name : '', plate].filter(Boolean).join(', ').slice(0, 80) || 'Тодорхойгүй';
+        const name = $('bookName').value.trim().slice(0, 60) || 'Үйлчлүүлэгч';
+        const service = serviceText().slice(0, 300);
+        const date = selDate, time = selTime;
+
+        sending = true;
+        const btn = $('bookBtn'); btn.disabled = true; $('bookBtnText').textContent = 'Илгээж байна...';
+        try {
+            // Захиалга болон тухайн цагийн дүүргэлтийг хамт хадгална
+            const batch = db.batch();
+            batch.set(db.collection("bookings").doc(), {
+                name, phone, car: carText, date, time, service,
+                status: 'new',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            batch.set(db.collection("bookingSlots").doc(date), { [time]: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+            await batch.commit();
+
+            store.set('motys_phone', $('bookPhone').value);
+            if ($('bookName').value.trim()) store.set('motys_name', $('bookName').value.trim());
+            if (plate) store.set('motys_plate', plate);
+
+            const t = totals();
+            $('doneWhen').textContent = `${WEEKDAYS[weekday(date)]}, ${time}`;
+            $('donePhone').textContent = $('bookPhone').value;
+            $('doneOil').textContent = t.o ? `${oilTitle(t.o)} · ${qty} л` : 'Тос солих';
+            $('doneCar').textContent = (t.filter ? 'Шүүлтүүр · ' : '') + carText + ' · ' + niceDate(date);
+            $('doneTotal').textContent = t.o ? fmt(t.total) + '₮' : '';
+            $('doneImg').src = oilImage(t.o);
+            go('viewDone');
+        } catch (ex) {
+            console.error(ex);
+            if (ex.code === 'permission-denied') {
+                showErr('Уучлаарай, энэ цаг дөнгөж сая дүүрчихлээ. Өөр цаг сонгоно уу.');
+                selTime = ''; refreshTimes();
+            } else {
+                showErr('Захиалга илгээхэд алдаа гарлаа. Интернэтээ шалгаад дахин оролдоно уу.');
+            }
+        }
+        sending = false; btn.disabled = false; updateTitle();
+    });
+
+    function newBooking() {
+        selTime = '';
+        go('viewCalc');
+    }
+</script>
 </body>
 </html>
