@@ -570,6 +570,7 @@
                     <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                         <span id="bookingCountBadge" style="font-size:0.8rem; color:var(--text-muted);"></span>
                         <button id="notifyEnableBtn" class="btn-sm" style="display:none; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="enableBookingNotifications()">🔔 Мэдэгдэл асаах</button>
+                        <button class="btn-sm" style="background:#e61924; color:white;" onclick="openManualBookingModal()"><i class="fa-solid fa-phone"></i> Захиалга нэмэх</button>
                         <button class="btn-sm admin-only" style="display:none; background:#0ea5e9; color:white;" onclick="openBookingSettingsModal()"><i class="fa-solid fa-clock"></i> Хуваарь</button>
                     </div>
                 </div>
@@ -1105,6 +1106,27 @@
                 <input type="text" id="resetPinInput" style="text-align:center; font-size:1.1rem;">
             </div>
             <button class="btn-danger" style="width:100%; padding:12px; margin-top:8px;" onclick="confirmResetDataWithPin()">Устгах</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="manualBookingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-phone"></i> Утсаар авсан захиалга</h2>
+                <button onclick="closeManualBookingModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="form-group"><label>Огноо:</label><input type="date" id="mbDate" onchange="refreshManualTimes()"></div>
+                <div class="form-group"><label>Цаг:</label><select id="mbTime"></select></div>
+            </div>
+            <div id="mbDayInfo" style="font-size:0.8rem; color:var(--warning); margin:-4px 0 8px; min-height:1em;"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="form-group"><label>Утас (8 орон):</label><input type="tel" id="mbPhone" maxlength="8" inputmode="numeric" placeholder="99112233"></div>
+                <div class="form-group"><label>Нэр:</label><input type="text" id="mbName" maxlength="60" placeholder="заавал биш"></div>
+            </div>
+            <div class="form-group"><label>Машин, улсын дугаар:</label><input type="text" id="mbCar" maxlength="80" placeholder="Toyota Prius, 1234 УБН"></div>
+            <div class="form-group"><label>Үйлчилгээ:</label><textarea id="mbService" rows="2" maxlength="280" placeholder="M100 5W30 4л + шүүлтүүр"></textarea></div>
+            <button class="btn-brand" id="mbSaveBtn" style="width:100%; padding:12px; margin-top:6px;" onclick="saveManualBooking()">Захиалга хадгалах</button>
         </div>
     </div>
 
@@ -1860,6 +1882,70 @@
                 if (used > 0) batch.update(slotRef, { count: firebase.firestore.FieldValue.increment(-1) });
             }
             try { await batch.commit(); logAudit('booking_delete', `Цаг захиалга устгав: ${b ? b.date + ' ' + b.time + ' ' + b.car + ' ' + b.name : id}`); } catch (err) { alert('Устгаж чадсангүй: ' + err.message); }
+        }
+
+        // ===== УТСААР АВСАН ЗАХИАЛГА НЭМЭХ =====
+        function mbSlotsFor(date) {
+            const h = (bookingCfg.hours || {})[String(new Date(date + 'T00:00:00').getDay())];
+            const toMin = hm => { const [a, b] = String(hm || '0:0').split(':').map(Number); return a * 60 + (b || 0); };
+            const toHM = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+            const from = h && h.open ? h.from : '09:00', to = h && h.open ? h.to : '18:00';
+            const step = Math.max(10, Number(bookingCfg.slotMinutes) || 30), out = [];
+            for (let m = toMin(from); m <= toMin(to); m += step) out.push(toHM(m));
+            return { slots: out, open: !!(h && h.open) };
+        }
+        function openManualBookingModal() {
+            ['mbPhone', 'mbName', 'mbCar', 'mbService'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('mbDate').value = localISODate(new Date());
+            document.getElementById('manualBookingModal').style.display = 'flex';
+            refreshManualTimes();
+        }
+        function closeManualBookingModal() { document.getElementById('manualBookingModal').style.display = 'none'; }
+        let mbTaken = {};
+        async function refreshManualTimes() {
+            const date = document.getElementById('mbDate').value, sel = document.getElementById('mbTime'), info = document.getElementById('mbDayInfo');
+            sel.innerHTML = ''; info.textContent = ''; mbTaken = {};
+            if (!date) return;
+            const { slots, open } = mbSlotsFor(date);
+            const closed = closedDayInfo(date);
+            if (closed) info.textContent = '⚠ Энэ өдөр хаалттай: ' + (closed.reason || '');
+            else if (!open) info.textContent = '⚠ Энэ гарагт ажилладаггүй (хуваарийн дагуу)';
+            try {
+                const snap = await db.collection('slotCounts').where('date', '==', date).get();
+                snap.forEach(d => { const x = d.data(); if (x && x.time) mbTaken[x.time] = Number(x.count) || 0; });
+            } catch (e) { console.warn(e); }
+            const per = Math.max(1, Number(bookingCfg.perSlot) || 1);
+            sel.innerHTML = slots.map(t => {
+                const used = mbTaken[t] || 0;
+                return `<option value="${t}">${t}${used ? ` — ${used}/${per}${used >= per ? ' дүүрсэн' : ''}` : ''}</option>`;
+            }).join('');
+            const firstFree = slots.find(t => (mbTaken[t] || 0) < per);
+            if (firstFree) sel.value = firstFree;
+        }
+        async function saveManualBooking() {
+            const date = document.getElementById('mbDate').value, time = document.getElementById('mbTime').value;
+            const phone = document.getElementById('mbPhone').value.replace(/\D/g, '');
+            const name = document.getElementById('mbName').value.trim() || 'Утсаар захиалсан';
+            const car = document.getElementById('mbCar').value.trim() || 'Тодорхойгүй';
+            const service = '📞 ' + (document.getElementById('mbService').value.trim() || 'Тос солих');
+            if (!date || !time) return alert('Огноо, цагаа сонгоно уу.');
+            if (!/^[0-9]{8}$/.test(phone)) return alert('Утасны дугаар 8 оронтой байх ёстой.');
+            const per = Math.max(1, Number(bookingCfg.perSlot) || 1);
+            if ((mbTaken[time] || 0) >= per && !confirm(`${date} ${time} цаг дүүрсэн байна (${mbTaken[time]}/${per}). Илүү машин нэмэх үү?`)) return;
+            const btn = document.getElementById('mbSaveBtn'); btn.disabled = true; btn.textContent = 'Хадгалж байна...';
+            try {
+                const batch = db.batch();
+                batch.set(db.collection('bookings').doc(), {
+                    name: name.slice(0, 60), phone, car: car.slice(0, 80), date, time, service: service.slice(0, 300),
+                    status: 'new', timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                batch.set(db.collection('slotCounts').doc(date + '_' + time), { date, time, count: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+                await batch.commit();
+                logAudit('booking_manual', `Утсаар захиалга нэмэв: ${date} ${time} ${car} ${phone}`);
+                closeManualBookingModal();
+                alert('Захиалга хадгалагдлаа. Энэ цаг үйлчлүүлэгчийн хуудсанд дүүргэлтэд тооцогдоно.');
+            } catch (err) { alert('Хадгалж чадсангүй: ' + err.message); }
+            btn.disabled = false; btn.textContent = 'Захиалга хадгалах';
         }
 
         // ===== ЦАГИЙН ХУВААРЬ =====
