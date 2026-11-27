@@ -248,6 +248,23 @@
         .span-4 { grid-column: span 4 !important; } .span-5 { grid-column: span 5 !important; } .span-6 { grid-column: span 6 !important; }
         .span-7 { grid-column: span 7 !important; } .span-8 { grid-column: span 8 !important; }
         .page-hidden { display: none !important; }
+        /* Бараа хүлээн авах, тооллого */
+        .rc-help { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
+        .rc-list { display: flex; flex-direction: column; gap: 8px; }
+        .rc-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--input-bg); }
+        .rc-item small { color: var(--text-muted); }
+        .rc-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+        .rc-badge { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; margin-left: 6px; background: var(--input-bg); border: 1px solid var(--border); }
+        .rc-badge.pending { color: var(--accent-blue); border-color: var(--accent-blue); }
+        .rc-badge.counted { color: var(--warning); border-color: var(--warning); }
+        .rc-badge.received, .rc-badge.closed { color: var(--success); border-color: var(--success); }
+        .rc-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .rc-row input { width: 110px; font-size: 16px; text-align: right; }
+        .rc-err { color: var(--moty-red); font-size: 0.85rem; min-height: 1.2em; margin-top: 8px; }
+        .rc-h3 { font-size: 0.95rem; margin: 14px 0 8px; }
+        .rc-diff-neg { color: var(--moty-red); font-weight: 600; } .rc-diff-pos { color: var(--warning); font-weight: 600; } .rc-diff-ok { color: var(--success); }
+        .rc-wo { border: 1px dashed var(--border); border-radius: 12px; padding: 12px; margin-top: 6px; }
+        .rc-wo small { color: var(--text-muted); }
         .card { border-radius: var(--radius); padding: 22px; box-shadow: none; backdrop-filter: none; }
         body:not(.light-theme) .card { background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0)) , var(--bg-card); }
         .card-header { border-bottom: none; padding-bottom: 0; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
@@ -361,6 +378,7 @@
         <div class="sb-label">Үндсэн цэс</div>
         <button class="sb-item" data-nav="dashboard" onclick="showPage('dashboard')"><i class="fa-solid fa-gauge-high"></i> Самбар</button>
         <button class="sb-item" data-nav="pos" onclick="showPage('pos')"><i class="fa-solid fa-cash-register"></i> Касс & Бараа <span class="sb-count" id="sbCartCount" style="display:none;"></span></button>
+        <button class="sb-item" data-nav="receive" onclick="showPage('receive')"><i class="fa-solid fa-truck-ramp-box"></i> Бараа хүлээн авах <span class="sb-count" id="sbReceiveCount" style="display:none;"></span></button>
         <button class="sb-item" data-nav="customers" onclick="showPage('customers')"><i class="fa-solid fa-users"></i> Харилцагч</button>
         <button class="sb-item" data-nav="bookings" onclick="showPage('bookings')"><i class="fa-solid fa-calendar-check"></i> Цаг захиалга <span class="sb-count" id="sbBookingCount" style="display:none;"></span></button>
         <button class="sb-item" data-nav="credit" onclick="showPage('credit')"><i class="fa-solid fa-hand-holding-dollar"></i> Зээл & Төлөлт <span class="sb-count" id="sbCreditCount" style="display:none;"></span></button>
@@ -431,6 +449,29 @@
         </div>
 
         <!-- ЗҮҮН БАГАНА -->
+        <!-- БАРАА ХҮЛЭЭН АВАХ / ТООЛЛОГО -->
+        <div class="card" data-page="receive">
+            <div class="card-header"><h2><i class="fa-solid fa-truck-ramp-box"></i> Хүлээн авах, тоолох</h2></div>
+            <p class="rc-help">Бараа ирэхэд жагсаалтаас сонгож, бараа бүрийг <b>бодитоор тоолоод</b> тоог нь оруулна. Хэдэн ширхэг ирэх ёстой нь энд харагдахгүй. Тоо таарвал бараа үлдэгдэлд шууд нэмэгдэнэ, зөрүүтэй бол менежер шалгана.</p>
+            <div id="rcTodo" class="rc-list"></div>
+        </div>
+        <div class="card admin-only" data-page="receive" style="display:none;">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-file-invoice"></i> Packing list (менежер)</h2>
+                <button class="btn-brand btn-sm" onclick="openPlCreate()"><i class="fa-solid fa-plus"></i> Шинэ packing list</button>
+            </div>
+            <p class="rc-help">Бараа ирэхээс өмнө нийлүүлэгчийн баримтаар packing list үүсгэнэ: scan хийсэн баримт, бараа, тоо, өртөг. Өртөг болон баримт зөвхөн менежерт харагдана.</p>
+            <div id="plAdminList" class="rc-list"></div>
+        </div>
+        <div class="card admin-only" data-page="receive" style="display:none;">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-clipboard-check"></i> Тооллого (менежер)</h2>
+                <button class="btn-sm btn-primary" onclick="startStocktake()"><i class="fa-solid fa-plus"></i> Тооллого эхлүүлэх</button>
+            </div>
+            <p class="rc-help">Бүх барааг кассчин тоолно. Системийн үлдэгдэлтэй харьцуулж, зөрүүг та баталгаажуулсны дараа үлдэгдэлд тусгана. Бараа орох бүрийн өмнө тооллого хийхийг зөвлөж байна.</p>
+            <div id="stAdminList" class="rc-list"></div>
+        </div>
+
         <div class="col">
             <!-- 1. БАРААНЫ ҮЛДЭГДЭЛ -->
             <div class="card span-7" data-page="pos">
@@ -511,7 +552,7 @@
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <button class="btn-sm btn-primary" onclick="openNewProductModal()"><i class="fa-solid fa-plus-circle"></i> Шинэ Бараа Нэмэх</button>
-                    <button class="btn-sm" style="background:#3b82f6; color:white;" onclick="openNewPackingListModal()"><i class="fa-solid fa-plus"></i> Парти</button>
+                    <button class="btn-sm" style="background:#3b82f6; color:white;" onclick="showPage('receive')"><i class="fa-solid fa-truck-ramp-box"></i> Packing list & Тооллого</button>
                     <button class="btn-sm" style="background:#8b5cf6; color:white;" onclick="openCategoryManager()"><i class="fa-solid fa-layer-group"></i> Ангилал</button>
                     <button class="btn-sm" style="background:#06b6d4; color:white;" onclick="openPaymentMethodManager()"><i class="fa-solid fa-credit-card"></i> Төлбөр</button>
                     <button class="btn-sm" style="background:#ec4899; color:white;" onclick="openOilCalcManagerModal()"><i class="fa-solid fa-calculator"></i> Дата</button>
@@ -522,24 +563,7 @@
                     <button class="btn-sm" style="background:#64748b; color:white;" onclick="openAuditLogModal()"><i class="fa-solid fa-shield-halved"></i> Өөрчлөлтийн түүх</button>
                     <button class="btn-sm" style="background:#0f766e; color:white;" onclick="downloadFullBackup()"><i class="fa-solid fa-download"></i> Бүрэн нөөц татах</button>
                 </div>
-                <form id="stockInForm" style="margin-top:14px;" onsubmit="submitStockIn(event)">
-                    <div class="form-group" style="display:flex; gap:8px;">
-                        <select id="selectPackingList" required style="flex:1;"></select>
-                        <button type="button" class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border); white-space:nowrap;" onclick="attachForSelectedPackingList()" title="Packing list-ийн PDF хавсаргах / харах">📎 <span id="plAttachCount"></span></button>
-                    </div>
-                    <div class="flex-grid">
-                        <div class="form-group" style="grid-column: span 2;">
-                            <select id="selectProductForStock" required onchange="autoFillCurrentPrice()"></select>
-                        </div>
-                        <div class="form-group">
-                            <input type="number" id="stockInQty" min="1" required placeholder="Тоо (+)">
-                        </div>
-                        <div class="form-group">
-                            <input type="number" id="stockInPrice" min="0" required placeholder="Үнэ (₮)">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-brand" style="width: 100%;">Барааны Орлого нэмэх</button>
-                </form>
+                <p class="rc-help" style="margin-top:12px;">Барааны орлогыг зөвхөн <b>Бараа хүлээн авах</b> хэсгээс packing list-ээр хийнэ.</p>
             </div>
         </div>
 
@@ -701,7 +725,7 @@
                 </div>
                 <div class="flex-grid">
                     <div class="form-group"><label>Зарах үнэ (₮):</label><input type="number" id="newProdPriceInput" min="0" required placeholder="219600"></div>
-                    <div class="form-group"><label>Анхны үлдэгдэл (Ширхэг):</label><input type="number" id="newProdStockInput" min="0" required placeholder="10"></div>
+                    <div class="form-group"><label>Үлдэгдэл:</label><input type="text" value="0 — packing list-ээр орлогдоно" readonly style="opacity:.7;"></div>
                 </div>
                 <button type="submit" class="btn-brand" style="width:100%; padding:12px; margin-top:10px;">Шинэ бараа хадгалах</button>
             </form>
@@ -1177,8 +1201,76 @@
                 <div class="form-group"><label>Хайрцаг дахь тоо:</label><input type="number" id="editProdBoxSize" min="1" required></div>
             </div>
             <div class="form-group"><label>Үнэ:</label><input type="number" id="editProdPrice" required></div>
-            <div class="form-group"><label>Үлдэгдэл:</label><input type="number" id="editProdStock" required></div>
+            <div class="form-group"><label>Одоогийн үлдэгдэл:</label><input type="text" id="editProdStock" readonly style="opacity:.7;"></div>
+            <div class="rc-wo">
+                <label style="font-weight:600;">Үлдэгдэл хасах (гэмтэл, алдагдал)</label>
+                <div class="flex-grid">
+                    <div class="form-group"><label>Хасах тоо</label><input type="number" id="editWoQty" min="0" step="1" placeholder="0"></div>
+                    <div class="form-group"><label>Шалтгаан</label><select id="editWoReason"><option value="">-- Сонгох --</option><option>Гэмтэлтэй</option><option>Алдагдсан</option><option>Хугацаа дууссан</option><option>Өөрийн хэрэгцээнд</option><option>Бусад</option></select></div>
+                </div>
+                <div class="form-group"><label>Тайлбар</label><input type="text" id="editWoNote" placeholder="Заавал биш"></div>
+                <small>Үлдэгдэл нэмэх нь зөвхөн packing list болон тооллогоор хийгдэнэ.</small>
+            </div>
             <button class="btn-brand" style="width:100%; padding:12px; margin-top:10px;" onclick="saveProductEdits()">Хадгалах</button>
+        </div>
+    </div>
+
+    <!-- PACKING LIST ҮҮСГЭХ (менежер) -->
+    <div class="modal-overlay" id="plCreateModal">
+        <div class="modal" style="max-width:920px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-invoice"></i> Шинэ packing list</h2>
+                <button onclick="rcClose('plCreateModal')" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="flex-grid">
+                <div class="form-group"><label>Packing list / баримтын дугаар *</label><input type="text" id="plCode"></div>
+                <div class="form-group"><label>Нийлүүлэгч *</label><input type="text" id="plSupplier" list="plSupplierList"><datalist id="plSupplierList"></datalist></div>
+                <div class="form-group"><label>Огноо *</label><input type="date" id="plDate"></div>
+            </div>
+            <div class="form-group"><label>Scan хийсэн баримт (PDF эсвэл зураг) * — зөвхөн менежерт харагдана</label><input type="file" id="plScan" accept="application/pdf,image/*"></div>
+            <div class="form-group"><label>Тэмдэглэл</label><input type="text" id="plNotes"></div>
+            <div class="rc-h3">Бараанууд</div>
+            <div class="scroll-box" style="max-height:40vh;">
+                <table>
+                    <thead><tr><th>Бараа</th><th>Тоо (ш)</th><th>Нэгж өртөг (₮)</th><th>Дүн</th><th></th></tr></thead>
+                    <tbody id="plLines"></tbody>
+                </table>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px;">
+                <button type="button" class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="plAddLine(false)">+ Байгаа бараа</button>
+                <button type="button" class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="plAddLine(true)">+ Шинэ бараа</button>
+                <span style="margin-left:auto;">Нийт өртөг: <b id="plTotal">0₮</b></span>
+            </div>
+            <p id="plErr" class="rc-err"></p>
+            <button class="btn-brand" id="plSaveBtn" style="width:100%; padding:12px; margin-top:6px;" onclick="savePl()">Packing list хадгалах</button>
+        </div>
+    </div>
+
+    <!-- ТООЛОХ (кассчин / менежер) -->
+    <div class="modal-overlay" id="countModal">
+        <div class="modal" style="max-width:640px;">
+            <div class="modal-header">
+                <h2 id="cntTitle">Тоолох</h2>
+                <button onclick="rcClose('countModal')" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <p id="cntSub" class="rc-help"></p>
+            <div id="cntLines" class="scroll-box" style="max-height:50vh;"></div>
+            <div class="form-group" id="cntPhotoWrap" style="margin-top:12px;"><label>Хүлээн авсан барааны зураг эсвэл гарын үсэгтэй хуудас *</label><input type="file" id="cntPhoto" accept="image/*,application/pdf"></div>
+            <p id="cntErr" class="rc-err"></p>
+            <button class="btn-brand" id="cntBtn" style="width:100%; padding:12px;" onclick="submitCount()">Тоолсон тоог илгээх</button>
+        </div>
+    </div>
+
+    <!-- ШАЛГАХ (менежер) -->
+    <div class="modal-overlay" id="rvModal">
+        <div class="modal" style="max-width:920px;">
+            <div class="modal-header">
+                <h2 id="rvTitle">Шалгах</h2>
+                <button onclick="rcClose('rvModal')" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div id="rvBody"></div>
+            <p id="rvErr" class="rc-err"></p>
+            <div id="rvActions" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;"></div>
         </div>
     </div>
 
@@ -1905,7 +1997,17 @@
             L(db.collection("packingLists"), snapshot => {
                 packingLists = [];
                 snapshot.forEach(doc => packingLists.push({ id: doc.id, ...doc.data() }));
-                renderPackingListsSelect();
+                renderPackingListsSelect(); renderReceive();
+            });
+            L(db.collection("stocktakes"), snapshot => {
+                stocktakes = [];
+                snapshot.forEach(doc => stocktakes.push({ id: doc.id, ...doc.data() }));
+                renderReceive();
+            });
+            if (isAdmin) L(db.collection("packingListPrivate"), snapshot => {
+                plPrivate = {};
+                snapshot.forEach(doc => { plPrivate[doc.id] = doc.data(); });
+                renderReceive();
             });
 
             L(db.collection("inventory"), snapshot => {
@@ -2274,13 +2376,14 @@
             const packingType = document.getElementById('newProdPackingType').value;
             const boxSize = parseInt(document.getElementById('newProdBoxSize').value) || 1;
             const price = parseFloat(document.getElementById('newProdPriceInput').value) || 0;
-            const stock = parseInt(document.getElementById('newProdStockInput').value) || 0;
+            const stock = 0; // Үлдэгдэл зөвхөн packing list-ээр нэмэгдэнэ
 
             if(!name) return alert('Барааны нэр оруулна уу!');
             try {
                 await db.collection("inventory").add({
-                    name, category, packingType, boxSize, price, stock
+                    name, category, packingType, boxSize, price, stock, createdBy: currentUserEmail
                 });
+                logAudit('product_add', `Шинэ бараа: ${name} (${price.toLocaleString()}₮)`);
                 alert('Цоо шинэ бараа системд амжилттай бүртгэгдлээ!');
                 closeNewProductModal();
             } catch(err) {
@@ -2373,25 +2476,7 @@
             renderCustomerSearch();
         });
 
-        async function submitStockIn(e) {
-            e.preventDefault();
-            const plId = document.getElementById('selectPackingList').value;
-            const prodId = document.getElementById('selectProductForStock').value;
-            const inQty = parseInt(document.getElementById('stockInQty').value);
-            const inPrice = parseFloat(document.getElementById('stockInPrice').value);
-            if(!plId || !prodId) return alert('Мэдээллээ бүрэн оруулна уу!');
-            const product = inventory.find(p => p.id === prodId);
-            if(product) {
-                await db.collection("inventory").doc(prodId).update({
-                    stock: inc(inQty),
-                    price: inPrice
-                });
-                const pl = packingLists.find(x => x.id === plId);
-                logAudit('stock_in', `Барааны орлого: ${product.name} +${inQty} ш (${pl ? pl.code : ''}), үнэ ${Number(product.price || 0).toLocaleString()} → ${inPrice.toLocaleString()}₮`);
-                alert('Барааны орлого амжилттай нэмэгдлээ!');
-                document.getElementById('stockInQty').value = '';
-            }
-        }
+        async function submitStockIn(e) { if (e) e.preventDefault(); alert('Барааны орлогыг «Бараа хүлээн авах» хэсгээс packing list-ээр хийнэ.'); }
 
         function renderInventory() {
             const list = document.getElementById('inventoryList');
@@ -2948,9 +3033,11 @@
             const invNum = "INV-" + Date.now().toString().slice(-6);
 
             const batch = db.batch();
+            const saleRef = db.collection("sales").doc();
             cart.forEach(item => {
                 const product = inventory.find(p => p.id === item.id);
-                if (product) batch.update(db.collection("inventory").doc(product.id), { stock: inc(-item.qty) });
+                // lastSale: үлдэгдэл хасалтыг энэ борлуулалттай холбоно (Firestore-ийн дүрэм шалгана)
+                if (product) batch.update(db.collection("inventory").doc(product.id), { stock: inc(-item.qty), lastSale: saleRef.id });
             });
 
             // Шинэ харилцагчийг борлуулалттай хамт хадгалах
@@ -2968,7 +3055,6 @@
                 }
             }
 
-            const saleRef = db.collection("sales").doc();
             batch.set(saleRef, {
                 invoiceNum: invNum, date: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 paymentMethod, docType, customer: custName, customerId: customerId || null, phone, carNo,
@@ -3282,6 +3368,7 @@
             document.getElementById('editProdPackingType').value = product.packingType || 'Standard';
             document.getElementById('editProdBoxSize').value = product.boxSize || 1;
             editOpenStock = Number(product.stock) || 0;
+            document.getElementById('editWoQty').value = ''; document.getElementById('editWoReason').value = ''; document.getElementById('editWoNote').value = '';
 
             const catSelect = document.getElementById('editProdCat');
             catSelect.innerHTML = '';
@@ -3300,20 +3387,23 @@
             const packingType = document.getElementById('editProdPackingType').value;
             const boxSize = parseInt(document.getElementById('editProdBoxSize').value) || 1;
             const price = parseFloat(document.getElementById('editProdPrice').value);
-            const stock = parseInt(document.getElementById('editProdStock').value);
+            const woQty = parseInt(document.getElementById('editWoQty').value) || 0;
+            const woReason = document.getElementById('editWoReason').value, woNote = document.getElementById('editWoNote').value.trim();
+            if (!name || !(price >= 0)) return alert('Нэр, үнийг зөв оруулна уу.');
+            if (woQty < 0) return alert('Хасах тоо буруу байна.');
+            if (woQty > 0 && !woReason) return alert('Үлдэгдэл хасах шалтгааныг сонгоно уу.');
+            if (woQty > 0 && !confirm(`${name}: үлдэгдлээс ${woQty} ширхэг хасах уу? (${woReason})`)) return;
 
             const before = inventory.find(p => p.id === id) || {};
-            // Үлдэгдлийг шууд дарж бичихгүй, зөвхөн өөрчилсөн зөрүүгээр нэмж/хасна.
-            // Ингэснээр засаж байх хооронд хийгдсэн борлуулалт алдагдахгүй.
-            const stockDelta = (isNaN(stock) ? editOpenStock : stock) - editOpenStock;
             const upd = { name, category: cat, packingType, boxSize, price };
-            if (stockDelta) upd.stock = inc(stockDelta);
-            await db.collection("inventory").doc(id).update(upd);
+            if (woQty > 0) upd.stock = inc(-woQty);
+            try { await db.collection("inventory").doc(id).update(upd); }
+            catch (err) { return alert('Хадгалагдсангүй: ' + err.message); }
             const ch = [];
             if (before.name !== name) ch.push(`нэр: ${before.name} → ${name}`);
             if (Number(before.price) !== price) ch.push(`үнэ: ${Number(before.price || 0).toLocaleString()} → ${price.toLocaleString()}₮`);
-            if (stockDelta) ch.push(`үлдэгдэл: ${editOpenStock} → ${stock} (${stockDelta > 0 ? '+' : ''}${stockDelta})`);
-            logAudit('product_edit', `Бараа засав: ${name}${ch.length ? ' (' + ch.join(', ') + ')' : ''}`);
+            if (ch.length) logAudit('product_edit', `Бараа засав: ${name} (${ch.join(', ')})`);
+            if (woQty > 0) logAudit('stock_writeoff', `Үлдэгдэл хасав: ${name} −${woQty} ш (${woReason}${woNote ? ': ' + woNote : ''}), ${editOpenStock} → ${editOpenStock - woQty}`);
             alert('Бараа амжилттай шинэчлэгдлээ.');
             closeEditProductModal();
         }
@@ -3791,7 +3881,7 @@
         // ================= БҮРЭН НӨӨЦ ТАТАХ =================
         async function downloadFullBackup() {
             if (currentUserRole !== 'admin') return alert('Зөвхөн менежер.');
-            const cols = ['customers', 'sales', 'inventory', 'bookings', 'slotCounts', 'categories', 'paymentMethods', 'packingLists', 'settings', 'oilsDb', 'carsDb', 'attachments', 'users'];
+            const cols = ['customers', 'sales', 'inventory', 'bookings', 'slotCounts', 'categories', 'paymentMethods', 'packingLists', 'packingListPrivate', 'stocktakes', 'settings', 'oilsDb', 'carsDb', 'attachments', 'users'];
             const out = { exportedAt: new Date().toISOString(), exportedBy: currentUserEmail, collections: {} };
             try {
                 for (const c of cols) {
@@ -3828,7 +3918,388 @@
         }
 
         // ================= ШИНЭ ЗАГВАР: ЦЭС, САМБАР, ГРАФИК =================
-        const PAGE_TITLES = { dashboard: 'Самбар', pos: 'Касс & Бараа', customers: 'Харилцагч', bookings: 'Цаг захиалга', credit: 'Зээл & Төлөлт', reports: 'Борлуулалтын тайлан', manage: 'Удирдлага' };
+
+        // ===================== БАРАА ХҮЛЭЭН АВАХ, ТООЛЛОГО =====================
+        // Урсгал: менежер packing list үүсгэнэ (scan + тоо + өртөг) → кассчин сохроор тоолно →
+        // тоо таарвал үлдэгдэлд автоматаар орно, зөрүүтэй бол менежер баталгаажуулна.
+        // Хүлээгдэж буй тоо, өртөг, scan нь packingListPrivate-д (зөвхөн менежер) хадгалагдана.
+        let stocktakes = [], plPrivate = {}, plDraft = [], cntCtx = null;
+        const RC_STATUS = { pending: 'Хүлээгдэж буй', counted: 'Тоологдсон — шалгах', received: 'Орлогдсон', open: 'Тоолж байна', closed: 'Баталгаажсан', cancelled: 'Цуцлагдсан' };
+        const fsDelete = () => firebase.firestore.FieldValue.delete();
+        function rcClose(id) { document.getElementById(id).style.display = 'none'; }
+        function rcDate(t) { try { return t && t.toDate ? t.toDate().toLocaleString('mn-MN') : ''; } catch (e) { return ''; } }
+        function rcTime(x) { return x && x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : 0; }
+        function rcBadge(st) { return st ? `<span class="rc-badge ${esc(st)}">${esc(RC_STATUS[st] || st)}</span>` : '<span class="rc-badge">Хуучин</span>'; }
+        function rcName(pid, fallback) { const p = inventory.find(x => x.id === pid); return p ? p.name : (fallback || 'Устгагдсан бараа'); }
+        function rcInt(v) { const n = Number(v); return Number.isInteger(n) && n >= 0 ? n : null; }
+        function rcSameMap(a, b) { a = a || {}; b = b || {}; const ka = Object.keys(a), kb = Object.keys(b); return ka.length === kb.length && ka.every(k => Number(a[k]) === Number(b[k])); }
+        function rcDiffCell(d) { return d === 0 ? '<span class="rc-diff-ok">0</span>' : `<span class="${d < 0 ? 'rc-diff-neg' : 'rc-diff-pos'}">${d > 0 ? '+' : ''}${d}</span>`; }
+        async function rcOpenFile(path) {
+            if (!path) return;
+            const w = window.open('', '_blank');
+            try { const url = await storage.ref(path).getDownloadURL(); if (w) w.location = url; else window.location = url; }
+            catch (err) { if (w) w.close(); alert('Нээж чадсангүй: ' + err.message); }
+        }
+        async function rcUpload(file, folder) {
+            const isPdf = file.type === 'application/pdf', isImg = /^image\//.test(file.type);
+            if (!isPdf && !isImg) throw new Error('Зөвхөн PDF эсвэл зураг оруулна уу.');
+            const blob = isImg ? await compressImage(file) : file;
+            if (blob.size > 15 * 1048576) throw new Error('Файл хэт том байна (15 MB-аас бага).');
+            const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${isPdf ? 'pdf' : 'jpg'}`;
+            await storage.ref(path).put(blob, { contentType: isPdf ? 'application/pdf' : 'image/jpeg' });
+            return path;
+        }
+
+        function renderReceive() {
+            const todo = document.getElementById('rcTodo');
+            if (!todo) return;
+            const isAdmin = currentUserRole === 'admin';
+            const pend = packingLists.filter(p => p.status === 'pending').sort((a, b) => rcTime(b) - rcTime(a));
+            const openSt = stocktakes.filter(x => x.status === 'open');
+            todo.innerHTML = [
+                ...pend.map(p => `<div class="rc-item"><div><b>📦 ${esc(p.code)}</b> · ${esc(p.supplier || '')}<br><small>${esc(p.date || '')} · ${(p.items || []).length} төрлийн бараа</small></div>
+                    <button class="btn-brand btn-sm" onclick="openCount('pl','${esc(p.id)}')"><i class="fa-solid fa-box-open"></i> Тоолж хүлээн авах</button></div>`),
+                ...openSt.map(x => `<div class="rc-item"><div><b>📋 Тооллого</b><br><small>${rcDate(x.createdAt)} · ${(x.items || []).length} бараа</small></div>
+                    <button class="btn-brand btn-sm" onclick="openCount('st','${esc(x.id)}')"><i class="fa-solid fa-list-check"></i> Тоолох</button></div>`)
+            ].join('') || '<div class="rc-empty">Одоогоор хүлээн авах бараа, тооллого алга байна.</div>';
+
+            const waiting = packingLists.filter(p => p.status === 'counted').length + stocktakes.filter(x => x.status === 'counted').length;
+            const badge = document.getElementById('sbReceiveCount');
+            if (badge) { const n = pend.length + openSt.length + (isAdmin ? waiting : 0); badge.textContent = n; badge.style.display = n ? 'inline-block' : 'none'; }
+            if (!isAdmin) return;
+
+            const order = { counted: 0, pending: 1, received: 2, cancelled: 3 };
+            const pls = packingLists.slice().sort((a, b) => (order[a.status] ?? 4) - (order[b.status] ?? 4) || rcTime(b) - rcTime(a) || String(b.date || '').localeCompare(String(a.date || '')));
+            document.getElementById('plAdminList').innerHTML = pls.map(p => {
+                const pr = plPrivate[p.id] || {};
+                const cost = pr.totalCost ? ` · өртөг ${Number(pr.totalCost).toLocaleString()}₮` : '';
+                const btns = [
+                    pr.scanPath ? `<button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="rcOpenFile('${esc(pr.scanPath)}')">📄 Баримт</button>` : '',
+                    p.status ? `<button class="btn-sm ${p.status === 'counted' ? 'btn-brand' : ''}" style="${p.status === 'counted' ? '' : 'background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);'}" onclick="openPlReview('${esc(p.id)}')">${p.status === 'counted' ? '⚠️ Шалгах' : 'Дэлгэрэнгүй'}</button>` : ''
+                ].join(' ');
+                return `<div class="rc-item"><div><b>${esc(p.code || '—')}</b>${rcBadge(p.status)}<br><small>${esc(p.supplier || '')} ${esc(p.date || '')} · ${(p.items || []).length || '?'} төрөл${cost}</small></div><div style="display:flex; gap:6px; flex-wrap:wrap;">${btns}</div></div>`;
+            }).join('') || '<div class="rc-empty">Packing list алга.</div>';
+
+            const sts = stocktakes.slice().sort((a, b) => (a.status === 'counted' ? -1 : 0) - (b.status === 'counted' ? -1 : 0) || rcTime(b) - rcTime(a));
+            document.getElementById('stAdminList').innerHTML = sts.map(x => `<div class="rc-item"><div><b>Тооллого</b>${rcBadge(x.status)}<br><small>${rcDate(x.createdAt)} · ${(x.items || []).length} бараа${x.countedBy ? ' · тоолсон: ' + esc(x.countedBy) : ''}</small></div>
+                <div style="display:flex; gap:6px;">${x.status === 'open' ? `<button class="btn-sm btn-danger" onclick="cancelStocktake('${esc(x.id)}')">Цуцлах</button>` : `<button class="btn-sm ${x.status === 'counted' ? 'btn-brand' : ''}" style="${x.status === 'counted' ? '' : 'background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);'}" onclick="openStReview('${esc(x.id)}')">${x.status === 'counted' ? '⚠️ Шалгах' : 'Дэлгэрэнгүй'}</button>`}</div></div>`).join('')
+                || '<div class="rc-empty">Тооллого хийгдээгүй байна.</div>';
+        }
+
+        // ---------- 1. Менежер: packing list үүсгэх ----------
+        function openPlCreate() {
+            if (currentUserRole !== 'admin') return;
+            plDraft = [{ kind: 'existing', productId: '', qty: '', cost: '' }];
+            ['plCode', 'plSupplier', 'plNotes', 'plScan'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('plDate').value = localISODate(new Date());
+            document.getElementById('plErr').textContent = '';
+            const sup = [...new Set(packingLists.map(p => p.supplier).filter(Boolean))];
+            document.getElementById('plSupplierList').innerHTML = sup.map(x => `<option value="${esc(x)}">`).join('');
+            renderPlLines();
+            document.getElementById('plCreateModal').style.display = 'flex';
+        }
+        function plAddLine(isNew) { plDraft.push(isNew ? { kind: 'new', name: '', category: (categories[0] || {}).name || '', price: '', qty: '', cost: '' } : { kind: 'existing', productId: '', qty: '', cost: '' }); renderPlLines(); }
+        function plDel(i) { plDraft.splice(i, 1); renderPlLines(); }
+        function plSet(i, k, v) { plDraft[i][k] = v; plTotals(); }
+        function renderPlLines() {
+            const prodOpts = inventory.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+            const catOpts = categories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+            document.getElementById('plLines').innerHTML = plDraft.map((l, i) => `<tr>
+                <td>${l.kind === 'new'
+                    ? `<div style="display:flex; gap:6px; flex-wrap:wrap;"><input type="text" placeholder="Шинэ барааны нэр" value="${esc(l.name)}" oninput="plSet(${i},'name',this.value)" style="flex:2; min-width:150px;">
+                       <select id="plCat_${i}" onchange="plSet(${i},'category',this.value)" style="flex:1; min-width:110px;">${catOpts}</select>
+                       <input type="number" min="0" placeholder="Зарах үнэ ₮" value="${esc(l.price)}" oninput="plSet(${i},'price',this.value)" style="width:120px;"></div>`
+                    : `<select id="plProd_${i}" onchange="plSet(${i},'productId',this.value)" style="min-width:200px;"><option value="">-- Бараа сонгох --</option>${prodOpts}</select>`}</td>
+                <td><input type="number" min="1" step="1" value="${esc(l.qty)}" oninput="plSet(${i},'qty',this.value)" style="width:80px;"></td>
+                <td><input type="number" min="0" value="${esc(l.cost)}" oninput="plSet(${i},'cost',this.value)" style="width:120px;"></td>
+                <td id="plSum_${i}" style="white-space:nowrap; text-align:right;"></td>
+                <td><button type="button" class="btn-sm btn-danger" onclick="plDel(${i})" title="Хасах">✕</button></td></tr>`).join('');
+            plDraft.forEach((l, i) => {
+                const el = document.getElementById(l.kind === 'new' ? `plCat_${i}` : `plProd_${i}`);
+                if (el) el.value = l.kind === 'new' ? l.category : l.productId;
+            });
+            plTotals();
+        }
+        function plTotals() {
+            let total = 0;
+            plDraft.forEach((l, i) => {
+                const sum = (Number(l.qty) || 0) * (Number(l.cost) || 0); total += sum;
+                const el = document.getElementById(`plSum_${i}`); if (el) el.textContent = sum ? sum.toLocaleString() + '₮' : '';
+            });
+            document.getElementById('plTotal').textContent = total.toLocaleString() + '₮';
+            return total;
+        }
+        async function savePl() {
+            const err = m => { document.getElementById('plErr').textContent = m; };
+            const code = document.getElementById('plCode').value.trim(), supplier = document.getElementById('plSupplier').value.trim();
+            const date = document.getElementById('plDate').value, notes = document.getElementById('plNotes').value.trim();
+            const file = document.getElementById('plScan').files[0];
+            if (!code || !supplier || !date) return err('Дугаар, нийлүүлэгч, огноог бөглөнө үү.');
+            if (packingLists.some(p => String(p.code || '').trim().toLowerCase() === code.toLowerCase())) return err(`«${code}» дугаартай packing list аль хэдийн бүртгэлтэй байна.`);
+            if (!file) return err('Scan хийсэн баримтыг заавал хавсаргана.');
+            if (!plDraft.length) return err('Дор хаяж нэг бараа нэмнэ үү.');
+            const seen = new Set();
+            for (const [i, l] of plDraft.entries()) {
+                const row = `${i + 1}-р мөр: `;
+                if (l.kind === 'existing') {
+                    if (!l.productId) return err(row + 'бараагаа сонгоно уу.');
+                    if (seen.has(l.productId)) return err(row + 'нэг бараа хоёр удаа орсон байна.');
+                    seen.add(l.productId);
+                } else {
+                    if (!String(l.name).trim()) return err(row + 'шинэ барааны нэрийг бичнэ үү.');
+                    if (inventory.some(p => p.name.trim().toLowerCase() === String(l.name).trim().toLowerCase())) return err(row + `«${l.name}» нэртэй бараа аль хэдийн байна. «Байгаа бараа»-аас сонгоно уу.`);
+                    if (!(Number(l.price) > 0)) return err(row + 'шинэ барааны зарах үнийг оруулна уу.');
+                }
+                if (!(rcInt(l.qty) > 0)) return err(row + 'тоо ширхэг 1-ээс их бүхэл тоо байна.');
+                if (l.cost === '' || !(Number(l.cost) >= 0)) return err(row + 'нэгж өртгийг оруулна уу.');
+            }
+            err('');
+            const btn = document.getElementById('plSaveBtn'); btn.disabled = true; btn.textContent = 'Хадгалж байна...';
+            const plRef = db.collection('packingLists').doc();
+            let scanPath = '';
+            try {
+                scanPath = await rcUpload(file, `packingLists/${plRef.id}`);
+                const batch = db.batch(), items = [], expectedQty = {}, cost = {};
+                for (const l of plDraft) {
+                    let pid = l.productId, name;
+                    if (l.kind === 'new') {
+                        const ref = db.collection('inventory').doc(); pid = ref.id; name = String(l.name).trim();
+                        batch.set(ref, { name, category: l.category || '', packingType: 'Standard', boxSize: 1, price: Number(l.price), stock: 0, createdBy: currentUserEmail });
+                    } else name = rcName(pid);
+                    items.push({ productId: pid, name });
+                    expectedQty[pid] = rcInt(l.qty); cost[pid] = Number(l.cost);
+                }
+                const totalCost = plTotals();
+                batch.set(plRef, { v: 2, code, supplier, date, notes, status: 'pending', items, createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                batch.set(db.collection('packingListPrivate').doc(plRef.id), { expectedQty, cost, totalCost, scanPath, scanName: file.name });
+                await batch.commit();
+                logAudit('pl_create', `Packing list үүсгэв: ${code} (${supplier}), ${items.length} төрөл, өртөг ${totalCost.toLocaleString()}₮`);
+                rcClose('plCreateModal');
+                alert('Packing list хадгалагдлаа. Бараа ирэхэд кассчин «Бараа хүлээн авах» хэсгээс тоолж хүлээн авна.');
+            } catch (e) {
+                if (scanPath) storage.ref(scanPath).delete().catch(() => {});
+                err('Хадгалагдсангүй: ' + e.message);
+            } finally { btn.disabled = false; btn.textContent = 'Packing list хадгалах'; }
+        }
+
+        // ---------- 2. Кассчин: сохроор тоолох ----------
+        function openCount(kind, id) {
+            const doc = (kind === 'pl' ? packingLists : stocktakes).find(x => x.id === id);
+            if (!doc) return;
+            const wanted = kind === 'pl' ? 'pending' : 'open';
+            if (doc.status !== wanted) return alert('Энэ аль хэдийн тоологдсон байна.');
+            cntCtx = { kind, id, items: doc.items || [] };
+            document.getElementById('cntTitle').textContent = kind === 'pl' ? `📦 ${doc.code} — хүлээн авах` : '📋 Тооллого';
+            document.getElementById('cntSub').innerHTML = kind === 'pl'
+                ? `${esc(doc.supplier || '')} · ${esc(doc.date || '')}<br>Бараа бүрийг <b>бодитоор тоолж</b> бичнэ үү. Ирээгүй бараанд <b>0</b> гэж бичнэ. Илгээсний дараа засах боломжгүй.`
+                : 'Агуулах, лангуун дээрх бараа бүрийг тоолж бичнэ үү. Байхгүй бол <b>0</b>. Илгээсний дараа засах боломжгүй.';
+            document.getElementById('cntLines').innerHTML = cntCtx.items.map((it, i) => `<div class="rc-row"><span>${esc(rcName(it.productId, it.name))}</span><input type="number" min="0" step="1" inputmode="numeric" id="cntQ_${i}" placeholder="Тоо"></div>`).join('');
+            document.getElementById('cntPhotoWrap').style.display = kind === 'pl' ? 'block' : 'none';
+            document.getElementById('cntPhoto').value = '';
+            document.getElementById('cntErr').textContent = '';
+            document.getElementById('countModal').style.display = 'flex';
+        }
+        async function submitCount() {
+            if (!cntCtx) return;
+            const err = m => { document.getElementById('cntErr').textContent = m; };
+            const counted = {};
+            for (const [i, it] of cntCtx.items.entries()) {
+                const raw = document.getElementById(`cntQ_${i}`).value.trim();
+                const n = rcInt(raw);
+                if (raw === '' || n === null) return err(`«${rcName(it.productId, it.name)}»-ийн тоог бүхэл тоогоор бичнэ үү (байхгүй бол 0).`);
+                counted[it.productId] = n;
+            }
+            const photo = document.getElementById('cntPhoto').files[0];
+            if (cntCtx.kind === 'pl' && !photo) return err('Хүлээн авсан барааны зураг эсвэл гарын үсэгтэй хуудсыг хавсаргана уу.');
+            const total = Object.values(counted).reduce((a, b) => a + b, 0);
+            if (!confirm(`Нийт ${total} ширхэг тоолсон. Илгээх үү?\nИлгээсний дараа засах боломжгүй.`)) return;
+            err('');
+            const btn = document.getElementById('cntBtn'); btn.disabled = true; btn.textContent = 'Илгээж байна...';
+            const { kind, id } = cntCtx;
+            try {
+                if (kind === 'st') {
+                    const systemQty = {};
+                    cntCtx.items.forEach(it => { const p = inventory.find(x => x.id === it.productId); systemQty[it.productId] = p ? Number(p.stock) || 0 : 0; });
+                    await db.collection('stocktakes').doc(id).update({ status: 'counted', countedQty: counted, systemQty, countedBy: currentUserEmail, countedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    logAudit('stocktake_count', `Тооллого тоолов: ${cntCtx.items.length} бараа, нийт ${total} ш`);
+                    rcClose('countModal');
+                    return alert('Тооллого илгээгдлээ. Менежер шалгаж баталгаажуулна.');
+                }
+                const photoPath = await rcUpload(photo, `receiving/${id}`);
+                const plRef = db.collection('packingLists').doc(id);
+                // Алхам 1: тоог түгжинэ (дараа нь кассчин өөрчлөх боломжгүй)
+                await plRef.update({ status: 'counted', countedQty: counted, countedBy: currentUserEmail, countedAt: firebase.firestore.FieldValue.serverTimestamp(), photoPath });
+                // Алхам 2: тоо таарвал үлдэгдэлд шууд нэмнэ. Таарахгүй бол Firestore-ийн дүрэм татгалзана → менежер шалгана.
+                let auto = true;
+                if (currentUserRole === 'admin') auto = rcSameMap(counted, (plPrivate[id] || {}).expectedQty);
+                let received = false;
+                if (auto) {
+                    try {
+                        const b = db.batch();
+                        b.update(plRef, { status: 'received', receivedQty: counted, receivedBy: currentUserEmail, receivedAt: firebase.firestore.FieldValue.serverTimestamp(), autoApproved: true });
+                        Object.entries(counted).forEach(([pid, q]) => { if (q > 0) b.update(db.collection('inventory').doc(pid), { stock: inc(q), lastReceipt: id }); });
+                        await b.commit();
+                        received = true;
+                    } catch (e) { console.warn('Автомат орлого хийгдсэнгүй:', e.code || e.message); }
+                }
+                const pl = packingLists.find(x => x.id === id) || {};
+                logAudit('pl_count', `Packing list тоолов: ${pl.code || id}, нийт ${total} ш${received ? ' — тоо таарч, үлдэгдэлд орлоо' : ' — менежерийн шалгалт хүлээж байна'}`);
+                rcClose('countModal');
+                alert(received ? '✅ Тоо таарлаа. Бараа үлдэгдэлд нэмэгдлээ.' : 'Тоолсон тоо бүртгэгдлээ. Менежер шалгаж баталгаажуулсны дараа үлдэгдэлд нэмэгдэнэ.');
+            } catch (e) {
+                err('Илгээгдсэнгүй: ' + e.message);
+            } finally { btn.disabled = false; btn.textContent = 'Тоолсон тоог илгээх'; }
+        }
+
+        // ---------- 3. Менежер: зөрүү шалгах, баталгаажуулах ----------
+        const RC_REASONS = ['Дутуу ирсэн', 'Илүү ирсэн', 'Гэмтэлтэй ирсэн', 'Буруу бараа ирсэн', 'Бусад'];
+        function openPlReview(id) {
+            const p = packingLists.find(x => x.id === id); if (!p) return;
+            const pr = plPrivate[id] || {}, exp = pr.expectedQty || {}, cost = pr.cost || {};
+            const cnt = p.countedQty || {}, rec = p.receivedQty || {}, diffs = pr.diffs || {};
+            const showCnt = p.status === 'counted' || p.status === 'received';
+            document.getElementById('rvTitle').innerHTML = `${esc(p.code)} ${rcBadge(p.status)}`;
+            const rows = (p.items || []).map(it => {
+                const e = Number(exp[it.productId]) || 0, c = cnt[it.productId], d = c === undefined ? null : c - e;
+                return `<tr><td>${esc(rcName(it.productId, it.name))}</td><td style="text-align:right;">${e}</td>
+                    <td style="text-align:right;">${showCnt && c !== undefined ? c : '—'}</td><td style="text-align:right;">${d === null ? '—' : rcDiffCell(d)}</td>
+                    <td style="text-align:right; white-space:nowrap;">${cost[it.productId] !== undefined ? Number(cost[it.productId]).toLocaleString() + '₮' : '—'}</td>
+                    <td>${p.status === 'counted' && d ? `<select id="rvReason_${esc(it.productId)}"><option value="">-- Шалтгаан --</option>${RC_REASONS.map(r => `<option>${r}</option>`).join('')}</select>` : esc((diffs[it.productId] || {}).reason || (p.status === 'received' && rec[it.productId] !== undefined ? '' : ''))}</td></tr>`;
+            }).join('');
+            const meta = [
+                `Нийлүүлэгч: <b>${esc(p.supplier || '—')}</b> · Огноо: ${esc(p.date || '—')}`,
+                pr.totalCost ? `Нийт өртөг: <b>${Number(pr.totalCost).toLocaleString()}₮</b>` : '',
+                p.countedBy ? `Тоолсон: ${esc(p.countedBy)} (${rcDate(p.countedAt)})` : '',
+                p.status === 'received' ? `Орлогдсон: ${rcDate(p.receivedAt)}${p.autoApproved ? ' — тоо таарч автоматаар' : ' — менежер баталгаажуулсан (' + esc(p.approvedBy || '') + ')'}` : '',
+                (pr.countHistory || []).length ? `Дахин тоолуулсан: ${(pr.countHistory || []).length} удаа` : '',
+                p.notes ? `Тэмдэглэл: ${esc(p.notes)}` : ''
+            ].filter(Boolean).join('<br>');
+            document.getElementById('rvBody').innerHTML = `<p class="rc-help">${meta}</p>
+                <div class="scroll-box" style="max-height:45vh;"><table><thead><tr><th>Бараа</th><th style="text-align:right;">Баримтаар</th><th style="text-align:right;">Тоолсон</th><th style="text-align:right;">Зөрүү</th><th style="text-align:right;">Өртөг</th><th>Шалтгаан</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            const b = [];
+            if (pr.scanPath) b.push(`<button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="rcOpenFile('${esc(pr.scanPath)}')">📄 Scan баримт</button>`);
+            if (p.photoPath) b.push(`<button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="rcOpenFile('${esc(p.photoPath)}')">📷 Хүлээн авсан зураг</button>`);
+            if (p.status === 'counted') {
+                b.push(`<button class="btn-brand btn-sm" onclick="approvePl('${esc(id)}')">✓ Тоолсон тоогоор орлогдуулах</button>`);
+                b.push(`<button class="btn-sm" style="background:var(--warning); color:#fff;" onclick="recountPl('${esc(id)}')">↻ Дахин тоолуулах</button>`);
+            }
+            if (p.status === 'pending' || p.status === 'counted') b.push(`<button class="btn-sm btn-danger" onclick="cancelPl('${esc(id)}')">Цуцлах</button>`);
+            document.getElementById('rvActions').innerHTML = b.join('');
+            document.getElementById('rvErr').textContent = '';
+            document.getElementById('rvModal').style.display = 'flex';
+        }
+        async function approvePl(id) {
+            const p = packingLists.find(x => x.id === id); if (!p || p.status !== 'counted') return;
+            const pr = plPrivate[id] || {}, exp = pr.expectedQty || {}, cnt = p.countedQty || {};
+            const diffs = {};
+            for (const it of (p.items || [])) {
+                const d = (Number(cnt[it.productId]) || 0) - (Number(exp[it.productId]) || 0);
+                if (!d) continue;
+                const sel = document.getElementById(`rvReason_${it.productId}`);
+                if (!sel || !sel.value) { document.getElementById('rvErr').textContent = `«${rcName(it.productId, it.name)}»-ийн зөрүүний шалтгааныг сонгоно уу.`; return; }
+                diffs[it.productId] = { expected: Number(exp[it.productId]) || 0, counted: Number(cnt[it.productId]) || 0, reason: sel.value };
+            }
+            const total = Object.values(cnt).reduce((a, x) => a + Number(x), 0);
+            if (!confirm(`Тоолсон тоогоор (нийт ${total} ш) үлдэгдэлд нэмэх үү?`)) return;
+            try {
+                const b = db.batch();
+                b.update(db.collection('packingLists').doc(id), { status: 'received', receivedQty: cnt, receivedBy: p.countedBy || currentUserEmail, approvedBy: currentUserEmail, receivedAt: firebase.firestore.FieldValue.serverTimestamp(), autoApproved: false });
+                b.set(db.collection('packingListPrivate').doc(id), { diffs }, { merge: true });
+                Object.entries(cnt).forEach(([pid, q]) => { if (Number(q) > 0) b.update(db.collection('inventory').doc(pid), { stock: inc(Number(q)), lastReceipt: id }); });
+                await b.commit();
+                logAudit('pl_approve', `Packing list баталгаажуулав: ${p.code}, ${total} ш орлого, ${Object.keys(diffs).length} зөрүү (${Object.entries(diffs).map(([pid, x]) => `${rcName(pid)} ${x.counted - x.expected > 0 ? '+' : ''}${x.counted - x.expected} ${x.reason}`).join('; ')})`);
+                rcClose('rvModal');
+                alert('Баталгаажлаа. Бараа үлдэгдэлд нэмэгдлээ.');
+            } catch (e) { document.getElementById('rvErr').textContent = 'Хадгалагдсангүй: ' + e.message; }
+        }
+        async function recountPl(id) {
+            const p = packingLists.find(x => x.id === id); if (!p || p.status !== 'counted') return;
+            if (!confirm('Кассчинаар дахин тоолуулах уу? Өмнөх тоо түүхэнд хадгалагдана.')) return;
+            try {
+                const b = db.batch();
+                b.set(db.collection('packingListPrivate').doc(id), { countHistory: firebase.firestore.FieldValue.arrayUnion({ countedQty: p.countedQty || {}, countedBy: p.countedBy || '', photoPath: p.photoPath || '', at: new Date().toISOString() }) }, { merge: true });
+                b.update(db.collection('packingLists').doc(id), { status: 'pending', countedQty: fsDelete(), countedBy: fsDelete(), countedAt: fsDelete(), photoPath: fsDelete() });
+                await b.commit();
+                logAudit('pl_recount', `Packing list дахин тоолуулав: ${p.code}`);
+                rcClose('rvModal');
+            } catch (e) { document.getElementById('rvErr').textContent = 'Хадгалагдсангүй: ' + e.message; }
+        }
+        async function cancelPl(id) {
+            const p = packingLists.find(x => x.id === id); if (!p) return;
+            if (!confirm(`${p.code} packing list-ийг цуцлах уу? Үлдэгдэлд юу ч нэмэгдэхгүй.`)) return;
+            try {
+                await db.collection('packingLists').doc(id).update({ status: 'cancelled', cancelledBy: currentUserEmail, cancelledAt: firebase.firestore.FieldValue.serverTimestamp() });
+                logAudit('pl_cancel', `Packing list цуцлав: ${p.code}`);
+                rcClose('rvModal');
+            } catch (e) { alert('Хадгалагдсангүй: ' + e.message); }
+        }
+
+        // ---------- Тооллого ----------
+        async function startStocktake() {
+            if (currentUserRole !== 'admin') return;
+            if (stocktakes.some(x => x.status === 'open' || x.status === 'counted')) return alert('Дуусаагүй тооллого байна. Эхлээд түүнийг дуусгана уу.');
+            if (!inventory.length) return alert('Бараа алга байна.');
+            if (!confirm(`Бүх ${inventory.length} барааны тооллого эхлүүлэх үү? Кассчин «Бараа хүлээн авах» хэсгээс тоолно.`)) return;
+            try {
+                await db.collection('stocktakes').add({ status: 'open', items: inventory.map(p => ({ productId: p.id, name: p.name })), createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                logAudit('stocktake_start', `Тооллого эхлүүлэв (${inventory.length} бараа)`);
+            } catch (e) { alert('Эхлүүлж чадсангүй: ' + e.message); }
+        }
+        function openStReview(id) {
+            const x = stocktakes.find(s => s.id === id); if (!x) return;
+            const cnt = x.countedQty || {}, sys = x.systemQty || {};
+            let lossQty = 0, lossVal = 0, gainVal = 0;
+            const rows = (x.items || []).map(it => {
+                const s0 = Number(sys[it.productId]) || 0, c = Number(cnt[it.productId]) || 0, d = c - s0;
+                const price = Number((inventory.find(p => p.id === it.productId) || {}).price) || 0;
+                if (d < 0) { lossQty += -d; lossVal += -d * price; } else gainVal += d * price;
+                return { d, html: `<tr><td>${esc(rcName(it.productId, it.name))}</td><td style="text-align:right;">${s0}</td><td style="text-align:right;">${c}</td><td style="text-align:right;">${rcDiffCell(d)}</td><td style="text-align:right; white-space:nowrap;">${d ? (d * price).toLocaleString() + '₮' : ''}</td></tr>` };
+            }).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).map(r => r.html).join('');
+            document.getElementById('rvTitle').innerHTML = `Тооллого ${rcBadge(x.status)}`;
+            document.getElementById('rvBody').innerHTML = `<p class="rc-help">Тоолсон: ${esc(x.countedBy || '—')} (${rcDate(x.countedAt)})<br>
+                Дутуу: <b class="rc-diff-neg">${lossQty} ш · ${lossVal.toLocaleString()}₮</b> (зарах үнээр) · Илүү: <b class="rc-diff-pos">${gainVal.toLocaleString()}₮</b>${x.status === 'closed' ? '<br>Баталгаажуулсан: ' + esc(x.approvedBy || '') : ''}</p>
+                <div class="scroll-box" style="max-height:50vh;"><table><thead><tr><th>Бараа</th><th style="text-align:right;">Систем</th><th style="text-align:right;">Тоолсон</th><th style="text-align:right;">Зөрүү</th><th style="text-align:right;">Дүн</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            document.getElementById('rvActions').innerHTML = x.status === 'counted'
+                ? `<button class="btn-brand btn-sm" onclick="approveStocktake('${esc(id)}')">✓ Зөрүүг үлдэгдэлд тусгах</button>
+                   <button class="btn-sm" style="background:var(--warning); color:#fff;" onclick="recountStocktake('${esc(id)}')">↻ Дахин тоолуулах</button>
+                   <button class="btn-sm btn-danger" onclick="cancelStocktake('${esc(id)}')">Цуцлах</button>` : '';
+            document.getElementById('rvErr').textContent = '';
+            document.getElementById('rvModal').style.display = 'flex';
+        }
+        async function approveStocktake(id) {
+            const x = stocktakes.find(s => s.id === id); if (!x || x.status !== 'counted') return;
+            const cnt = x.countedQty || {}, sys = x.systemQty || {}, adj = {};
+            (x.items || []).forEach(it => { const d = (Number(cnt[it.productId]) || 0) - (Number(sys[it.productId]) || 0); if (d && inventory.some(p => p.id === it.productId)) adj[it.productId] = d; });
+            if (!confirm(`${Object.keys(adj).length} барааны үлдэгдлийг тоолсон тоогоор засах уу?\n(Тоолсны дараа хийгдсэн борлуулалт хэвээр тооцогдоно.)`)) return;
+            try {
+                const b = db.batch();
+                // Тоолох үеийн системийн тооноос зөрүүг нэмнэ — тоолсны дараах борлуулалт алдагдахгүй
+                Object.entries(adj).forEach(([pid, d]) => b.update(db.collection('inventory').doc(pid), { stock: inc(d) }));
+                b.update(db.collection('stocktakes').doc(id), { status: 'closed', adjustments: adj, approvedBy: currentUserEmail, approvedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                await b.commit();
+                logAudit('stocktake_approve', `Тооллого баталгаажуулав: ${Object.entries(adj).map(([pid, d]) => `${rcName(pid)} ${d > 0 ? '+' : ''}${d}`).join('; ') || 'зөрүүгүй'}`);
+                rcClose('rvModal');
+                alert('Тооллого баталгаажлаа.');
+            } catch (e) { document.getElementById('rvErr').textContent = 'Хадгалагдсангүй: ' + e.message; }
+        }
+        async function recountStocktake(id) {
+            if (!confirm('Дахин тоолуулах уу?')) return;
+            try {
+                await db.collection('stocktakes').doc(id).update({ status: 'open', countedQty: fsDelete(), systemQty: fsDelete(), countedBy: fsDelete(), countedAt: fsDelete() });
+                logAudit('stocktake_recount', 'Тооллогыг дахин тоолуулав');
+                rcClose('rvModal');
+            } catch (e) { alert('Хадгалагдсангүй: ' + e.message); }
+        }
+        async function cancelStocktake(id) {
+            if (!confirm('Тооллогыг цуцлах уу? Үлдэгдэл өөрчлөгдөхгүй.')) return;
+            try {
+                await db.collection('stocktakes').doc(id).update({ status: 'cancelled', cancelledBy: currentUserEmail });
+                logAudit('stocktake_cancel', 'Тооллого цуцлав');
+                rcClose('rvModal');
+            } catch (e) { alert('Хадгалагдсангүй: ' + e.message); }
+        }
+
+        const PAGE_TITLES = { dashboard: 'Самбар', pos: 'Касс & Бараа', customers: 'Харилцагч', bookings: 'Цаг захиалга', credit: 'Зээл & Төлөлт', reports: 'Борлуулалтын тайлан', manage: 'Удирдлага', receive: 'Бараа хүлээн авах' };
         let currentPage = 'dashboard';
         let chartRange = 30;
 
