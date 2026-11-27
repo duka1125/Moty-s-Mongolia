@@ -65,6 +65,15 @@
         .oil.sel { background: #fff; border: 1px solid #fff; color: #111114; backdrop-filter: none; }
         .oil.sel .pic { background: #F4F4F5; }
         .oil.sel .pr { color: #B91C1C; }
+        /* Компьютер (хулгана) дээр хажуу тийш гүйлгэх боломжгүй тул бүх тосыг мөр мөрөөр харуулна */
+        @media (hover: hover) and (pointer: fine) {
+            .oils { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; scroll-snap-type: none; }
+            .oil { width: calc((100% - 20px) / 3); }
+        }
+        .oil-hint { margin-top: 10px; font-size: 13px; color: #FCA5A5; }
+        .oils.need { animation: needPick 0.6s ease 2; border-radius: 22px; }
+        @keyframes needPick { 50% { box-shadow: 0 0 0 2px #FCA5A5; } }
+        @media (prefers-reduced-motion: reduce) { .oils.need { animation: none; box-shadow: 0 0 0 2px #FCA5A5; } }
         .row2 { display: flex; gap: 10px; }
         .stepper { flex: 1; border-radius: 999px; padding: 6px; display: flex; align-items: center; justify-content: space-between; }
         .stepper button { width: 40px; height: 40px; border-radius: 999px; border: none; background: rgba(255,255,255,0.1); font-size: 18px; }
@@ -160,6 +169,7 @@
                     <span class="h-sec">Тос сонгох</span><span class="muted" style="font-size:13px;" id="oilCount"></span>
                 </div>
                 <div class="oils" id="oilCards" role="radiogroup" aria-label="Тос сонгох"></div>
+                <div class="oil-hint hidden" id="oilHint" role="alert">Цаг захиалахын өмнө тосоо сонгоно уу.</div>
             </div>
             <div id="saleBanner" class="sale-banner hidden"></div>
 
@@ -393,10 +403,6 @@
 
     function renderOils() {
         if (oilIdx >= oilsList.length) oilIdx = -1;
-        if (oilIdx < 0 && oilsList.length) {
-            const i = oilsList.findIndex(o => /5w-?30/i.test(o.name));
-            oilIdx = i >= 0 ? i : 0;
-        }
         $('oilCount').textContent = oilsList.length + ' төрөл';
         $('oilCards').innerHTML = oilsList.map((o, i) => {
             const on = saleOn(o);
@@ -412,7 +418,7 @@
         $('filterLabel').textContent = '+' + fmt(filterPrice) + '₮';
         calc();
     }
-    function pickOil(i) { oilIdx = i; renderOils(); }
+    function pickOil(i) { oilIdx = i; $('oilHint').classList.add('hidden'); $('oilCards').classList.remove('need'); renderOils(); }
     function stepQty(d) { qty = Math.min(30, Math.max(0.5, Math.round((qty + d) * 2) / 2)); calc(); }
 
     db.collection("oilsDb").get().then(snap => {
@@ -441,7 +447,9 @@
     function calc() {
         const t = totals();
         $('qtyVal').textContent = qty;
-        $('calcTotal').innerHTML = fmt(t.total) + '<small>₮</small>';
+        $('calcTotal').innerHTML = t.o
+            ? fmt(t.total) + '<small>₮</small>'
+            : '<span style="font-size:28px; line-height:1.2; display:block;">Тосоо сонгоно уу</span>';
         $('calcBreak').innerHTML = t.o
             ? `Тос ${qty} л × ${fmt(t.unit)}₮ = ${fmt(t.sub)}₮` + (t.filter ? `<br>Шүүлтүүр ${fmt(t.filter)}₮` : '') + (t.save > 0 ? `<br><span style="color:#86EFAC;">Хямдралаар ${fmt(t.save)}₮ хэмнэлээ</span>` : '')
             : '';
@@ -574,6 +582,13 @@
     }
     function goBooking() {
         const t = totals(), car = currentCar();
+        if (!t.o) {
+            const cards = $('oilCards');
+            $('oilHint').classList.remove('hidden');
+            cards.classList.remove('need'); void cards.offsetWidth; cards.classList.add('need');
+            cards.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
         $('sumCar').textContent = car ? car.name : 'Машин сонгоогүй';
         $('sumOil').textContent = t.o ? `${oilTitle(t.o)} · ${qty} л${t.filter ? ' · шүүлтүүр' : ''}` : 'Тос сонгоогүй';
         $('sumTotal').textContent = fmt(t.total) + '₮';
