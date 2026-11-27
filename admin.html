@@ -308,6 +308,21 @@
             .kpi .kpi-value { font-size: 1.1rem; }
             .top-search { order: 3; max-width: none; flex-basis: 100%; }
         }
+
+        /* Тосны үнэ, зураг, хямдрал */
+        .op-list { display: flex; flex-direction: column; gap: 12px; }
+        .op-card { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 16px; border: 1px solid var(--border); border-radius: 14px; padding: 14px; background: var(--input-bg); }
+        .op-img { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+        .op-img img { width: 100%; height: 120px; object-fit: contain; border-radius: 10px; background: rgba(255,255,255,0.05); }
+        .op-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+        .op-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+        .op-check { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+        .op-check input { width: auto; }
+        .op-sale { display: flex; flex-direction: column; gap: 10px; border: 1px dashed var(--border); border-radius: 12px; padding: 12px; }
+        .op-sale.op-off > :not(:first-child) { opacity: 0.4; pointer-events: none; }
+        .op-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .op-prev { font-size: 0.85rem; }
+        @media (max-width: 640px) { .op-card { grid-template-columns: minmax(0, 1fr); } .op-img img { height: 100px; } }
     </style>
 
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -954,12 +969,9 @@
                 <h2><i class="fa-solid fa-oil-can" style="color:#22c55e;"></i> ТОСНЫ ҮНЭ (1 ЛИТР) & УРАМШУУЛАЛ</h2>
                 <button onclick="closeOilPriceModal()" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
             </div>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Бүх тосыг 1 литрийн үнээр бүртгэнэ. Урамшуулал зарлахдаа "Урамшуулал" чагтыг тэмдэглээд урамшууллын үнийг оруулна. Дуусах өдөр оруулбал тэр өдрийн дараа үндсэн үнэ рүүгээ автоматаар буцна. Мөр бүрийг өөрчилсний дараа 💾 дарж хадгална.</p>
-            <div class="scroll-box" style="max-height:50vh;">
-                <table>
-                    <thead><tr><th>Тосны нэр</th><th>1л үнэ (₮)</th><th>Урамшуулал</th><th>Урамшууллын 1л үнэ</th><th>Тайлбар</th><th>Дуусах өдөр</th><th>Харуулах</th><th></th></tr></thead>
-                    <tbody id="oilPriceBody"></tbody>
-                </table>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Тос бүрийн нэр, 1 литрийн үнэ, зургийг энд засна. <b>Хямдрал:</b> «🔥 Хямдрал зарлах»-ыг чагтлаад хувь (жишээ 20) эсвэл шинэ үнийг бичиж, өдрөө сонгоно («Зөвхөн өнөөдөр» товч). Хугацаа дуусахад үндсэн үнэ рүүгээ автоматаар буцна. Хямдрал идэвхтэй үед цаг захиалгын хуудасны дээд хэсэгт улаан мэдэгдэл гарна. Өөрчилсний дараа <b>Хадгалах</b> дарна.</p>
+            <div class="scroll-box" style="max-height:60vh;">
+                <div id="oilPriceBody" class="op-list"></div>
             </div>
             <form onsubmit="addOilPrice(event)" style="display:flex; gap:8px; align-items:end; flex-wrap:wrap; margin-top:12px; background:var(--input-bg); padding:12px; border-radius:12px;">
                 <div class="form-group" style="flex:2; margin:0;"><label>Шинэ тос нэмэх</label><input type="text" id="opNewName" placeholder="Жишээ: M100 (5W20)"></div>
@@ -1544,7 +1556,17 @@
             { name: "M100 (5W40)", price: 58900, order: 3 }, { name: "M103 (10W40)", price: 59900, order: 4 }, { name: "M110 (50)", price: 64900, order: 5 }
         ];
         let oilsList = DEFAULT_OILS.map((o, i) => ({ id: 'default' + i, ...o })), oilFilterPrice = 18000;
-        function oilSaleOn(o) { return !!(o.saleActive && Number(o.salePrice) > 0 && Number(o.salePrice) < Number(o.price) && (!o.saleUntil || o.saleUntil >= localISODate(new Date()))); }
+        function oilSaleOn(o) {
+            if (!o.saleActive || !(Number(o.salePrice) > 0) || !(Number(o.salePrice) < Number(o.price))) return false;
+            const t = localISODate(new Date());
+            return (!o.saleFrom || o.saleFrom <= t) && (!o.saleUntil || o.saleUntil >= t);
+        }
+        const OIL_CANS = ['m100-0w20', 'm100-5w30', 'm100-5w40', 'm103-10w40', 'm110-50'];
+        function oilImgSrc(o) {
+            if (o.imageUrl) return o.imageUrl;
+            const k = String(o.name).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').join('-');
+            return OIL_CANS.includes(k) ? 'can-' + k + '.png' : 'can-generic.png';
+        }
         function oilUnit(o) { return oilSaleOn(o) ? Number(o.salePrice) : Number(o.price); }
 
         function loadOilsFromFirestore() {
@@ -1611,37 +1633,130 @@
             const body = document.getElementById('oilPriceBody');
             if (!body) return;
             document.getElementById('opFilterPrice').value = oilFilterPrice;
-            const real = oilsList.filter(o => !String(o.id).startsWith('default'));
-            body.innerHTML = real.length ? real.map(o => `
-                <tr>
-                    <td><input type="text" id="opName_${o.id}" value="${esc(o.name)}" style="min-width:120px;"></td>
-                    <td><input type="number" id="opPrice_${o.id}" value="${esc(o.price)}" min="0" step="100" style="min-width:90px;"></td>
-                    <td style="text-align:center;"><input type="checkbox" id="opSale_${o.id}" ${o.saleActive ? 'checked' : ''} style="width:auto;"></td>
-                    <td><input type="number" id="opSalePrice_${o.id}" value="${o.salePrice || ''}" min="0" step="100" placeholder="—" style="min-width:90px;"></td>
-                    <td><input type="text" id="opSaleNote_${o.id}" value="${esc(o.saleNote || '')}" placeholder="Жишээ: 11-р сарын урамшуулал" style="min-width:120px;"></td>
-                    <td><input type="date" id="opSaleUntil_${o.id}" value="${esc(o.saleUntil || '')}"></td>
-                    <td style="text-align:center;"><input type="checkbox" id="opActive_${o.id}" ${o.active !== false ? 'checked' : ''} style="width:auto;"></td>
-                    <td style="white-space:nowrap;">
-                        <button class="btn-sm btn-primary" onclick="saveOilPrice('${o.id}')" title="Хадгалах"><i class="fa-solid fa-floppy-disk"></i></button>
-                        <button class="btn-sm btn-danger" onclick="deleteOilPrice('${o.id}')" title="Устгах"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                <tr><td colspan="8" style="padding-top:0; font-size:0.75rem; color:${oilSaleOn(o) ? 'var(--success)' : 'var(--text-muted)'};">${oilSaleOn(o) ? '🔥 Одоо урамшууллын үнэ ' + Number(o.salePrice).toLocaleString() + '₮/л үйлчилж байна' : 'Үндсэн үнэ ' + Number(o.price).toLocaleString() + '₮/л үйлчилж байна'}</td></tr>`).join('')
-                : '<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Тос бүртгэгдээгүй. (Firestore Rules шинэчлэгдсэн эсэхийг шалгана уу.)</td></tr>';
+            // Зөвхөн санах ойн түр жагсаалтыг (default0, default1...) нууна. Анхны 5 тос (default-m100...) засагдана.
+            const real = oilsList.filter(o => !/^default\d+$/.test(String(o.id)));
+            body.innerHTML = real.length ? real.map(o => {
+                const id = esc(o.id), type = o.saleType === 'price' ? 'price' : 'percent';
+                const val = type === 'percent' ? (o.salePercent || (o.salePrice && o.price ? Math.round((1 - o.salePrice / o.price) * 100) : '')) : (o.salePrice || '');
+                return `
+                <div class="op-card">
+                    <div class="op-img">
+                        <img src="${esc(oilImgSrc(o))}" alt="" id="opImg_${id}">
+                        <label class="btn-sm" style="cursor:pointer; text-align:center;"><i class="fa-solid fa-image"></i> Зураг солих
+                            <input type="file" accept="image/*" style="display:none;" onchange="uploadOilImage('${id}', this)"></label>
+                        <small id="opImgMsg_${id}" style="color:var(--text-muted);"></small>
+                    </div>
+                    <div class="op-main">
+                        <div class="op-row">
+                            <div class="form-group" style="flex:2; margin:0;"><label>Тосны нэр</label><input type="text" id="opName_${id}" value="${esc(o.name)}"></div>
+                            <div class="form-group" style="flex:1; margin:0;"><label>1 литрийн үнэ (₮)</label><input type="number" id="opPrice_${id}" value="${esc(o.price)}" min="0" step="100" oninput="opPreview('${id}')"></div>
+                            <label class="op-check"><input type="checkbox" id="opActive_${id}" ${o.active !== false ? 'checked' : ''}> Цаг захиалгад харуулах</label>
+                        </div>
+                        <div class="op-sale">
+                            <label class="op-check" style="font-weight:600;"><input type="checkbox" id="opSale_${id}" ${o.saleActive ? 'checked' : ''} onchange="opPreview('${id}')"> 🔥 Хямдрал зарлах</label>
+                            <div class="op-row" id="opSaleBox_${id}">
+                                <div class="form-group" style="margin:0;"><label>Хямдралын төрөл</label>
+                                    <select id="opSaleType_${id}" onchange="opPreview('${id}')">
+                                        <option value="percent" ${type === 'percent' ? 'selected' : ''}>Хувиар (%)</option>
+                                        <option value="price" ${type === 'price' ? 'selected' : ''}>Шинэ үнэ (₮)</option>
+                                    </select></div>
+                                <div class="form-group" style="margin:0; width:120px;"><label id="opSaleValLbl_${id}">${type === 'percent' ? 'Хэдэн хувь' : '1л шинэ үнэ'}</label><input type="number" id="opSaleVal_${id}" value="${esc(val)}" min="0" oninput="opPreview('${id}')"></div>
+                                <div class="form-group" style="margin:0;"><label>Эхлэх өдөр</label><input type="date" id="opSaleFrom_${id}" value="${esc(o.saleFrom || '')}" onchange="opPreview('${id}')"></div>
+                                <div class="form-group" style="margin:0;"><label>Дуусах өдөр</label><input type="date" id="opSaleUntil_${id}" value="${esc(o.saleUntil || '')}" onchange="opPreview('${id}')"></div>
+                            </div>
+                            <div class="op-row" style="align-items:center;">
+                                <span style="font-size:0.8rem; color:var(--text-muted);">Хурдан сонгох:</span>
+                                <button type="button" class="btn-sm" onclick="opQuick('${id}', 0, 0)">Зөвхөн өнөөдөр</button>
+                                <button type="button" class="btn-sm" onclick="opQuick('${id}', 1, 1)">Зөвхөн маргааш</button>
+                                <button type="button" class="btn-sm" onclick="opQuick('${id}', 0, 6)">7 хоног</button>
+                            </div>
+                            <div class="form-group" style="margin:0;"><label>Мэдэгдлийн нэмэлт текст (заавал биш)</label><input type="text" id="opSaleNote_${id}" value="${esc(o.saleNote || '')}" placeholder="Жишээ: Хар Баасан гаригийн хямдрал"></div>
+                        </div>
+                        <div class="op-foot">
+                            <span id="opPrev_${id}" class="op-prev"></span>
+                            <span style="white-space:nowrap;">
+                                <button class="btn-sm btn-primary" onclick="saveOilPrice('${id}')"><i class="fa-solid fa-floppy-disk"></i> Хадгалах</button>
+                                <button class="btn-sm btn-danger" onclick="deleteOilPrice('${id}')" title="Устгах"><i class="fa-solid fa-trash"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') : '<div style="text-align:center; color:var(--text-muted); padding:20px;">Тос бүртгэгдээгүй байна.</div>';
+            real.forEach(o => opPreview(o.id));
+        }
+        // Хямдралын тооцоо: хувиар бол үндсэн үнээс хасна, шинэ үнэ бол шууд авна
+        function opSaleCalc(id) {
+            const g = k => document.getElementById(`op${k}_${id}`);
+            const price = parseFloat(g('Price').value) || 0, type = g('SaleType').value, v = parseFloat(g('SaleVal').value) || 0;
+            const salePrice = type === 'percent' ? Math.round(price * (100 - v) / 100) : v;
+            const pct = price > 0 && salePrice > 0 ? Math.round((1 - salePrice / price) * 100) : 0;
+            return { price, type, v, salePrice, pct };
+        }
+        function opPreview(id) {
+            const g = k => document.getElementById(`op${k}_${id}`);
+            if (!g('Sale')) return;
+            const on = g('Sale').checked, c = opSaleCalc(id);
+            g('SaleBox').parentElement.classList.toggle('op-off', !on);
+            g('SaleValLbl').textContent = c.type === 'percent' ? 'Хэдэн хувь' : '1л шинэ үнэ';
+            const from = g('SaleFrom').value, until = g('SaleUntil').value, today = localISODate(new Date());
+            const when = !from && !until ? 'дуусах хугацаагүй' : from && from === until ? (from === today ? 'зөвхөн өнөөдөр' : from + '-нд л') : `${from || 'одооноос'} → ${until || 'хугацаагүй'}`;
+            const p = g('Prev');
+            if (!on) { p.textContent = `Үндсэн үнэ ${c.price.toLocaleString()}₮/л`; p.style.color = 'var(--text-muted)'; return; }
+            if (!(c.salePrice > 0 && c.salePrice < c.price)) { p.textContent = '⚠️ Хямдралын хувь эсвэл шинэ үнийг зөв оруулна уу'; p.style.color = 'var(--warning)'; return; }
+            p.innerHTML = `🔥 ${c.price.toLocaleString()}₮ → <b>${c.salePrice.toLocaleString()}₮/л</b> (−${c.pct}%) · ${esc(when)}`;
+            p.style.color = 'var(--success)';
+        }
+        function opQuick(id, fromDays, toDays) {
+            const d = n => { const x = new Date(); x.setDate(x.getDate() + n); return localISODate(x); };
+            document.getElementById(`opSaleFrom_${id}`).value = d(fromDays);
+            document.getElementById(`opSaleUntil_${id}`).value = d(toDays);
+            document.getElementById(`opSale_${id}`).checked = true;
+            opPreview(id);
         }
         async function saveOilPrice(id) {
             const g = k => document.getElementById(`op${k}_${id}`);
-            const price = parseFloat(g('Price').value) || 0, salePrice = parseFloat(g('SalePrice').value) || 0, saleActive = g('Sale').checked;
-            if (!g('Name').value.trim() || price <= 0) return alert('Тосны нэр, 1 литрийн үнийг зөв оруулна уу.');
-            if (saleActive && (salePrice <= 0 || salePrice >= price)) return alert('Урамшууллын үнэ үндсэн үнээс бага байх ёстой.');
+            const name = g('Name').value.trim(), saleActive = g('Sale').checked, c = opSaleCalc(id);
+            const saleFrom = g('SaleFrom').value, saleUntil = g('SaleUntil').value;
+            if (!name || c.price <= 0) return alert('Тосны нэр, 1 литрийн үнийг зөв оруулна уу.');
+            if (saleActive) {
+                if (c.type === 'percent' && !(c.v > 0 && c.v < 100)) return alert('Хямдралын хувийг 1-99 хооронд оруулна уу.');
+                if (!(c.salePrice > 0 && c.salePrice < c.price)) return alert('Хямдралын үнэ үндсэн үнээс бага байх ёстой.');
+                if (saleFrom && saleUntil && saleFrom > saleUntil) return alert('Эхлэх өдөр дуусах өдрөөс хойш байж болохгүй.');
+            }
             try {
-                await db.collection("oilsDb").doc(id).update({
-                    name: g('Name').value.trim(), price, salePrice, saleActive,
-                    saleNote: g('SaleNote').value.trim(), saleUntil: g('SaleUntil').value, active: g('Active').checked, updatedBy: currentUserEmail
-                });
-                logAudit('oil_price', `Тосны үнэ: ${g('Name').value.trim()} ${price.toLocaleString()}₮/л${saleActive ? ', урамшуулал ' + salePrice.toLocaleString() + '₮' + (g('SaleUntil').value ? ' (' + g('SaleUntil').value + ' хүртэл)' : '') : ''}`);
-                alert('Хадгалагдлаа. Тооцоолуур болон цаг захиалгын хуудсанд шууд шинэчлэгдэнэ.');
+                await db.collection("oilsDb").doc(id).set({
+                    name, price: c.price, active: g('Active').checked,
+                    saleActive, saleType: c.type, salePercent: c.type === 'percent' ? c.v : c.pct, salePrice: saleActive ? c.salePrice : 0,
+                    saleFrom, saleUntil, saleNote: g('SaleNote').value.trim(), updatedBy: currentUserEmail
+                }, { merge: true });
+                logAudit('oil_price', `Тос: ${name} ${c.price.toLocaleString()}₮/л${saleActive ? `, хямдрал −${c.pct}% (${c.salePrice.toLocaleString()}₮) ${saleFrom || ''}→${saleUntil || ''}` : ''}`);
+                alert('Хадгалагдлаа. Цаг захиалгын хуудсанд шууд шинэчлэгдэнэ.');
             } catch (err) { alert('Хадгалагдсангүй: ' + err.message); }
+        }
+        // Тосны зураг: 600px болгон жижигрүүлж Storage-д хадгална, цаг захиалгын хуудсанд шууд харагдана
+        async function uploadOilImage(id, input) {
+            const file = input.files && input.files[0]; input.value = '';
+            const msg = document.getElementById(`opImgMsg_${id}`);
+            if (!file) return;
+            if (!/^image\//.test(file.type)) return alert('Зөвхөн зураг (PNG, JPG, WEBP) оруулна уу.');
+            if (file.size > 15 * 1024 * 1024) return alert('Зураг хэт том байна (15MB-аас бага).');
+            try {
+                msg.textContent = 'Хуулж байна...';
+                const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+                const k = Math.min(1, 600 / Math.max(img.width, img.height));
+                const cv = document.createElement('canvas'); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+                cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+                const blob = await new Promise(r => cv.toBlob(r, 'image/webp', 0.9));
+                const path = `oils/${id}_${Date.now()}.webp`;
+                await storage.ref(path).put(blob, { contentType: 'image/webp', cacheControl: 'public,max-age=31536000' });
+                const url = await storage.ref(path).getDownloadURL();
+                const old = (oilsList.find(x => x.id === id) || {}).imagePath;
+                await db.collection("oilsDb").doc(id).set({ imageUrl: url, imagePath: path }, { merge: true });
+                if (old && old !== path) storage.ref(old).delete().catch(() => {});
+                document.getElementById(`opImg_${id}`).src = url;
+                msg.textContent = '✓ Зураг солигдлоо';
+                logAudit('oil_image', `Тосны зураг солив: ${(oilsList.find(x => x.id === id) || {}).name || id}`);
+            } catch (err) { msg.textContent = ''; alert('Зураг хуулж чадсангүй: ' + err.message + '\n(Storage-ийн дүрэмд oils/ хэсэг нэмэгдсэн эсэхийг шалгана уу.)'); }
         }
         async function deleteOilPrice(id) {
             const o = oilsList.find(x => x.id === id);

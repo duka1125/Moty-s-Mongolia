@@ -70,6 +70,8 @@
             .oils { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; scroll-snap-type: none; }
             .oil { width: calc((100% - 20px) / 3); }
         }
+        .hero-sale { display: inline-block; margin-bottom: 10px; padding: 7px 12px; border-radius: 999px; border: 0; background: #E11D2A; color: #fff; font-size: 13px; line-height: 1.3; text-align: left; box-shadow: 0 4px 16px rgba(225,29,42,0.45); }
+        .hero-sale b { font-weight: 600; }
         .oil-hint { margin-top: 10px; font-size: 13px; color: #FCA5A5; }
         .oils.need { animation: needPick 0.6s ease 2; border-radius: 22px; }
         @keyframes needPick { 50% { box-shadow: 0 0 0 2px #FCA5A5; } }
@@ -147,6 +149,7 @@
                 </a>
             </div>
             <div>
+                <button type="button" id="heroSale" class="hero-sale hidden" onclick="$('oilCards').scrollIntoView({ behavior: 'smooth', block: 'center' })"></button>
                 <div style="font-size:14px; color:rgba(255,255,255,0.8);">Тос солих нийт дүн</div>
                 <div class="big" id="calcTotal">0<small>₮</small></div>
                 <div style="font-size:13px; margin-top:4px; color:rgba(255,255,255,0.75);"><span style="color:#86EFAC;">Ажлын хөлс үнэгүй</span> · Японд үйлдвэрлэсэн premium тос</div>
@@ -364,12 +367,24 @@
     const CAN_IMAGES = ['m100-0w20', 'm100-5w30', 'm100-5w40', 'm103-10w40', 'm110-50'];
     function oilImage(o) {
         if (!o) return 'can-generic.png';
+        if (o.imageUrl && /^https:\/\/firebasestorage\.googleapis\.com\//.test(o.imageUrl)) return o.imageUrl;
         const key = String(o.name).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').join('-');
         return CAN_IMAGES.includes(key) ? 'can-' + key + '.png' : 'can-generic.png';
     }
     function oilTitle(o) { return String(o.name).replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim(); }
     function todayStr() { return localISO(new Date()); }
-    function saleOn(o) { return !!(o && o.saleActive && o.salePrice > 0 && o.salePrice < o.price && (!o.saleUntil || o.saleUntil >= todayStr())); }
+    // Хямдрал: эхлэх (saleFrom) болон дуусах (saleUntil) өдрийн хооронд л үйлчилнэ
+    function saleOn(o) {
+        if (!o || !o.saleActive || !(o.salePrice > 0) || !(o.salePrice < o.price)) return false;
+        const t = todayStr();
+        return (!o.saleFrom || o.saleFrom <= t) && (!o.saleUntil || o.saleUntil >= t);
+    }
+    function salePct(o) { return Math.round((1 - o.salePrice / o.price) * 100); }
+    function saleWhen(o) {
+        const t = todayStr();
+        if (o.saleUntil === t) return 'Зөвхөн өнөөдөр';
+        return o.saleUntil ? o.saleUntil.slice(5).replace('-', '/') + ' хүртэл' : '';
+    }
     function unitPrice(o) { return saleOn(o) ? o.salePrice : o.price; }
     function currentOil() { return oilsList[oilIdx]; }
     function currentCar() { return carsDb[$('carSelect').value]; }
@@ -407,14 +422,21 @@
         $('oilCards').innerHTML = oilsList.map((o, i) => {
             const on = saleOn(o);
             return `<button type="button" role="radio" aria-checked="${i === oilIdx}" class="oil ${i === oilIdx ? 'sel' : 'g'}" onclick="pickOil(${i})">
-                <span class="pic">${on ? '<span class="tag">Хямдрал</span>' : ''}<img src="${oilImage(o)}" alt="${esc(oilTitle(o))}" loading="lazy"></span>
+                <span class="pic">${on ? '<span class="tag">−' + salePct(o) + '%</span>' : ''}<img src="${esc(oilImage(o))}" alt="${esc(oilTitle(o))}" loading="lazy"></span>
                 <span><span class="nm">${esc(oilTitle(o))}</span><span class="pr">${fmt(unitPrice(o))}₮/л${on ? '<span class="old">' + fmt(o.price) + '</span>' : ''}</span></span>
             </button>`;
         }).join('');
         const sales = oilsList.filter(saleOn);
         const banner = $('saleBanner');
-        banner.innerHTML = sales.map(o => `🔥 <b>${esc(oilTitle(o))}</b> 1л ${fmt(o.salePrice)}₮${o.saleNote ? ' · ' + esc(o.saleNote) : ''}${o.saleUntil ? ' · ' + esc(o.saleUntil) + ' хүртэл' : ''}`).join('<br>');
+        banner.innerHTML = sales.map(o => `🔥 <b>${esc(oilTitle(o))}</b> −${salePct(o)}% · 1л <b>${fmt(o.salePrice)}₮</b> <s style="opacity:.6">${fmt(o.price)}₮</s>${o.saleNote ? ' · ' + esc(o.saleNote) : ''}${saleWhen(o) ? ' · ' + esc(saleWhen(o)) : ''}`).join('<br>');
         banner.classList.toggle('hidden', !sales.length);
+        // Нүүрний дээд хэсэгт харагдах хямдралын мэдэгдэл
+        const hs = $('heroSale');
+        if (sales.length) {
+            const top = sales.reduce((a, b) => salePct(b) > salePct(a) ? b : a);
+            hs.innerHTML = `🔥 ${esc(saleWhen(top) === 'Зөвхөн өнөөдөр' ? 'Өнөөдөр' : 'Хямдрал')}: <b>${esc(oilTitle(top))}</b> −${salePct(top)}%` + (sales.length > 1 ? ` · +${sales.length - 1} тос` : '');
+        }
+        hs.classList.toggle('hidden', !sales.length);
         $('filterLabel').textContent = '+' + fmt(filterPrice) + '₮';
         calc();
     }
