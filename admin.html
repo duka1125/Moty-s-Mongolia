@@ -1516,6 +1516,22 @@
 
         auth.onAuthStateChanged(async (user) => {
             if (!user) { showLoggedOut(); return; }
+            // И-мэйл баталгаажаагүй бол Firestore-ийн дүрэм хандалтыг хаадаг тул баталгаажуулах холбоос илгээнэ
+            if (!user.emailVerified) {
+                const em = user.email || '';
+                let msg = `Таны и-мэйл (${em}) баталгаажаагүй байна. `;
+                try {
+                    await user.sendEmailVerification();
+                    msg += 'Баталгаажуулах холбоос и-мэйл рүү тань илгээгдлээ (Spam хавтсыг ч шалгаарай). Холбоос дээр дарсны дараа энд дахин нэвтэрнэ үү.';
+                } catch (e) {
+                    msg += e.code === 'auth/too-many-requests'
+                        ? 'Холбоос саяхан илгээгдсэн байна. И-мэйлээ (Spam хавтсыг ч) шалгаад, холбоос дээр дарсны дараа дахин нэвтэрнэ үү.'
+                        : 'Холбоос илгээж чадсангүй: ' + e.message;
+                }
+                await auth.signOut();
+                document.getElementById('loginError').textContent = msg;
+                return;
+            }
             try {
                 const email = (user.email || '').toLowerCase();
                 const profile = await db.collection('users').doc(email).get();
