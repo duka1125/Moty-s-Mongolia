@@ -265,6 +265,12 @@
         .rc-diff-neg { color: var(--moty-red); font-weight: 600; } .rc-diff-pos { color: var(--warning); font-weight: 600; } .rc-diff-ok { color: var(--success); }
         .rc-wo { border: 1px dashed var(--border); border-radius: 12px; padding: 12px; margin-top: 6px; }
         .rc-wo small { color: var(--text-muted); }
+        .web-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+        .web-tabs button { min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); cursor: pointer; font-size: 0.85rem; }
+        .web-tabs button.on { background: var(--moty-red); border-color: var(--moty-red); color: #fff; }
+        .web-thumb { width: 46px; height: 46px; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,0.05); }
+        .web-form .form-group { margin-bottom: 10px; }
+        .web-form textarea { min-height: 120px; width: 100%; }
         .card { border-radius: var(--radius); padding: 22px; box-shadow: none; backdrop-filter: none; }
         body:not(.light-theme) .card { background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0)) , var(--bg-card); }
         .card-header { border-bottom: none; padding-bottom: 0; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
@@ -383,6 +389,7 @@
         <button class="sb-item" data-nav="bookings" onclick="showPage('bookings')"><i class="fa-solid fa-calendar-check"></i> Цаг захиалга <span class="sb-count" id="sbBookingCount" style="display:none;"></span></button>
         <button class="sb-item" data-nav="credit" onclick="showPage('credit')"><i class="fa-solid fa-hand-holding-dollar"></i> Зээл & Төлөлт <span class="sb-count" id="sbCreditCount" style="display:none;"></span></button>
         <button class="sb-item" data-nav="reports" onclick="showPage('reports')"><i class="fa-solid fa-chart-line"></i> Тайлан</button>
+        <button class="sb-item admin-only" style="display:none;" data-nav="web" onclick="showPage('web')"><i class="fa-solid fa-globe"></i> Вэб сайт <span class="sb-count" id="sbWebCount" style="display:none;"></span></button>
         <button class="sb-item admin-only" style="display:none;" data-nav="manage" onclick="showPage('manage')"><i class="fa-solid fa-screwdriver-wrench"></i> Удирдлага</button>
         <div class="sb-label">Хэрэгсэл</div>
         <button class="sb-item" onclick="openOilCalculatorModal()"><i class="fa-solid fa-calculator"></i> Тосны тооцоолуур</button>
@@ -449,6 +456,23 @@
         </div>
 
         <!-- ЗҮҮН БАГАНА -->
+        <!-- ВЭБ САЙТ (менежер) -->
+        <div class="card admin-only" data-page="web" style="display:none;">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-globe"></i> everymotors.mn удирдлага</h2>
+                <a class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border); text-decoration:none;" href="https://everymotors.mn" target="_blank" rel="noopener">Сайтыг нээх ↗</a>
+            </div>
+            <p class="rc-help">Энд оруулсан бараа, брэнд, зөвлөгөө, холбоо барих мэдээлэл вэб сайтад шууд харагдана. Кассын өртөг, үлдэгдэл вэб сайтад огт харагдахгүй.</p>
+            <div class="web-tabs" id="webTabs">
+                <button data-w="webOrders" class="on" onclick="webTab('webOrders')">Захиалга</button>
+                <button data-w="webProducts" onclick="webTab('webProducts')">Бараа</button>
+                <button data-w="webBrands" onclick="webTab('webBrands')">Брэнд</button>
+                <button data-w="webPosts" onclick="webTab('webPosts')">Зөвлөгөө</button>
+                <button data-w="contact" onclick="webTab('contact')">Холбоо барих</button>
+            </div>
+            <div id="webBody"></div>
+        </div>
+
         <!-- БАРАА ХҮЛЭЭН АВАХ / ТООЛЛОГО -->
         <div class="card" data-page="receive">
             <div class="card-header"><h2><i class="fa-solid fa-truck-ramp-box"></i> Хүлээн авах, тоолох</h2></div>
@@ -1274,6 +1298,19 @@
         </div>
     </div>
 
+    <!-- ВЭБ САЙТЫН МЭДЭЭЛЭЛ ЗАСАХ -->
+    <div class="modal-overlay" id="webEditModal">
+        <div class="modal" style="max-width:640px;">
+            <div class="modal-header">
+                <h2 id="weTitle">Засах</h2>
+                <button onclick="rcClose('webEditModal')" style="background:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </div>
+            <div id="weForm" class="web-form"></div>
+            <p id="weErr" class="rc-err"></p>
+            <button class="btn-brand" id="weSave" style="width:100%; padding:12px;" onclick="webSave()">Хадгалах</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="returnModal">
         <div class="modal">
             <div class="modal-header">
@@ -1999,6 +2036,10 @@
                 snapshot.forEach(doc => packingLists.push({ id: doc.id, ...doc.data() }));
                 renderPackingListsSelect(); renderReceive();
             });
+            if (isAdmin) ['webProducts', 'webBrands', 'webPosts', 'webOrders'].forEach(c => L(db.collection(c), snap => {
+                webData[c] = []; snap.forEach(d => webData[c].push({ id: d.id, ...d.data() })); renderWeb();
+            }));
+            if (isAdmin) L(db.collection('webSettings').doc('contact'), d => { webData.contact = d.exists ? d.data() : {}; renderWeb(); });
             L(db.collection("stocktakes"), snapshot => {
                 stocktakes = [];
                 snapshot.forEach(doc => stocktakes.push({ id: doc.id, ...doc.data() }));
@@ -3881,7 +3922,7 @@
         // ================= БҮРЭН НӨӨЦ ТАТАХ =================
         async function downloadFullBackup() {
             if (currentUserRole !== 'admin') return alert('Зөвхөн менежер.');
-            const cols = ['customers', 'sales', 'inventory', 'bookings', 'slotCounts', 'categories', 'paymentMethods', 'packingLists', 'packingListPrivate', 'stocktakes', 'settings', 'oilsDb', 'carsDb', 'attachments', 'users'];
+            const cols = ['customers', 'sales', 'inventory', 'bookings', 'slotCounts', 'categories', 'paymentMethods', 'packingLists', 'packingListPrivate', 'stocktakes', 'webProducts', 'webBrands', 'webPosts', 'webOrders', 'webSettings', 'settings', 'oilsDb', 'carsDb', 'attachments', 'users'];
             const out = { exportedAt: new Date().toISOString(), exportedBy: currentUserEmail, collections: {} };
             try {
                 for (const c of cols) {
@@ -4299,12 +4340,178 @@
             } catch (e) { alert('Хадгалагдсангүй: ' + e.message); }
         }
 
-        const PAGE_TITLES = { dashboard: 'Самбар', pos: 'Касс & Бараа', customers: 'Харилцагч', bookings: 'Цаг захиалга', credit: 'Зээл & Төлөлт', reports: 'Борлуулалтын тайлан', manage: 'Удирдлага', receive: 'Бараа хүлээн авах' };
+
+        // ===================== ВЭБ САЙТ (everymotors.mn) =====================
+        const webData = { webProducts: [], webBrands: [], webPosts: [], webOrders: [], contact: {} };
+        let webCur = 'webOrders', webEdit = null;
+        const WEB_CATS = { shock: 'Амортизатор', susp: 'Пүрш, тюнинг', seat: 'Суудал', oil: "Moty's тос", carbon: 'Carbon', merch: 'Merch' };
+        const WEB_ORDER_ST = { new: 'Шинэ', contacted: 'Холбогдсон', done: 'Дууссан', cancelled: 'Цуцалсан' };
+        const WEB_ORDER_TYPE = { order: 'Захиалга', preorder: 'Урьдчилсан', request: 'Хүсэлт' };
+        function webBrandOpts() { return [['em', 'Every Motors (өөрийн бараа, merch)'], ...webData.webBrands.map(b => [b.key || b.id, b.name || b.id])]; }
+        const WEB_SCHEMA = {
+            webProducts: { title: 'Бараа', fields: [
+                { k: 'name', l: 'Барааны нэр *', req: 1 }, { k: 'brand', l: 'Брэнд', t: 'select', opts: webBrandOpts },
+                { k: 'category', l: 'Ангилал', t: 'select', opts: () => Object.entries(WEB_CATS) }, { k: 'fits', l: 'Тохирох машин / тайлбар' },
+                { k: 'price', l: 'Үнэ (₮) *', t: 'number', req: 1 }, { k: 'unit', l: 'Нэгж', def: 'ширхэг' },
+                { k: 'status', l: 'Төлөв', t: 'select', opts: () => [['in', 'Бэлэн байгаа'], ['order', 'Захиалгаар']] }, { k: 'leadTime', l: 'Захиалгын хугацаа (жишээ: 4–6 долоо хоног)' },
+                { k: 'isNew', l: '«Шинэ» шошготой', t: 'check' }, { k: 'active', l: 'Сайтад харуулах', t: 'check', def: true },
+                { k: 'order', l: 'Дараалал (бага нь эхэнд)', t: 'number', def: 100 }, { k: 'imageUrl', l: 'Зураг', t: 'image' }] },
+            webBrands: { title: 'Брэнд', fields: [
+                { k: 'key', l: 'Түлхүүр (латин жижиг үсэг, жишээ: bride) *', req: 1, idField: 1 }, { k: 'name', l: 'Нэр *', req: 1 },
+                { k: 'country', l: 'Улс' }, { k: 'type', l: 'Чиглэл (жишээ: Спорт суудал)' }, { k: 'desc', l: 'Тайлбар', t: 'textarea' },
+                { k: 'url', l: 'Албан ёсны вэб сайт (https://...)' }, { k: 'order', l: 'Дараалал', t: 'number', def: 100 }, { k: 'active', l: 'Сайтад харуулах', t: 'check', def: true }] },
+            webPosts: { title: 'Зөвлөгөө', fields: [
+                { k: 'title', l: 'Гарчиг *', req: 1 }, { k: 'body', l: 'Агуулга', t: 'textarea' },
+                { k: 'order', l: 'Дараалал', t: 'number', def: 100 }, { k: 'active', l: 'Сайтад харуулах', t: 'check', def: true }] },
+            contact: { title: 'Холбоо барих', fields: [
+                { k: 'address', l: 'Хаяг' }, { k: 'phones', l: 'Утас (таслалаар тусгаарлана, эхнийх нь гол дугаар)' }, { k: 'email', l: 'И-мэйл' },
+                { k: 'hours', l: 'Ажлын цаг' }, { k: 'facebook', l: 'Facebook' }] }
+        };
+        const WEB_SEED_BRANDS = [
+            { key: 'runs', name: 'RUNS', country: 'Монгол', type: 'Амортизатор, пүрш', desc: 'Every Motors-ийн өөрийн брэнд.', order: 1 },
+            { key: 'kazama', name: 'Kazama Auto', country: 'Япон', type: 'Дрифт, явах эд анги', desc: 'Японы Сайтама мужид 1989 оноос ажиллаж буй дрифт, тюнингийн мэргэжлийн газар.', order: 2 },
+            { key: 'bride', name: 'BRIDE', country: 'Япон', type: 'Спорт суудал', desc: '1981 онд байгуулагдсан Японы спорт суудлын үйлдвэр.', url: 'https://brideseats.com/en/', order: 3 },
+            { key: 'rsr', name: 'RS★R', country: 'Япон', type: 'Пүрш, амортизатор', desc: 'Осакад үүсгэн байгуулагдсан, 1980 оноос өөрийн үйлдвэртэй.', url: 'https://www.rs-r.co.jp/', order: 4 },
+            { key: 'kic', name: 'KIC', country: 'Солонгос', type: 'Амортизатор', desc: 'Солонгосын Ансан хотод төвтэй амортизатор үйлдвэрлэгч.', order: 5 },
+            { key: 'motys', name: "Moty's", country: 'Япон', type: 'Тос тосолгоо', desc: 'Японы өндөр гүйцэтгэлийн тос тосолгооны материал.', order: 6 }];
+
+        function webTab(w) { webCur = w; document.querySelectorAll('#webTabs button').forEach(b => b.classList.toggle('on', b.dataset.w === w)); renderWeb(); }
+        function renderWeb() {
+            const nNew = webData.webOrders.filter(o => o.status === 'new').length;
+            const badge = document.getElementById('sbWebCount'); if (badge) { badge.textContent = nNew; badge.style.display = nNew ? 'inline-block' : 'none'; }
+            const body = document.getElementById('webBody'); if (!body || currentUserRole !== 'admin') return;
+            const btn = (label, fn, cls = '') => `<button class="btn-sm ${cls}" ${cls ? '' : 'style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);"'} onclick="${fn}">${label}</button>`;
+            if (webCur === 'webOrders') {
+                const list = webData.webOrders.slice().sort((a, b) => (b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0) - (a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0));
+                body.innerHTML = list.length ? `<div class="scroll-box" style="max-height:60vh;"><table><thead><tr><th>Огноо</th><th>Төрөл</th><th>Бараа</th><th>Үйлчлүүлэгч</th><th>Төлөв</th><th></th></tr></thead><tbody>${list.map(o => `<tr>
+                    <td style="white-space:nowrap;">${rcDate(o.createdAt)}</td><td>${esc(WEB_ORDER_TYPE[o.type] || o.type)}</td>
+                    <td><b>${esc(o.productName)}</b><br><small>${esc(o.brand || '')}${o.price ? ' · ' + Number(o.price).toLocaleString() + '₮' : ''} × ${esc(o.qty)}</small></td>
+                    <td>${esc(o.name)}<br><a href="tel:${esc(o.phone)}" style="color:var(--accent-blue);">${esc(o.phone)}</a>${o.car ? '<br><small>' + esc(o.car) + '</small>' : ''}${o.note ? '<br><small>📝 ' + esc(o.note) + '</small>' : ''}</td>
+                    <td><select onchange="webOrderStatus('${esc(o.id)}', this.value)">${Object.entries(WEB_ORDER_ST).map(([k, v]) => `<option value="${k}" ${o.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select></td>
+                    <td><button class="btn-sm btn-danger" onclick="webDelete('webOrders','${esc(o.id)}')">✕</button></td></tr>`).join('')}</tbody></table></div>`
+                    : '<div class="rc-empty">Вэб сайтаас захиалга ирээгүй байна.</div>';
+                return;
+            }
+            if (webCur === 'contact') {
+                const c = webData.contact || {};
+                body.innerHTML = `<div class="rc-list">${WEB_SCHEMA.contact.fields.map(f => `<div class="rc-item"><div><small>${esc(f.l)}</small><br><b>${esc(c[f.k] || '—')}</b></div></div>`).join('')}</div>
+                    <div style="margin-top:12px;">${btn('<i class="fa-solid fa-pen"></i> Засах', "webOpen('contact','contact')", 'btn-brand')}</div>`;
+                return;
+            }
+            const sch = WEB_SCHEMA[webCur], list = webData[webCur].slice().sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+            const top = `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">${btn('<i class="fa-solid fa-plus"></i> Шинэ ' + sch.title.toLowerCase(), `webOpen('${webCur}')`, 'btn-brand')}
+                ${webCur === 'webBrands' && !list.length ? btn('Үндсэн 6 брэндийг оруулах', 'webSeedBrands()') : ''}
+                ${webCur === 'webProducts' ? btn('Кассын бараанаас хуулах', 'webImportInventory()') : ''}</div>`;
+            const row = x => {
+                if (webCur === 'webProducts') return `<td>${x.imageUrl ? `<img class="web-thumb" src="${esc(x.imageUrl)}" alt="">` : ''}</td><td><b>${esc(x.name)}</b><br><small>${esc((webData.webBrands.find(b => (b.key || b.id) === x.brand) || {}).name || (x.brand === 'em' ? 'Every Motors' : x.brand || ''))} · ${esc(WEB_CATS[x.category] || '')} · ${esc(x.fits || '')}</small></td>
+                    <td style="text-align:right; white-space:nowrap;">${Number(x.price || 0).toLocaleString()}₮</td><td>${x.status === 'order' ? 'Захиалгаар' : 'Бэлэн'}${x.isNew ? ' · Шинэ' : ''}</td>`;
+                if (webCur === 'webBrands') return `<td></td><td><b>${esc(x.name)}</b> <small>(${esc(x.key || x.id)})</small><br><small>${esc(x.country || '')} · ${esc(x.type || '')}</small></td><td colspan="2"><small>${x.url ? esc(x.url) : 'Сайтын холбоосгүй'}</small></td>`;
+                return `<td></td><td><b>${esc(x.title)}</b><br><small>${esc(String(x.body || '').slice(0, 90))}${String(x.body || '').length > 90 ? '…' : ''}</small></td><td colspan="2"></td>`;
+            };
+            body.innerHTML = top + (list.length ? `<div class="scroll-box" style="max-height:60vh;"><table><tbody>${list.map(x => `<tr style="${x.active === false ? 'opacity:.45;' : ''}">${row(x)}
+                <td style="white-space:nowrap;">${btn('<i class="fa-solid fa-pen"></i>', `webOpen('${webCur}','${esc(x.id)}')`)} <button class="btn-sm btn-danger" onclick="webDelete('${webCur}','${esc(x.id)}')">✕</button></td></tr>`).join('')}</tbody></table></div>`
+                : '<div class="rc-empty">Одоогоор бүртгэл алга. Бүртгэл нэмтэл вэб сайт жишээ мэдээллийг харуулна.</div>');
+        }
+        function webOpen(col, id) {
+            const sch = WEB_SCHEMA[col]; webEdit = { col, id: id || null, img: null };
+            const cur = col === 'contact' ? (webData.contact || {}) : (id ? webData[col].find(x => x.id === id) || {} : {});
+            document.getElementById('weTitle').textContent = (id ? '' : 'Шинэ ') + sch.title;
+            document.getElementById('weForm').innerHTML = sch.fields.map(f => {
+                const v = cur[f.k] !== undefined ? cur[f.k] : (f.def !== undefined ? f.def : '');
+                const idA = `id="we_${f.k}"`;
+                if (f.t === 'select') return `<div class="form-group"><label>${esc(f.l)}</label><select ${idA}>${f.opts().map(([k, l]) => `<option value="${esc(k)}" ${String(v) === String(k) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>`;
+                if (f.t === 'textarea') return `<div class="form-group"><label>${esc(f.l)}</label><textarea ${idA}>${esc(v)}</textarea></div>`;
+                if (f.t === 'check') return `<label class="op-check" style="margin:6px 12px 10px 0;"><input type="checkbox" ${idA} ${v ? 'checked' : ''}> ${esc(f.l)}</label>`;
+                if (f.t === 'image') return `<div class="form-group"><label>${esc(f.l)}</label><div style="display:flex; gap:10px; align-items:center;"><img id="we_imgPrev" class="web-thumb" style="width:70px;height:70px;" src="${esc(v || '')}" alt="" ${v ? '' : 'hidden'}><input type="file" id="we_img" accept="image/*"></div></div>`;
+                return `<div class="form-group"><label>${esc(f.l)}</label><input type="${f.t === 'number' ? 'number' : 'text'}" ${idA} value="${esc(v)}" ${f.idField && id ? 'disabled' : ''}></div>`;
+            }).join('');
+            document.getElementById('weErr').textContent = '';
+            document.getElementById('webEditModal').style.display = 'flex';
+        }
+        async function webSave() {
+            const { col, id } = webEdit, sch = WEB_SCHEMA[col], err = m => { document.getElementById('weErr').textContent = m; };
+            const data = {};
+            for (const f of sch.fields) {
+                if (f.t === 'image') continue;
+                const el = document.getElementById('we_' + f.k); if (!el) continue;
+                let v = f.t === 'check' ? el.checked : el.value.trim();
+                if (f.t === 'number') v = v === '' ? 0 : Number(v);
+                if (f.req && (v === '' || (f.t === 'number' && !(v > 0)))) return err(`«${f.l.replace(' *', '')}» талбарыг бөглөнө үү.`);
+                data[f.k] = v;
+            }
+            if (col === 'webBrands') {
+                data.key = String(data.key || id || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (!data.key) return err('Түлхүүрийг латин үсгээр бичнэ үү.');
+                if (!id && webData.webBrands.some(b => (b.key || b.id) === data.key)) return err('Ийм түлхүүртэй брэнд байна.');
+                if (data.url && !/^https?:\/\//.test(data.url)) return err('Вэб сайтын хаяг https:// гэж эхэлнэ.');
+            }
+            const btn = document.getElementById('weSave'); btn.disabled = true; btn.textContent = 'Хадгалж байна...';
+            try {
+                let ref;
+                if (col === 'contact') ref = db.collection('webSettings').doc('contact');
+                else if (col === 'webBrands') ref = db.collection('webBrands').doc(id || data.key);
+                else ref = id ? db.collection(col).doc(id) : db.collection(col).doc();
+                const file = document.getElementById('we_img') && document.getElementById('we_img').files[0];
+                if (file) {
+                    if (!/^image\//.test(file.type)) throw new Error('Зөвхөн зураг оруулна уу.');
+                    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+                    const k = Math.min(1, 900 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+                    cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+                    const blob = await new Promise(r => cv.toBlob(r, 'image/webp', 0.88));
+                    const path = `web/${col}/${ref.id}_${Date.now()}.webp`;
+                    await storage.ref(path).put(blob, { contentType: 'image/webp', cacheControl: 'public,max-age=31536000' });
+                    data.imageUrl = await storage.ref(path).getDownloadURL(); data.imagePath = path;
+                    const old = (webData[col] || []).find && (webData[col].find(x => x.id === id) || {}).imagePath;
+                    if (old) storage.ref(old).delete().catch(() => {});
+                }
+                data.updatedBy = currentUserEmail; data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+                await ref.set(data, { merge: true });
+                logAudit('web_edit', `Вэб сайт: ${WEB_SCHEMA[col].title} ${id ? 'засав' : 'нэмэв'} — ${data.name || data.title || col}`);
+                rcClose('webEditModal');
+            } catch (e) { err('Хадгалагдсангүй: ' + e.message); }
+            finally { btn.disabled = false; btn.textContent = 'Хадгалах'; }
+        }
+        async function webDelete(col, id) {
+            const x = webData[col].find(i => i.id === id) || {};
+            if (!confirm(`«${x.name || x.title || x.productName || id}» устгах уу?`)) return;
+            try {
+                await db.collection(col).doc(id).delete();
+                if (x.imagePath) storage.ref(x.imagePath).delete().catch(() => {});
+                logAudit('web_delete', `Вэб сайт: устгав — ${x.name || x.title || x.productName || id}`);
+            } catch (e) { alert('Устгаж чадсангүй: ' + e.message); }
+        }
+        async function webOrderStatus(id, st) {
+            try { await db.collection('webOrders').doc(id).update({ status: st, handledBy: currentUserEmail }); }
+            catch (e) { alert('Хадгалагдсангүй: ' + e.message); }
+        }
+        async function webSeedBrands() {
+            if (!confirm('Kazama Auto, BRIDE, RS★R, KIC, RUNS, Moty\'s брэндүүдийг оруулах уу? Дараа нь засаж болно.')) return;
+            const b = db.batch();
+            WEB_SEED_BRANDS.forEach(x => b.set(db.collection('webBrands').doc(x.key), { ...x, active: true, updatedBy: currentUserEmail }));
+            try { await b.commit(); logAudit('web_edit', 'Вэб сайт: үндсэн брэндүүдийг оруулав'); } catch (e) { alert('Алдаа: ' + e.message); }
+        }
+        async function webImportInventory() {
+            const have = new Set(webData.webProducts.map(p => (p.name || '').trim().toLowerCase()));
+            const todo = inventory.filter(p => !have.has((p.name || '').trim().toLowerCase()));
+            if (!todo.length) return alert('Кассын бүх бараа вэб сайтад аль хэдийн байна.');
+            if (!confirm(`Кассын ${todo.length} барааг нэр, зарах үнээр нь вэб сайтад нэмэх үү?\nНэмэгдсэн бараа «Сайтад харуулахгүй» төлөвтэй орно. Брэнд, ангиллыг нь засаад харуулна уу.`)) return;
+            try {
+                for (let i = 0; i < todo.length; i += 400) {
+                    const b = db.batch();
+                    todo.slice(i, i + 400).forEach(p => b.set(db.collection('webProducts').doc(), { name: p.name, price: Number(p.price) || 0, unit: 'ширхэг', brand: /moty/i.test(p.name) ? 'motys' : 'em', category: /moty|тос/i.test(p.name + ' ' + (p.category || '')) ? 'oil' : 'shock', status: 'in', active: false, isNew: false, order: 100, updatedBy: currentUserEmail }));
+                    await b.commit();
+                }
+                logAudit('web_edit', `Вэб сайт: кассаас ${todo.length} бараа хуулав`);
+                alert(`${todo.length} бараа нэмэгдлээ. «Бараа» хэсгээс засаж, «Сайтад харуулах»-ыг асаана уу.`);
+            } catch (e) { alert('Алдаа: ' + e.message); }
+        }
+
+        const PAGE_TITLES = { dashboard: 'Самбар', pos: 'Касс & Бараа', customers: 'Харилцагч', bookings: 'Цаг захиалга', credit: 'Зээл & Төлөлт', reports: 'Борлуулалтын тайлан', manage: 'Удирдлага', receive: 'Бараа хүлээн авах', web: 'Вэб сайт (everymotors.mn)' };
         let currentPage = 'dashboard';
         let chartRange = 30;
 
         function showPage(page) {
-            if (!PAGE_TITLES[page] || (page === 'manage' && currentUserRole !== 'admin')) page = 'dashboard';
+            if (!PAGE_TITLES[page] || ((page === 'manage' || page === 'web') && currentUserRole !== 'admin')) page = 'dashboard';
             currentPage = page;
             try { localStorage.setItem('lastPage', page); } catch (e) { }
             document.querySelectorAll('#mainSystemContainer [data-page]').forEach(el => el.classList.toggle('page-hidden', el.dataset.page !== page));
