@@ -1142,6 +1142,7 @@
             <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
             <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border); width:100%;" onclick="importSalesforceCatalog()">⬇ Salesforce-оос амортизаторын бараа, гаражуудыг оруулах</button>
             <small style="display:block; color:var(--text-muted); margin-top:6px;">Нэг удаа хийнэ. Аль хэдийн байгаа нэртэй бараа, харилцагчийг давхар оруулахгүй. Үлдэгдэл 0 — тооллогоор оруулна.</small>
+            <button class="btn-sm" style="background:var(--input-bg); color:var(--warning); border:1px solid var(--warning); width:100%; margin-top:10px;" onclick="importGarageOpeningBalances()">⬇ Гаражуудын эхний авлагыг оруулах (Drive «Report», шалгаагүй)</button>
         </div>
     </div>
 
@@ -3425,6 +3426,32 @@
                 alert('Эхний авлага бүртгэгдлээ. «Зээл» хэсэгт харагдана.');
                 openCustomerProfile(c.id);
             } catch (e) { alert('Хадгалж чадсангүй: ' + e.message); }
+        }
+        // Google Drive «Report» → «2026 year» хуудасны үлдэгдэл (2026/11/28). Хэрэглэгч дараа нь шалгана.
+        const GARAGE_OPENING = [{"n":"PRIUS CENTER HYBRID CENTER","a":21561200,"src":"Prius center"},{"n":"BROS Auto service","a":16725500,"src":"Bros auto service"},{"n":"GAN GARAGE","a":7580160,"src":"GAN GARAGE"},{"n":"Kharkhorin","a":55237350,"src":"Kharkhorin"},{"n":"Level printer","a":4882263,"src":"Level printer"},{"n":"Master Auto","a":2297550,"src":"Master Auto"},{"n":"UB Авто сэрвис","a":49883200,"src":"UB  auto"},{"n":"Анар авто сервис","a":2886600,"src":"Анар авто сервис"},{"n":"Загсүүжинговь Өмнөговь Хурд","a":9100800,"src":"Загсүүжинговь"},{"n":"Өвөрхангай Арвайхээр","a":43320300,"src":"Өвөрхангай Арвайхээр"},{"n":"ТЛ моторс","a":42009150,"src":"ТЛ моторс"},{"n":"Чанар Авто сервис","a":37082500,"src":"Чанар Авто сервис"},{"n":"Эрдэнэт граж","a":10404000,"src":"Эрдэнэт граж"},{"n":"Хэнтий Auto service","a":4056500,"src":"Хэнтий- Auto service"},{"n":"Yokohama Tire Mongolia","a":15118000,"src":"Yokohama Tire Mongolia"},{"n":"Сутай Буянт Салбар","a":10245500,"src":"Сутай буянт"},{"n":"Дархан салбар","a":25222400,"src":"Дархан салбар"},{"n":"ARKHANGAI GOLD auto","a":5689600,"src":"ARKHANGAI GOLD auto"},{"n":"Баянхонгор Их Богд","a":1078500,"src":"Баянхонгор"}];
+        async function importGarageOpeningBalances() {
+            if (currentUserRole !== 'admin') return alert('Зөвхөн Менежерт эрх байна!');
+            const done = new Set(salesData.filter(x => x.opening && x.openingSource === 'drive-report-2026').map(x => x.customerId));
+            const plan = GARAGE_OPENING.map(g => ({ g, c: customers.find(c => normKey(c.name) === normKey(g.n)) })).filter(x => !(x.c && done.has(x.c.id)));
+            if (!plan.length) return alert('Бүгд аль хэдийн орсон байна.');
+            const total = plan.reduce((a, x) => a + x.g.a, 0), missing = plan.filter(x => !x.c).length;
+            if (!confirm(`${plan.length} гаражийн эхний авлага, нийт ${total.toLocaleString()}₮ оруулах уу?\n(Шалгаагүй гэж тэмдэглэнэ.${missing ? ` Касс дээр бүртгэлгүй ${missing} гаражийг шинээр бүртгэнэ.` : ''})`)) return;
+            try {
+                const b = db.batch(), now = new Date();
+                plan.forEach(({ g, c }, i) => {
+                    let cid = c && c.id, cname = c ? c.name : g.n;
+                    if (!c) { const r = db.collection('customers').doc(); cid = r.id; b.set(r, { type: 'Байгууллага', name: g.n, phone: '', carNo: '', note: '', createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+                    b.set(db.collection('sales').doc(), {
+                        opening: true, openingSource: 'drive-report-2026', openingVerified: false, invoiceNum: 'OPEN-' + (Date.now() + i).toString().slice(-6), date: now.toLocaleString('mn-MN'), timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        paymentMethod: 'Эхний авлага', docType: 'OPENING', customer: cname, customerId: cid, phone: (c && c.phone) || '', carNo: '',
+                        items: [], subTotal: 0, discount: 0, total: 0, openingAmount: g.a, isCredit: true, advancePaid: 0, creditRemaining: g.a, dueDate: '',
+                        notes: `Шалгаагүй — Drive «Report» (${g.src}), 2026/11/28`, status: 'credit_unpaid', soldBy: currentUserEmail
+                    });
+                });
+                await b.commit();
+                logAudit('opening_receivable_import', `Гаражуудын эхний авлага: ${plan.length} гараж, ${total.toLocaleString()}₮ (Drive Report, шалгаагүй)`);
+                alert(`Орлоо: ${plan.length} гараж, ${total.toLocaleString()}₮. «Зээл» хэсэгт «Шалгаагүй» гэж харагдана.`);
+            } catch (e) { alert('Алдаа: ' + e.message); }
         }
         async function deleteOpeningReceivable(id) {
             const s0 = salesData.find(x => x.id === id);
