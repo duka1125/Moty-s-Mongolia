@@ -698,6 +698,11 @@
                     <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('month')">Энэ сар</button>
                     <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('year')">Жил</button>
                     <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="filterSales('all')">Бүгд</button>
+                    <select id="salesLineFilter" onchange="filterSales(currentSalesFilter)" style="width:auto; padding:6px 10px; font-size:0.8rem;">
+                        <option value="all">🏷️ Бүх шугам</option>
+                        <option value="motys">Moty's</option>
+                        <option value="shock">Амортизатор</option>
+                    </select>
                     <select id="salesVatFilter" onchange="filterSales(currentSalesFilter)" style="width:auto; padding:6px 10px; font-size:0.8rem;">
                         <option value="all">🧾 НӨАТ: бүгд</option>
                         <option value="vat">Зөвхөн НӨАТ-тэй</option>
@@ -1132,7 +1137,10 @@
                 </div>
             </div>
             <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
-            <div style="max-height: 200px; overflow-y: auto;" id="categoryManageList"></div>
+            <div style="max-height: 320px; overflow-y: auto;" id="categoryManageList"></div>
+            <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+            <button class="btn-sm" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border); width:100%;" onclick="importSalesforceCatalog()">⬇ Salesforce-оос амортизаторын бараа, гаражуудыг оруулах</button>
+            <small style="display:block; color:var(--text-muted); margin-top:6px;">Нэг удаа хийнэ. Аль хэдийн байгаа нэртэй бараа, харилцагчийг давхар оруулахгүй. Үлдэгдэл 0 — тооллогоор оруулна.</small>
         </div>
     </div>
 
@@ -1353,8 +1361,10 @@
             <div class="form-group"><label>Утас:</label><input type="tel" id="modalCustPhone" oninput="onCheckoutCustomerFieldEdit()"></div>
             <div class="flex-grid">
                 <div class="form-group"><label>Машины №:</label><input type="text" id="modalCarNo" oninput="onCheckoutCustomerFieldEdit()"></div>
-                <div class="form-group"><label>КМ:</label><input type="number" id="modalKm"></div>
+                <div class="form-group"><label>КМ:</label><input type="number" id="modalKm" min="0"></div>
             </div>
+            <div class="form-group"><label>Машины загвар:</label><input type="text" id="modalCarModel" placeholder="Жишээ: Harrier MHU38" maxlength="60"></div>
+            <div id="modalWarrantyNote" style="display:none; font-size:0.82rem; color:var(--warning); margin:-4px 0 10px;"></div>
             <label id="modalSaveCustWrap" style="display:none; font-size:0.85rem; margin-bottom:10px; cursor:pointer;"><input type="checkbox" id="modalSaveCust" checked style="width:auto; margin-right:6px;">Шинэ харилцагч — автоматаар бүртгэж, энэ худалдан авалтыг түүхэнд нь нэмнэ</label>
             <div style="background:rgba(16,185,129,0.08); border:1px solid var(--border); padding:10px 12px; border-radius:10px; margin-bottom:12px;">
                 <label style="cursor:pointer; margin:0; font-size:0.9rem; text-transform:none; color:var(--text-main);"><input type="checkbox" id="modalVat" onchange="toggleVatFields()" style="width:auto; margin-right:6px;">🧾 НӨАТ-ын баримт (И-баримт) олгосон</label>
@@ -1497,6 +1507,21 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         const inc = (n) => firebase.firestore.FieldValue.increment(n);
+        // ===== БИЗНЕСИЙН ШУГАМ / БАТАЛГАА / ҮЙЛЧИЛГЭЭ (ангиллын тохиргооноос) =====
+        const LINES = { motys: "Moty's", shock: 'Амортизатор' };
+        function catOf(name) { return categories.find(c => c.name === name) || {}; }
+        function lineOfProduct(p) { return (p && catOf(p.category).line) || 'motys'; }
+        function isServiceProduct(p) { return !!(p && catOf(p.category).service); }
+        function warrantyKmOf(p) { return Number(p && catOf(p.category).warrantyKm) || 0; }
+        function saleLines(sale) { const l = (sale.items || []).map(i => i.line || 'motys'); return l.length ? [...new Set(l)] : ['motys']; }
+        function itemNet(i) { return (Number(i.price) || 0) * (Number(i.qty) || 0) * (1 - (Number(i.discountPercent) || 0) / 100); }
+        // Олон шугамтай баримтын дүнг тухайн шугамын бараагаар хуваана (хөнгөлөлтийн дараах дүнгээр)
+        function saleLineTotal(sale, line) {
+            const items = sale.items || []; if (!items.length) return line === 'motys' ? (sale.total || 0) : 0;
+            const all = items.reduce((a, i) => a + itemNet(i), 0), part = items.filter(i => (i.line || 'motys') === line).reduce((a, i) => a + itemNet(i), 0);
+            return all > 0 ? Math.round((sale.total || 0) * part / all) : 0;
+        }
+        function wNote(item) { return item && item.warrantyUntilKm ? `<br><small>Баталгаа: ${Number(item.warrantyUntilKm).toLocaleString()} км хүртэл</small>` : ''; }
 
         // Хэрэглэгчийн оруулсан текстийг аюулгүй харуулах
         function esc(v) {
@@ -2591,8 +2616,40 @@
             const l = document.getElementById('categoryManageList');
             if(l) {
                 l.innerHTML = '';
-                categories.forEach(c => l.innerHTML += `<div class="cat-item"><span><strong>${esc(c.name)}</strong></span><button class="btn-danger btn-sm" onclick="deleteCategory('${c.id}')"><i class="fa-solid fa-trash"></i></button></div>`);
+                categories.forEach(c => l.innerHTML += `<div class="cat-item" style="flex-wrap:wrap; gap:6px;"><span style="flex:1 1 100%;"><strong>${esc(c.name)}</strong></span>
+                    <select style="width:auto; padding:4px 6px; font-size:0.8rem;" title="Бизнесийн шугам" onchange="updateCategory('${c.id}', 'line', this.value)">${Object.entries(LINES).map(([k, v]) => `<option value="${k}" ${(c.line || 'motys') === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>
+                    <label style="font-size:0.78rem; margin:0; text-transform:none;">Баталгаа <input type="number" min="0" step="1000" value="${Number(c.warrantyKm) || 0}" style="width:80px; padding:4px; display:inline-block;" onchange="updateCategory('${c.id}', 'warrantyKm', Math.max(0, parseInt(this.value) || 0))"> км</label>
+                    <label style="font-size:0.78rem; margin:0; text-transform:none; cursor:pointer;" title="Үйлчилгээ бол үлдэгдэл тоологдохгүй"><input type="checkbox" style="width:auto;" ${c.service ? 'checked' : ''} onchange="updateCategory('${c.id}', 'service', this.checked)"> Үйлчилгээ</label>
+                    <button class="btn-danger btn-sm" onclick="deleteCategory('${c.id}')"><i class="fa-solid fa-trash"></i></button></div>`);
             }
+        }
+        // Salesforce-оос татсан амортизаторын бараа (тос, иж бүрдэл «set»-ийг оруулаагүй) ба гаражууд
+        const SF_CATALOG = {"products":[{"n":"RX450h GYL15 FRT RH","c":"Амортизатор","p":299000,"sf":"a025i00000aknEC"},{"n":"Highlander FRT RH","c":"Амортизатор","p":299000,"sf":"a025i00000aknED"},{"n":"Highlander RR LH","c":"Амортизатор","p":299000,"sf":"a025i00000aknEE"},{"n":"Camry 50 RR RH","c":"Амортизатор","p":240000,"sf":"a025i00000aknEG"},{"n":"Harrier(MHU38) FRT RH MG 4WD","c":"Амортизатор","p":275000,"sf":"a025i00000aknEK"},{"n":"Harrier(MHU38) RR LH 4WD","c":"Амортизатор","p":275000,"sf":"a025i00000aknEL"},{"n":"RX450h GYL15 FRT LH","c":"Амортизатор","p":299000,"sf":"a025i00000aknEM"},{"n":"Camry 50 FRT RH","c":"Амортизатор","p":240000,"sf":"a025i00000aknEN"},{"n":"Prius 20 FRT LH","c":"Амортизатор","p":200000,"sf":"a025i00000aknEO"},{"n":"Prius 20 FRT RH","c":"Амортизатор","p":200000,"sf":"a025i00000aknEP"},{"n":"Rav4 Vanguard Резин","c":"Сэлбэг","p":15000,"sf":"a025i00000aknEQ"},{"n":"Наклад RX450, Harrier урд /ADT342190/","c":"Сэлбэг","p":198000,"sf":"a025i00000aknEW"},{"n":"Harrier SPRING RR R/L","c":"Пүрш","p":179000,"sf":"a025i00000aknEX"},{"n":"RX450h SPRING RR R/L","c":"Пүрш","p":189000,"sf":"a025i00000aknEY"},{"n":"Harrier FRT MOUNT 48609-48020","c":"Сэлбэг","p":95000,"sf":"a025i00000aknEZ"},{"n":"Harrier RR MOUNT 48750-48040","c":"Сэлбэг","p":95000,"sf":"a025i00000aknEa"},{"n":"SAI, LEXUS HS250h FRT LH","c":"Амортизатор","p":210000,"sf":"a025i00000aknEc"},{"n":"SAI, LEXUS HS250h FRT RH","c":"Амортизатор","p":210000,"sf":"a025i00000aknEd"},{"n":"SAI, LEXUS HS250h RR R/L","c":"Амортизатор","p":210000,"sf":"a025i00000aknEe"},{"n":"Sonata 7 FRT RH","c":"Сэлбэг","p":130000,"sf":"a025i00000aknEf"},{"n":"Sonata 7 FRT LH","c":"Сэлбэг","p":130000,"sf":"a025i00000aknEg"},{"n":"Sonata 7 RR R/L","c":"Амортизатор","p":100000,"sf":"a025i00000aknEh"},{"n":"Harrier rezin FRT","c":"Сэлбэг","p":15000,"sf":"a025i00000aknEl"},{"n":"Mount bearing Rx450, Rav4, Estima 48619-42010","c":"Сэлбэг","p":95000,"sf":"a025i00000aknEm"},{"n":"Air force cuddle","c":"Сэлбэг","p":230000,"sf":"a025i00000aknEn"},{"n":"Lexus NX200t, 300h","c":"Амортизатор","p":275000,"sf":"a025i00000aknEp"},{"n":"Rav4 MOUNT FRT 48609-42020","c":"Сэлбэг","p":95000,"sf":"a025i00000aknEr"},{"n":"Наклад Landcruiser 200 урд /ADT342175/","c":"Сэлбэг","p":220000,"sf":"a025i00000aknEs"},{"n":"Наклад Landcruiser 200 хойд /ADT342176/","c":"Сэлбэг","p":176000,"sf":"a025i00000aknEt"},{"n":"Harrier(MHU38) FRT LH MG 4WD","c":"Амортизатор","p":275000,"sf":"a025i00000aknEv"},{"n":"Harrier(MHU38) RR RH 4WD","c":"Амортизатор","p":275000,"sf":"a025i00000aknEw"},{"n":"Harrier(ACU30)2WD RR RH","c":"Амортизатор","p":275000,"sf":"a025i00000aknEx"},{"n":"Harrier(ACU30)2WD RR LH","c":"Амортизатор","p":275000,"sf":"a025i00000aknEy"},{"n":"Highlander FRT LH","c":"Амортизатор","p":299000,"sf":"a025i00000aknEz"},{"n":"Highlander RR RH","c":"Амортизатор","p":299000,"sf":"a025i00000aknF0"},{"n":"Camry 50 RR LH","c":"Амортизатор","p":240000,"sf":"a025i00000aknF1"},{"n":"Prius 20 RR R/L","c":"Амортизатор","p":180000,"sf":"a025i00000aknF2"},{"n":"Harrier SPRING FRT R/L","c":"Пүрш","p":179000,"sf":"a025i00000aknF3"},{"n":"RX450h SPRING FRT R","c":"Пүрш","p":189000,"sf":"a025i00000aknF4"},{"n":"Prius 30 FRT LH","c":"Амортизатор","p":200000,"sf":"a025i00000aknF5"},{"n":"Prius 30 FRT RH","c":"Амортизатор","p":200000,"sf":"a025i00000aknF6"},{"n":"Prius 30 RR R/L","c":"Амортизатор","p":180000,"sf":"a025i00000aknF7"},{"n":"Harrier SPRING FTR R/L 2400сс","c":"Пүрш","p":179000,"sf":"a025i00000aknF8"},{"n":"RAV4 Vanguard FRT RH","c":"Амортизатор","p":240000,"sf":"a025i00000aknF9"},{"n":"Harrier MCU35 RR RH 4WD","c":"Амортизатор","p":275000,"sf":"a025i00000aknFA"},{"n":"Harrier MCU35 RR LH 4WD","c":"Амортизатор","p":275000,"sf":"a025i00000aknFB"},{"n":"RX450h GYL15 RR R/L","c":"Амортизатор","p":299000,"sf":"a025i00000aknFC"},{"n":"RAV4 Vanguard FRT LH","c":"Амортизатор","p":240000,"sf":"a025i00000aknFD"},{"n":"RAV4 Vanguard RR R/L","c":"Амортизатор","p":240000,"sf":"a025i00000aknFE"},{"n":"Camry 50 FRT LH","c":"Амортизатор","p":240000,"sf":"a025i00000cJzPt"},{"n":"Harrier(CBA ACU30)2WD RR RH","c":"Амортизатор","p":275000,"sf":"a025i00000cJzdM"},{"n":"RX450h SPRING FRT L","c":"Пүрш","p":189000,"sf":"a025i00000cJzlK"},{"n":"Alphard 10 FRT RH","c":"Амортизатор","p":275000,"sf":"a025i00000cK2do"},{"n":"Alphard 10 FRT LH","c":"Амортизатор","p":275000,"sf":"a025i00000cK2em"},{"n":"Alphard 20 FRT RH","c":"Амортизатор","p":275000,"sf":"a025i00000cK2en"},{"n":"Alphard 20 FRT LH","c":"Амортизатор","p":275000,"sf":"a025i00000cK2eo"},{"n":"Alphard 10 RR R/L","c":"Амортизатор","p":275000,"sf":"a025i00000cK2gT"},{"n":"Alphard 20 RR R/L","c":"Амортизатор","p":275000,"sf":"a025i00000cK2hq"},{"n":"RAV4 SPRING FRT R/L","c":"Пүрш","p":179000,"sf":"a025i00000cKFlc"},{"n":"RAV4 SPRING RR R/L","c":"Пүрш","p":179000,"sf":"a025i00000cKHx2"},{"n":"Тэнхлэг тохиргоо 30","c":"Амортизатор үйлчилгээ","p":30000,"sf":"a025i00000dDN4V"},{"n":"Harrier(CBA ACU30)2WD RR LH","c":"Амортизатор","p":275000,"sf":"a025i00000dxrTV"},{"n":"RX450 FRT mount 48609-48060","c":"Сэлбэг","p":95000,"sf":"a025i00000dxrdV"},{"n":"Салон агаах шүүгч Harrier","c":"Сэлбэг","p":30000,"sf":"a025i00000fBWLq"},{"n":"мотор агаар шүүгч Harrier","c":"Сэлбэг","p":15000,"sf":"a025i00000fBWMK"},{"n":"маслын шүүр harrier","c":"Сэлбэг","p":30000,"sf":"a025i00000fBWPn"},{"n":"Маслын шүүр RX","c":"Сэлбэг","p":30000,"sf":"a025i00000fBWPo"},{"n":"harrier наклад хойд","c":"Сэлбэг","p":140000,"sf":"a025i00000fBWRf"},{"n":"мотор агаар шүүгч Sai P-41 Vanguard","c":"Сэлбэг","p":20000,"sf":"a025i00000fBWTf"},{"n":"Наклад урд","c":"Сэлбэг","p":160000,"sf":"a025i00000fBWWt"},{"n":"оношилгоо","c":"Амортизатор үйлчилгээ","p":15000,"sf":"a025i00000fCNWy"},{"n":"Хуучин пүрш","c":"Сэлбэг","p":179000,"sf":"a025i00000fCQxf"},{"n":"Шаариг","c":"Сэлбэг","p":35000,"sf":"a025i00000fCRGV"},{"n":"Суурь резин","c":"Сэлбэг","p":65000,"sf":"a025i00000fCRyw"},{"n":"LC-200 570","c":"Сэлбэг","p":50000,"sf":"a025i00000fCS5n"},{"n":"Harrier Пүршний суурь резин","c":"Сэлбэг","p":60000,"sf":"a025i00000fCcGU"},{"n":"Мотор агаар шүүгч RX","c":"Сэлбэг","p":30000,"sf":"a025i00000fCciC"},{"n":"L300 агаар шүүгч","c":"Сэлбэг","p":25000,"sf":"a025i00000fCcng"},{"n":"TSI-MCU30F доод тавагны резин хойд","c":"Сэлбэг","p":60000,"sf":"a025i00000fCcnh"},{"n":"PM2.5 агаар шүүгч","c":"Сэлбэг","p":25000,"sf":"a025i00000fCcrT"},{"n":"RX хойд мөөм","c":"Сэлбэг","p":300000,"sf":"a025i00000fCcyy"},{"n":"Уранган Экспо","c":"Амортизатор үйлчилгээ","p":90000,"sf":"a025i00000fCtCv"},{"n":"HKS шүүр","c":"Сэлбэг","p":60000,"sf":"a025i00000fCtKy"},{"n":"Хайлш өндөрлөгөө","c":"Сэлбэг","p":25000,"sf":"a025i00000fEvVy"},{"n":"Масло шүүр 38020","c":"Сэлбэг","p":10000,"sf":"a025i00000fEwBV"},{"n":"Lexus NX200t, 300h(AYZ1) MG FRT LH","c":"Амортизатор","p":275000,"sf":"a025i00000fExiy"},{"n":"Lexus NX200t, 300h(AYZ1) MG RR L/R","c":"Амортизатор","p":275000,"sf":"a025i00000fEyZa"},{"n":"Lexus NX200t, 300h(AYZ1) MG FRT RH","c":"Амортизатор","p":275000,"sf":"a025i00000fEyn7"},{"n":"Harrier 60 (ZSU6) MG FRT RH","c":"Амортизатор","p":275000,"sf":"a025i00000fEyrZ"},{"n":"Harrier 60 (ZSU6) MG FRT LH","c":"Амортизатор","p":275000,"sf":"a025i00000fEytP"},{"n":"Harrier 60 (ZSU6) MG RR L/R","c":"Амортизатор","p":275000,"sf":"a025i00000fEyyZ"},{"n":"Тэнхлэг тохиргоо","c":"Амортизатор үйлчилгээ","p":50000,"sf":"a025i00000gTOKm"},{"n":"Масло шүүр 10001","c":"Сэлбэг","p":10000,"sf":"a025i00000gTOXq"},{"n":"Сэвчээ","c":"Сэлбэг","p":60000,"sf":"a025i00000gTP1s"},{"n":"Гүпэр түгжээ","c":"Сэлбэг","p":0,"sf":"a025i00000gTP6Y"},{"n":"Гүпэр пүрш","c":"Сэлбэг","p":0,"sf":"a025i00000gTP6n"},{"n":"RX дунд таваг","c":"Сэлбэг","p":50000,"sf":"a025i00000gUxdw"},{"n":"rizen shagai ixee nemsen","c":"Сэлбэг","p":15000,"sf":"a025i00000gV78d"},{"n":"Салон агаар шүүгч P-10 20 land","c":"Сэлбэг","p":15000,"sf":"a025i00000gWL8r"},{"n":"Prius 41 FRT RH","c":"Амортизатор","p":210000,"sf":"a025i00000gWyb5"},{"n":"Prius 41 FRT LH","c":"Амортизатор","p":210000,"sf":"a025i00000gWych"},{"n":"Prius 41 RR R/L","c":"Амортизатор","p":210000,"sf":"a025i00000gWyeY"},{"n":"Lexus 450 GYL25 FRT LH","c":"Амортизатор","p":339000,"sf":"a025i00000gWz5e"},{"n":"Lexus 450 GYL 25 FRT RH","c":"Амортизатор","p":339000,"sf":"a025i00000gWz7f"},{"n":"Lexus 450 GYL 25 RR/ L/R","c":"Амортизатор","p":339000,"sf":"a025i00000gWzGT"},{"n":"Camry 50 LONG RR RH","c":"Амортизатор","p":249000,"sf":"a025i00000gX05P"},{"n":"Camry 50 LONG FRT LH","c":"Амортизатор","p":249000,"sf":"a025i00000gX05t"},{"n":"Camry 50 LONG FRT RH","c":"Амортизатор","p":249000,"sf":"a025i00000gX0Gq"},{"n":"Camry 50 LONG RR LH","c":"Амортизатор","p":249000,"sf":"a025i00000gX0HA"},{"n":"солих үйлчилгээ, оношилгоо","c":"Амортизатор үйлчилгээ","p":25000,"sf":"a025i00000hl8X5"},{"n":"Harrier шүүр 90915","c":"Сэлбэг","p":10000,"sf":"a025i00000hm2G7"},{"n":"Масло шүүр 37010","c":"Сэлбэг","p":10000,"sf":"a025i00000hm2GC"},{"n":"Масло шүүр 31090","c":"Сэлбэг","p":10000,"sf":"a025i00000hm2GH"},{"n":"Масло шүүр 31080","c":"Сэлбэг","p":10000,"sf":"a025i00000hm2GW"},{"n":"Crown 210","c":"Амортизатор","p":2000000,"sf":"a025i00000i0sQh"},{"n":"Rezin rav , P30 Sai","c":"Сэлбэг","p":15000,"sf":"a025i00000i1Htg"},{"n":"Rezin Harrier RR","c":"Сэлбэг","p":15000,"sf":"a025i00000i1HuE"},{"n":"Завин гар","c":"Сэлбэг","p":300000,"sf":"a025i00000jaxHP"},{"n":"Хэвтээ тэнцүүлэгч","c":"Сэлбэг","p":450000,"sf":"a025i00000jaxHi"},{"n":"Босоо тэнцүүлэгч","c":"Сэлбэг","p":30000,"sf":"a02J3000004Pcs2"},{"n":"Босоо тэнцүүлэгч RAV4,prius30, 60harrier","c":"Сэлбэг","p":30000,"sf":"a02J3000004PlG5"},{"n":"Акумлятор Voltex / 45AH L /","c":"Сэлбэг","p":184000,"sf":"a02J30000076Kmz"},{"n":"Акумлятор Voltex / 45AH R /","c":"Сэлбэг","p":184000,"sf":"a02J30000076Kn0"},{"n":"Акумлятор Voltex / 60AH L /","c":"Сэлбэг","p":230000,"sf":"a02J30000076KrK"},{"n":"Салон агаар шүүгч P-30 40 41 sai harrier","c":"Сэлбэг","p":20000,"sf":"a02J30000076UT1"},{"n":"MO-703","c":"Сэлбэг","p":10000,"sf":"a02J300000ACEwr"},{"n":"Yokoso агаар шүүгч","c":"Сэлбэг","p":25000,"sf":"a02J300000AEWRT"},{"n":"Yokoso масло шүүр","c":"Сэлбэг","p":18000,"sf":"a02J300000AEWSW"},{"n":"Yokoso 87138-06060","c":"Сэлбэг","p":25000,"sf":"a02J300000CSiRu"},{"n":"RS-R RUNS Landcruiser VJA300 2inch UP KIT","c":"Амортизатор","p":9800000,"sf":"a02Q800000C1Hvx"},{"n":"шил арчигч шингэн","c":"Сэлбэг","p":7000,"sf":"a02Q800000CWMT9"},{"n":"Резин","c":"Сэлбэг","p":10000,"sf":"a02Q800000CgK6f"},{"n":"Harrier SPRING RR-R/L2400cc","c":"Пүрш","p":179000,"sf":"a02Q800000GCSfF"},{"n":"Yokoso LC300 17801-52020 мотор шүүгч","c":"Сэлбэг","p":65000,"sf":"a02Q800000GWq3v"},{"n":"Yokoso LC20017801-38030 мотор шүүгч","c":"Сэлбэг","p":65000,"sf":"a02Q800000GX2Hx"},{"n":"Prius 50 RR L/R","c":"Амортизатор","p":210000,"sf":"a02Q800000HzkU1"},{"n":"Prius 50,51 FRT RH","c":"Амортизатор","p":210000,"sf":"a02Q800000Hzv4P"},{"n":"Prius 50,51 FRT LH","c":"Амортизатор","p":210000,"sf":"a02Q800000HzvXR"},{"n":"Carbon түлхүүрний оосор","c":"Сэлбэг","p":30000,"sf":"a02Q800000VN5Er"},{"n":"Yokoso 48050 Cabin Filter","c":"Сэлбэг","p":28000,"sf":"a02Q800000Yr9sn"},{"n":"Yokoso 28010 Cabin Filter","c":"Сэлбэг","p":25000,"sf":"a02Q800000YrDEr"},{"n":"Yokoso Air filter 37021, 45031","c":"Сэлбэг","p":25000,"sf":"a02Q800000YrE9J"}],"partners":[{"n":"ТЛ моторс","ph":"96110788","note":"Нягтлан:  96110788 · РД: 6238343","sf":"0015i0000143m19"},{"n":"Чанар Авто сервис","ph":"99069031","note":"Нягтлан: Солонго 99069031","sf":"0015i0000143mLB"},{"n":"Содон автомаркет Эрдэнэт хот","ph":"","note":"","sf":"0015i0000143mLp"},{"n":"UB Авто сэрвис","ph":"88044000","note":"Менежер:  88044000 · Нягтлан:  88044015","sf":"0015i0000143mMd"},{"n":"GAN GARAGE","ph":"99295086","note":"Нягтлан: ЦОЛМОН 99295086","sf":"0015i0000143mMe"},{"n":"Загсүүжинговь Өмнөговь Хурд","ph":"99665140","note":"Нягтлан:  99665140 · РД: 3618587","sf":"0015i0000143mMx"},{"n":"АНАНД АВТО СЕРВИС","ph":"95029504","note":"Нягтлан:  95029504","sf":"0015i0000143mN7"},{"n":"Уранган Экспо","ph":"","note":"","sf":"0015i000014mUpO"},{"n":"Moty's","ph":"","note":"Хөдөлгүүрийн тосны бүртгэл","sf":"0015i000015hIlm"},{"n":"GYL16-15","ph":"","note":"burtgel","sf":"0015i000015hLgz"},{"n":"Авто Экспо","ph":"","note":"","sf":"0015i000015jpbl"},{"n":"V8 Auto service","ph":"","note":"","sf":"0015i000017efUN"},{"n":"PRIUS CENTER HYBRID CENTER","ph":"91217557","note":"Менежер: Төгсжаргал 91217557 · Нягтлан: Отгончимэг 99089583","sf":"0015i000017fWPW"},{"n":"Анар авто сервис","ph":"95207580","note":"Менежер: Сэлбэг хариуцсан 95207580","sf":"0015i000017fZvb"},{"n":"V8 Моторс","ph":"","note":"","sf":"0015i000017felQ"},{"n":"TORUS intertaiment","ph":"","note":"","sf":"0015i000017gMWo"},{"n":"Ихээ","ph":"","note":"Нягтлан: Инженер","sf":"0015i00001998Jo"},{"n":"АКУМА","ph":"","note":"","sf":"0015i000019AFI1"},{"n":"AKUMA Төв салбар","ph":"80199261","note":"Менежер: Болорчимэг 80199261","sf":"0015i00001BTi3g"},{"n":"AKUMA Чулуун овоо салбар","ph":"99767655","note":"Менежер: Мөнгөнцэцэг 99767655","sf":"0015i00001BTiS2"},{"n":"AKUMA Баянбүрд салбар","ph":"99854370","note":"Менежер: Ганцэцэг 99854370","sf":"0015i00001BTieV"},{"n":"AKUMA 5н шар салбар","ph":"89409944","note":"Менежер:  89409944","sf":"0015i00001BTihP"},{"n":"AKUMA 32 салбар","ph":"86323003","note":"Менежер: Болортуяа 86323003","sf":"0015i00001BTikd"},{"n":"AKUMA 16 салбар","ph":"80703003","note":"Менежер:  80703003","sf":"0015i00001BTiu6"},{"n":"BROS Auto service","ph":"94094001","note":"Менежер:  94094001","sf":"0015i00001DYfM5"},{"n":"UB auto sansar","ph":"90748888","note":"Менежер:  90748888","sf":"0015i00001DYpNy"},{"n":"Kharkhorin","ph":"86071828","note":"Нягтлан: Эрдэнэчимэг 86071828","sf":"0015i00001DZoyH"},{"n":"PRIUS Center Амгалан салбар","ph":"86006060","note":"Менежер:  86006060","sf":"001J3000002tJQH"},{"n":"PRIUS Center Гандан салбар","ph":"","note":"","sf":"001J3000002tJRP"},{"n":"Digital garage","ph":"89896396","note":"Менежер:  89896396","sf":"001J3000004JuUM"},{"n":"Эрдэнэт граж","ph":"99039089","note":"Менежер: Мягмарсүрэн 99039089","sf":"001J3000004JuUg"},{"n":"Prius center Энх тайван салбар","ph":"94802871","note":"Менежер:  94802871","sf":"001J3000004KG0h"},{"n":"Авто Баярт Сервис","ph":"","note":"","sf":"001J3000005txu9"},{"n":"Mark","ph":"","note":"Dugui 10shirheg avsan.","sf":"001J3000005wIl5"},{"n":"Master Auto","ph":"88881152","note":"Менежер:  88881152","sf":"001J3000005wJwM"},{"n":"AKUMA 22 Салбар","ph":"99129250","note":"Менежер: Мягмардорж 99129250","sf":"001J30000090wyV"},{"n":"9963","ph":"","note":"","sf":"001J30000091fPw"},{"n":"Шагай","ph":"","note":"","sf":"001J30000091haW"},{"n":"Хэнмэдэх","ph":"","note":"","sf":"001J30000091huu"},{"n":"Сутайнбуянт зах","ph":"80099500","note":"Менежер: Батзаяа 80099500","sf":"001J30000091iX7"},{"n":"Аагий зурагчин","ph":"98118700","note":"Нягтлан:  98118700","sf":"001J300000Aeojq"},{"n":"Level printer","ph":"","note":"","sf":"001J300000Aetqr"},{"n":"Batzaya","ph":"","note":"","sf":"001J300000BSHQa"},{"n":"Бямбасайхан","ph":"","note":"","sf":"001J300000BSc0s"},{"n":"Төгөлдөр Drift","ph":"","note":"","sf":"001J300000BSrdr"},{"n":"Yokoso","ph":"88881815","note":"Менежер:  88881815   99055344","sf":"001J300000BTQfD"},{"n":"888 Autoservice","ph":"","note":"Баталгааны хуудас 0025501-0025600","sf":"001J300000BV4j7"},{"n":"RSR company Japan","ph":"","note":"","sf":"001Q800000VuXaZ"},{"n":"Ихбаяр","ph":"","note":"","sf":"001Q800000VueNV"},{"n":"Өвөрхангай Арвайхээр","ph":"","note":"","sf":"001Q800000WEJrZ"},{"n":"Yokohama Tire Mongolia","ph":"","note":"","sf":"001Q800000WEQhr"},{"n":"Global electronics","ph":"95029432","note":"Менежер: Г. Нарангэрэл 95029432 · Нягтлан:  99905282 · РД: РД:5132568","sf":"001Q800000aYobx"},{"n":"Itgel auto service","ph":"11344090","note":"Менежер:  11344090 · Моншибасаки ХХК","sf":"001Q800000alfRB"},{"n":"Сутай Буянт Салбар","ph":"80048245","note":"Нягтлан: Сарангэрэл 80048245","sf":"001Q800000f32ld"},{"n":"Сэлэнгэ салбар","ph":"","note":"","sf":"001Q800000gcsvM"},{"n":"Дархан салбар","ph":"","note":"","sf":"001Q800000gdDbV"},{"n":"ARKHANGAI GOLD auto","ph":"","note":"","sf":"001Q800000me5oa"},{"n":"Erdenebayr ah","ph":"","note":"","sf":"001Q800000oY1Y0"},{"n":"supra","ph":"","note":"","sf":"001Q800000oYb8P"},{"n":"BATKHANKHORUM","ph":"80059500","note":"Нягтлан: Otgonchimeg 80059500 · РД: 8367914","sf":"001Q800000obrjm"},{"n":"Баянхонгор Их Богд","ph":"","note":"","sf":"001Q800000zR1mW"},{"n":"Лхагвадорж","ph":"","note":"","sf":"001Q800001ju10d"}]};
+        const SF_CATS = { 'Амортизатор': { line: 'shock', warrantyKm: 10000, service: false }, 'Пүрш': { line: 'shock', warrantyKm: 0, service: false }, 'Сэлбэг': { line: 'shock', warrantyKm: 0, service: false }, 'Амортизатор үйлчилгээ': { line: 'shock', warrantyKm: 0, service: true } };
+        async function importSalesforceCatalog() {
+            if (currentUserRole !== 'admin') return alert('Зөвхөн Менежерт эрх байна!');
+            const have = new Set(inventory.map(p => normKey(p.name)));
+            const prods = SF_CATALOG.products.filter(p => !have.has(normKey(p.n)));
+            const haveC = new Set(customers.map(c => normKey(c.name)));
+            const parts = SF_CATALOG.partners.filter(p => !haveC.has(normKey(p.n)));
+            const newCats = Object.keys(SF_CATS).filter(n => !categories.some(c => c.name === n));
+            if (!prods.length && !parts.length && !newCats.length) return alert('Бүгд аль хэдийн орсон байна.');
+            if (!confirm(`Оруулах:\n• ${newCats.length} шинэ ангилал (${newCats.join(', ') || '—'})\n• ${prods.length} бараа (үлдэгдэл 0)\n• ${parts.length} гараж/байгууллага\n\nҮргэлжлүүлэх үү?`)) return;
+            try {
+                const ops = [];
+                newCats.forEach(n => ops.push(b => b.set(db.collection('categories').doc(), { name: n, ...SF_CATS[n] })));
+                prods.forEach(p => ops.push(b => b.set(db.collection('inventory').doc(), { name: p.n, category: p.c, packingType: 'piece', boxSize: 1, price: p.p, stock: 0, sfId: p.sf, createdBy: currentUserEmail })));
+                parts.forEach(p => ops.push(b => b.set(db.collection('customers').doc(), { type: 'Байгууллага', name: p.n, phone: p.ph, carNo: '', note: p.note, sfId: p.sf, createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp() })));
+                for (let i = 0; i < ops.length; i += 400) { const b = db.batch(); ops.slice(i, i + 400).forEach(f => f(b)); await b.commit(); }
+                logAudit('sf_import', `Salesforce: ${newCats.length} ангилал, ${prods.length} бараа, ${parts.length} харилцагч оруулав`);
+                alert(`Амжилттай! ${prods.length} бараа, ${parts.length} харилцагч орлоо.\nДараагийн алхам: «Бараа хүлээн авах» → Тооллого (3 — Амортизатор).`);
+            } catch (e) { alert('Алдаа: ' + e.message); }
+        }
+        async function updateCategory(id, field, value) {
+            if (currentUserRole !== 'admin') return;
+            const c = categories.find(x => x.id === id);
+            try { await db.collection('categories').doc(id).update({ [field]: value }); logAudit('category_update', `Ангилал ${c ? c.name : id}: ${field} = ${value}`); }
+            catch (e) { alert('Хадгалж чадсангүй: ' + e.message); }
         }
         async function deleteCategory(id) { const c = categories.find(x => x.id === id); if(confirm('Устгах уу?')) { await db.collection("categories").doc(id).delete(); logAudit('category_delete', `Ангилал устгав: ${c ? c.name : id}`); } }
 
@@ -2840,7 +2897,7 @@
             document.getElementById('cpHistory').innerHTML = st.list.length ? st.list.map(sl => `
                 <tr>
                     <td><small>${esc(sl.date || '')}</small><br><small style="color:var(--text-muted);">${esc(sl.invoiceNum || '')}</small></td>
-                    <td style="font-size:0.82rem;">${(sl.items || []).map(it => `${esc(it.name)} × ${esc(it.qty)}${it.discountPercent ? ` <small style="color:var(--text-muted);">(-${esc(it.discountPercent)}%)</small>` : ''}`).join('<br>') || '—'}${sl.notes ? `<br><small style="color:var(--text-muted);">📝 ${esc(sl.notes)}</small>` : ''}</td>
+                    <td style="font-size:0.82rem;">${(sl.items || []).map(it => `${esc(it.name)} × ${esc(it.qty)}${it.discountPercent ? ` <small style="color:var(--text-muted);">(-${esc(it.discountPercent)}%)</small>` : ''}${it.warrantyUntilKm && sl.status !== 'returned' ? ` <small style="color:${Number(lastKm) > it.warrantyUntilKm ? 'var(--text-muted)' : 'var(--success)'};">🛡️ ${Number(it.warrantyUntilKm).toLocaleString()} км хүртэл${Number(lastKm) > it.warrantyUntilKm ? ' (дууссан)' : ''}</small>` : ''}`).join('<br>') || '—'}${sl.notes ? `<br><small style="color:var(--text-muted);">📝 ${esc(sl.notes)}</small>` : ''}</td>
                     <td><small>${esc(sl.km && sl.km !== 'Бичигдээгүй' ? sl.km : '—')}</small></td>
                     <td><small>${esc(sl.paymentMethod || '')}${sl.isCredit && sl.status === 'credit_unpaid' ? '<br><span style="color:var(--warning);">Зээл: ' + fmtMoney(sl.creditRemaining) + '</span>' : (sl.isCredit && sl.status !== 'returned' ? '<br><span style="color:var(--success);">✅ Зээл төлөгдсөн</span>' : '')}</small></td>
                     <td style="text-align:right; font-weight:700;">${fmtMoney(sl.total)}${sl.vat ? '<br><span class="vat-badge">НӨАТ</span>' : ''}</td>
@@ -2906,6 +2963,7 @@
             document.getElementById('modalCustName').value = c.name || '';
             document.getElementById('modalCustPhone').value = c.phone || '';
             document.getElementById('modalCarNo').value = c.carNo || '';
+            if (c.carModel) document.getElementById('modalCarModel').value = c.carModel;
             document.getElementById('modalCustomerSearch').value = '';
             document.getElementById('modalCustomerResults').innerHTML = '';
             const picked = document.getElementById('modalCustomerPicked');
@@ -2956,13 +3014,14 @@
 
         function addToCart(id) {
             const p = inventory.find(i => i.id === id);
-            if (!p || p.stock <= 0) return alert('Үлдэгдэл хүрэлцэхгүй!');
+            const svc = isServiceProduct(p);
+            if (!p || (!svc && p.stock <= 0)) return alert('Үлдэгдэл хүрэлцэхгүй!');
             let item = cart.find(c => c.id === id);
             if(item) {
-                if(item.qty + 1 > p.stock) return alert('Үлдэгдэл хүрэлцэхгүй!');
+                if(!svc && item.qty + 1 > p.stock) return alert('Үлдэгдэл хүрэлцэхгүй!');
                 item.qty++;
             } else {
-                cart.push({ id: p.id, name: p.name, price: p.price, qty: 1, discountPercent: 0 });
+                cart.push({ id: p.id, name: p.name, price: p.price, qty: 1, discountPercent: 0, line: lineOfProduct(p), warrantyKm: warrantyKmOf(p), service: svc });
             }
             renderCart();
         }
@@ -2970,7 +3029,7 @@
         function changeCartQty(index, change) {
             const item = cart[index];
             const p = inventory.find(i => i.id === item.id);
-            if(change > 0 && item.qty + 1 > p.stock) return alert('Үлдэгдэл хүрэлцэхгүй!');
+            if(change > 0 && !isServiceProduct(p) && item.qty + 1 > p.stock) return alert('Үлдэгдэл хүрэлцэхгүй!');
             item.qty += change;
             if(item.qty <= 0) cart.splice(index, 1);
             renderCart();
@@ -2981,7 +3040,7 @@
             if (isNaN(q) || q < 0) q = 0;
             const item = cart[index];
             const p = inventory.find(i => i.id === item.id);
-            if (q > p.stock) {
+            if (!isServiceProduct(p) && q > p.stock) {
                 alert('Үлдэгдэл хүрэлцэхгүй! Хамгийн их үлдэгдэл: ' + p.stock);
                 q = p.stock;
             }
@@ -3040,6 +3099,10 @@
             if(cart.length === 0) return alert('Сагс хоосон байна!');
             document.getElementById('modalFinalTotal').innerText = document.getElementById('cartTotal').innerText + " ₮";
             toggleCreditOptions();
+            const wItems = cart.filter(i => i.warrantyKm > 0);
+            const wn = document.getElementById('modalWarrantyNote');
+            wn.style.display = wItems.length ? 'block' : 'none';
+            wn.innerHTML = wItems.length ? `🛡️ Баталгаатай бараа байна (${wItems.map(i => esc(i.name)).join(', ')}) — <b>КМ заавал</b> бичнэ.` : '';
             document.getElementById('checkoutModal').style.display = 'flex';
             updateSaveCustomerOption();
             toggleVatFields();
@@ -3058,7 +3121,17 @@
             const custName = document.getElementById('modalCustName').value.trim() || 'Энгийн үйлчлүүлэгч';
             const phone = cleanPhone(document.getElementById('modalCustPhone').value);
             const carNo = cleanCarNo(document.getElementById('modalCarNo').value) || 'Бүртгэлгүй';
-            const currentKm = document.getElementById('modalKm').value || 'Бичигдээгүй';
+            const kmNum = parseInt(document.getElementById('modalKm').value, 10);
+            if (cart.some(i => i.warrantyKm > 0) && !(kmNum > 0)) { document.getElementById('modalKm').focus(); return alert('Баталгаатай бараанд машины одоогийн КМ-ийг заавал бичнэ үү.'); }
+            const currentKm = kmNum > 0 ? String(kmNum) : 'Бичигдээгүй';
+            const carModel = document.getElementById('modalCarModel').value.trim();
+            // Баталгаа: зарсан үеийн км + ангиллын баталгааны км
+            const saleItems = cart.map(i => {
+                const it = { ...i };
+                if (i.warrantyKm > 0) it.warrantyUntilKm = kmNum + i.warrantyKm;
+                return it;
+            });
+            const saleLineList = [...new Set(saleItems.map(i => i.line || 'motys'))];
             const notes = document.getElementById('modalNotes').value || '';
             const vatIssued = document.getElementById('modalVat').checked;
 
@@ -3078,7 +3151,7 @@
             cart.forEach(item => {
                 const product = inventory.find(p => p.id === item.id);
                 // lastSale: үлдэгдэл хасалтыг энэ борлуулалттай холбоно (Firestore-ийн дүрэм шалгана)
-                if (product) batch.update(db.collection("inventory").doc(product.id), { stock: inc(-item.qty), lastSale: saleRef.id });
+                if (product && !isServiceProduct(product)) batch.update(db.collection("inventory").doc(product.id), { stock: inc(-item.qty), lastSale: saleRef.id });
             });
 
             // Шинэ харилцагчийг борлуулалттай хамт хадгалах
@@ -3089,7 +3162,7 @@
                 else if (document.getElementById('modalSaveCustWrap').style.display !== 'none' && document.getElementById('modalSaveCust').checked) {
                     const custRef = db.collection("customers").doc();
                     batch.set(custRef, {
-                        type: 'Хувь хүн', name: custName, phone, carNo: carNo === 'Бүртгэлгүй' ? '' : carNo,
+                        type: 'Хувь хүн', name: custName, phone, carNo: carNo === 'Бүртгэлгүй' ? '' : carNo, carModel,
                         createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     customerId = custRef.id;
@@ -3099,7 +3172,7 @@
             batch.set(saleRef, {
                 invoiceNum: invNum, date: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 paymentMethod, docType, customer: custName, customerId: customerId || null, phone, carNo,
-                vat: vatIssued, vatAmount: vatIssued ? Math.round(finalTotal / 11) : 0, vatRegNo: vatIssued ? document.getElementById('modalVatRegNo').value.trim() : '', km: currentKm, notes, items: cart,
+                vat: vatIssued, vatAmount: vatIssued ? Math.round(finalTotal / 11) : 0, vatRegNo: vatIssued ? document.getElementById('modalVatRegNo').value.trim() : '', km: currentKm, carModel, lines: saleLineList, notes, items: saleItems,
                 subTotal, discount: discountAmount, total: finalTotal, isCredit, advancePaid, creditRemaining, dueDate,
                 status: isCredit ? (creditRemaining <= 0 ? 'completed' : 'credit_unpaid') : 'completed',
                 soldBy: currentUserEmail
@@ -3118,14 +3191,15 @@
             toggleVatFields();
 
             if (docType === 'THERMAL') {
-                printThermalReceipt(dateStr, custName, carNo, cart, subTotal, discountAmount, finalTotal);
+                printThermalReceipt(dateStr, custName, carNo, saleItems, subTotal, discountAmount, finalTotal);
             } else if (docType === 'A4_BOTH_CREDIT') {
-                printBothA4Documents(invNum, dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, creditRemaining, dueDate);
+                printBothA4Documents(invNum, dateStr, custName, phone, carNo, currentKm, saleItems, subTotal, discountAmount, advancePaid, creditRemaining, dueDate);
                 saveCurrentA4AsPdf(saleRef.id, invNum, true);
             } else {
-                printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, cart, subTotal, discountAmount, advancePaid, docType === 'A4_PAID' ? finalTotal : creditRemaining, docType, dueDate);
+                printA4Document(invNum, dateStr, custName, phone, carNo, currentKm, saleItems, subTotal, discountAmount, advancePaid, docType === 'A4_PAID' ? finalTotal : creditRemaining, docType, dueDate);
                 if (isCredit) saveCurrentA4AsPdf(saleRef.id, invNum, docType === 'A4_PACKING_LIST');
             }
+            document.getElementById('modalCarModel').value = '';
             cart = [];
             renderCart();
         }
@@ -3141,7 +3215,7 @@
             receiptItems.innerHTML = '';
             items.forEach(item => {
                 let itemTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
-                receiptItems.innerHTML += `<tr><td>${esc(item.name)}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;">${itemTotal.toLocaleString()}₮</td></tr>`;
+                receiptItems.innerHTML += `<tr><td>${esc(item.name)}${wNote(item)}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;">${itemTotal.toLocaleString()}₮</td></tr>`;
             });
             document.getElementById('receiptTotal').innerText = `НИЙТ: ${finalTotal.toLocaleString()}₮`;
             window.print();
@@ -3196,9 +3270,9 @@
                 totalQtyCount += (item.qty || 0);
                 let rowTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
                 if (isPackingList) {
-                    list.innerHTML += `<tr><td>${idx+1}</td><td>${esc(item.name)}</td><td style="text-align:center;"><strong>${item.qty} ширхэг</strong></td></tr>`;
+                    list.innerHTML += `<tr><td>${idx+1}</td><td>${esc(item.name)}${wNote(item)}</td><td style="text-align:center;"><strong>${item.qty} ширхэг</strong></td></tr>`;
                 } else {
-                    list.innerHTML += `<tr><td>${idx+1}</td><td>${esc(item.name)}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;" class="price-col">${item.price.toLocaleString()}₮</td><td style="text-align:right;" class="price-col">${rowTotal.toLocaleString()}₮</td></tr>`;
+                    list.innerHTML += `<tr><td>${idx+1}</td><td>${esc(item.name)}${wNote(item)}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;" class="price-col">${item.price.toLocaleString()}₮</td><td style="text-align:right;" class="price-col">${rowTotal.toLocaleString()}₮</td></tr>`;
                 }
             });
 
@@ -3257,7 +3331,7 @@
             items.forEach((item, idx) => {
                 totalQtyCount += (item.qty || 0);
                 let rowTotal = (item.price * item.qty) * (1 - (item.discountPercent || 0) / 100);
-                listHtml += `<tr><td>${idx+1}</td><td>${esc(item.name)}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;" class="price-col">${item.price.toLocaleString()}₮</td><td style="text-align:right;" class="price-col">${rowTotal.toLocaleString()}₮</td></tr>`;
+                listHtml += `<tr><td>${idx+1}</td><td>${esc(item.name)}${wNote(item)}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:right;" class="price-col">${item.price.toLocaleString()}₮</td><td style="text-align:right;" class="price-col">${rowTotal.toLocaleString()}₮</td></tr>`;
             });
             document.getElementById('invItemsList').innerHTML = listHtml;
             document.getElementById('invTotalQtyText').innerText = totalQtyCount;
@@ -3285,7 +3359,7 @@
 
             let plListHtml = '';
             items.forEach((item, idx) => {
-                plListHtml += `<tr><td>${idx+1}</td><td>${esc(item.name)}</td><td style="text-align:center;"><strong>${item.qty} ширхэг</strong></td></tr>`;
+                plListHtml += `<tr><td>${idx+1}</td><td>${esc(item.name)}${wNote(item)}</td><td style="text-align:center;"><strong>${item.qty} ширхэг</strong></td></tr>`;
             });
             document.getElementById('plItemsList').innerHTML = plListHtml;
             document.getElementById('plTotalQtyText').innerText = totalQtyCount;
@@ -3466,7 +3540,7 @@
             const batch = db.batch();
             sale.items.forEach(item => {
                 const product = inventory.find(p => p.id === item.id);
-                if (product) batch.update(db.collection("inventory").doc(product.id), { stock: inc(item.qty) });
+                if (product && !item.service && !isServiceProduct(product)) batch.update(db.collection("inventory").doc(product.id), { stock: inc(item.qty) });
             });
             batch.update(db.collection("sales").doc(saleId), {
                 status: 'returned', originalTotal: sale.total, total: 0, creditRemaining: 0,
@@ -3504,17 +3578,21 @@
                 const d = saleDate(sale);
                 return (!from || d >= from) && (!to || d < to);
             });
-            const filtered = inPeriod.filter(sale => vatF === 'all' || (vatF === 'vat' ? !!sale.vat : !sale.vat));
+            const lineF = (document.getElementById('salesLineFilter') || {}).value || 'all';
+            const amt = sale => lineF === 'all' ? (sale.total || 0) : saleLineTotal(sale, lineF);
+            const filtered = inPeriod.filter(sale => (vatF === 'all' || (vatF === 'vat' ? !!sale.vat : !sale.vat)) && (lineF === 'all' || saleLines(sale).includes(lineF)));
+            const lineTot = { motys: 0, shock: 0 };
+            inPeriod.forEach(sale => { if (sale.status !== 'returned') Object.keys(lineTot).forEach(k => lineTot[k] += saleLineTotal(sale, k)); });
             let vatTotal = 0, vatCount = 0, nonVatTotal = 0;
             inPeriod.forEach(sale => {
                 if (sale.status === 'returned') return;
                 if (sale.vat) { vatTotal += (sale.total || 0); vatCount++; } else nonVatTotal += (sale.total || 0);
             });
-            document.getElementById('vatSummary').innerHTML = `🧾 НӨАТ-тэй: <strong style="color:var(--text-main);">${vatTotal.toLocaleString()}₮</strong> (${vatCount} баримт, НӨАТ ${Math.round(vatTotal / 11).toLocaleString()}₮) · НӨАТ-гүй: <strong style="color:var(--text-main);">${nonVatTotal.toLocaleString()}₮</strong>`;
+            document.getElementById('vatSummary').innerHTML = `🧾 НӨАТ-тэй: <strong style="color:var(--text-main);">${vatTotal.toLocaleString()}₮</strong> (${vatCount} баримт, НӨАТ ${Math.round(vatTotal / 11).toLocaleString()}₮) · НӨАТ-гүй: <strong style="color:var(--text-main);">${nonVatTotal.toLocaleString()}₮</strong><br>🏷️ Moty's: <strong style="color:var(--text-main);">${lineTot.motys.toLocaleString()}₮</strong> · Амортизатор: <strong style="color:var(--text-main);">${lineTot.shock.toLocaleString()}₮</strong>`;
             let totalRev = 0;
             list.innerHTML = filtered.map(sale => {
                 const returned = sale.status === 'returned';
-                if (!returned) totalRev += (sale.total || 0);
+                if (!returned) totalRev += amt(sale);
                 return `
                     <tr style="${returned ? 'opacity:0.5;' : ''}">
                         <td style="font-size:0.75rem;">${esc(sale.date)}<br><small>${esc(sale.paymentMethod || '')}</small></td>
@@ -3549,11 +3627,11 @@
 
         function exportSalesToExcel() {
             const rows = salesData.map(s => ({
-                "№": s.invoiceNum, "Огноо": s.date, "Харилцагч": s.customer, "Утас": s.phone || '', "Машин": s.carNo || '',
+                "№": s.invoiceNum, "Огноо": s.date, "Шугам": saleLines(s).map(l => LINES[l] || l).join(', '), "Харилцагч": s.customer, "Утас": s.phone || '', "Машин": s.carNo || '', "Загвар": s.carModel || '', "КМ": s.km || '',
                 "Төлбөрийн хэлбэр": s.paymentMethod || '', "Дүн": s.total, "Хөнгөлөлт": s.discount || 0,
                 "Зээлийн үлдэгдэл": s.creditRemaining || 0, "Төлөв": s.status || '', "Зарсан": s.soldBy || '',
                 "НӨАТ баримт": s.vat ? 'Тийм' : 'Үгүй', "НӨАТ дүн": s.vat ? (s.vatAmount || Math.round((s.total || 0) / 11)) : 0, "Байгууллагын РД": s.vatRegNo || '',
-                "Бараа": (s.items || []).map(i => i.name + ' x' + i.qty).join('; ')
+                "Бараа": (s.items || []).map(i => i.name + ' x' + i.qty + (i.warrantyUntilKm ? ` (баталгаа ${i.warrantyUntilKm} км)` : '')).join('; ')
             }));
             const ws = XLSX.utils.json_to_sheet(rows);
             const wb = XLSX.utils.book_new();
@@ -4279,11 +4357,17 @@
         async function startStocktake() {
             if (currentUserRole !== 'admin') return;
             if (stocktakes.some(x => x.status === 'open' || x.status === 'counted')) return alert('Дуусаагүй тооллого байна. Эхлээд түүнийг дуусгана уу.');
-            if (!inventory.length) return alert('Бараа алга байна.');
-            if (!confirm(`Бүх ${inventory.length} барааны тооллого эхлүүлэх үү? Кассчин «Бараа хүлээн авах» хэсгээс тоолно.`)) return;
+            const ans = prompt("Аль барааг тоолох вэ?\n1 — Бүх бараа\n2 — Зөвхөн Moty's\n3 — Зөвхөн Амортизатор", '1');
+            if (ans === null) return;
+            const scope = { '1': 'all', '2': 'motys', '3': 'shock' }[String(ans).trim()];
+            if (!scope) return alert('1, 2, 3-ын аль нэгийг бичнэ үү.');
+            const list = inventory.filter(p => !isServiceProduct(p) && (scope === 'all' || lineOfProduct(p) === scope));
+            if (!list.length) return alert('Тоолох бараа алга байна.');
+            const scopeName = scope === 'all' ? 'Бүх' : LINES[scope];
+            if (!confirm(`${scopeName} — ${list.length} барааны тооллого эхлүүлэх үү? Кассчин «Бараа хүлээн авах» хэсгээс тоолно.`)) return;
             try {
-                await db.collection('stocktakes').add({ status: 'open', items: inventory.map(p => ({ productId: p.id, name: p.name })), createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-                logAudit('stocktake_start', `Тооллого эхлүүлэв (${inventory.length} бараа)`);
+                await db.collection('stocktakes').add({ status: 'open', scope, items: list.map(p => ({ productId: p.id, name: p.name })), createdBy: currentUserEmail, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                logAudit('stocktake_start', `Тооллого эхлүүлэв (${scopeName}, ${list.length} бараа)`);
             } catch (e) { alert('Эхлүүлж чадсангүй: ' + e.message); }
         }
         function openStReview(id) {
