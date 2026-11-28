@@ -1073,6 +1073,7 @@
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
                 <button class="btn-sm btn-primary" id="cpSaveBtn" onclick="saveCustomerProfile()"><i class="fa-solid fa-floppy-disk"></i> Хадгалах</button>
                 <button class="btn-sm" id="cpAttachBtn" style="background:var(--input-bg); color:var(--text-main); border:1px solid var(--border);" onclick="profileCandidate && profileCandidate.registered ? openAttachModal('customer', profileCandidate.id, profileCandidate.name) : alert('Эхлээд харилцагчаар бүртгэнэ үү.')">📎 Гэрээ / баримт</button>
+                <button class="btn-sm admin-only" id="cpOpeningBtn" style="display:none; background:var(--input-bg); color:var(--warning); border:1px solid var(--warning);" onclick="addOpeningReceivable()">＋ Эхний авлага</button>
                 <button class="btn-sm btn-danger admin-only" id="cpDeleteBtn" style="display:none;" onclick="deleteCustomerProfile()"><i class="fa-solid fa-trash"></i> Устгах</button>
             </div>
             <div id="cpStats" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin-bottom:12px;"></div>
@@ -2746,9 +2747,10 @@
         }
         function customerStats(c) {
             const list = customerSales(c);
-            const total = list.reduce((a, s) => a + (Number(s.total) || 0), 0);
+            const real = list.filter(s => !s.opening);
+            const total = real.reduce((a, s) => a + (Number(s.total) || 0), 0);
             const debt = list.filter(s => s.isCredit && s.status === 'credit_unpaid').reduce((a, s) => a + (Number(s.creditRemaining) || 0), 0);
-            return { count: list.length, last: list[0] ? list[0].date : null, total, debt, list };
+            return { count: real.length, last: real[0] ? real[0].date : null, total, debt, list };
         }
         const fmtMoney = n => (Number(n) || 0).toLocaleString('en-US') + '₮';
 
@@ -2897,6 +2899,7 @@
             document.getElementById('cpNote').value = c.note || '';
             document.getElementById('cpSaveBtn').innerHTML = c.registered ? '<i class="fa-solid fa-floppy-disk"></i> Хадгалах' : '<i class="fa-solid fa-user-plus"></i> Харилцагчаар бүртгэх';
             document.getElementById('cpDeleteBtn').style.display = (c.registered && currentUserRole === 'admin') ? 'inline-block' : 'none';
+            document.getElementById('cpOpeningBtn').style.display = (c.registered && currentUserRole === 'admin') ? 'inline-block' : 'none';
             const nAtt = c.registered ? attachmentsFor('customer', c.id).length : 0;
             document.getElementById('cpAttachBtn').innerHTML = `📎 Гэрээ / баримт${nAtt ? ' (' + nAtt + ')' : ''}`;
             const st = customerStats(c);
@@ -2908,7 +2911,7 @@
             document.getElementById('cpHistory').innerHTML = st.list.length ? st.list.map(sl => `
                 <tr>
                     <td><small>${esc(sl.date || '')}</small><br><small style="color:var(--text-muted);">${esc(sl.invoiceNum || '')}</small></td>
-                    <td style="font-size:0.82rem;">${(sl.items || []).map(it => `${esc(it.name)} × ${esc(it.qty)}${it.discountPercent ? ` <small style="color:var(--text-muted);">(-${esc(it.discountPercent)}%)</small>` : ''}${wText(it) && sl.status !== 'returned' ? ` <small style="color:${wExpired(it, lastKm) ? 'var(--text-muted)' : 'var(--success)'};">🛡️ ${esc(wText(it).replace('Баталгаа: ', ''))}${wExpired(it, lastKm) ? ' (дууссан)' : ''}</small>` : ''}`).join('<br>') || '—'}${sl.notes ? `<br><small style="color:var(--text-muted);">📝 ${esc(sl.notes)}</small>` : ''}</td>
+                    <td style="font-size:0.82rem;">${sl.opening ? `📂 <b>Эхний авлага</b> ${fmtMoney(sl.openingAmount)}${sl.status === 'credit_unpaid' ? '' : ' — төлөгдсөн'}` : ''}${(sl.items || []).map(it => `${esc(it.name)} × ${esc(it.qty)}${it.discountPercent ? ` <small style="color:var(--text-muted);">(-${esc(it.discountPercent)}%)</small>` : ''}${wText(it) && sl.status !== 'returned' ? ` <small style="color:${wExpired(it, lastKm) ? 'var(--text-muted)' : 'var(--success)'};">🛡️ ${esc(wText(it).replace('Баталгаа: ', ''))}${wExpired(it, lastKm) ? ' (дууссан)' : ''}</small>` : ''}`).join('<br>') || '—'}${sl.notes ? `<br><small style="color:var(--text-muted);">📝 ${esc(sl.notes)}</small>` : ''}</td>
                     <td><small>${esc(sl.km && sl.km !== 'Бичигдээгүй' ? sl.km : '—')}</small></td>
                     <td><small>${esc(sl.paymentMethod || '')}${sl.isCredit && sl.status === 'credit_unpaid' ? '<br><span style="color:var(--warning);">Зээл: ' + fmtMoney(sl.creditRemaining) + '</span>' : (sl.isCredit && sl.status !== 'returned' ? '<br><span style="color:var(--success);">✅ Зээл төлөгдсөн</span>' : '')}</small></td>
                     <td style="text-align:right; font-weight:700;">${fmtMoney(sl.total)}${sl.vat ? '<br><span class="vat-badge">НӨАТ</span>' : ''}</td>
@@ -3387,11 +3390,11 @@
             activeCredits.forEach(s => {
                 list.innerHTML += `
                     <tr>
-                        <td><strong>${esc(s.customer)}</strong> (${esc(s.carNo)})<br><small style="color:var(--text-muted);">Дуусах: ${esc(s.dueDate || '-')}</small></td>
+                        <td><strong>${esc(s.customer)}</strong>${s.carNo ? ` (${esc(s.carNo)})` : ''}<br><small style="color:var(--text-muted);">${s.opening ? `📂 Эхний авлага${s.notes ? ' · ' + esc(s.notes) : ''}` : 'Дуусах: ' + esc(s.dueDate || '-')}</small></td>
                         <td><strong style="color:var(--moty-red);">${s.creditRemaining.toLocaleString()}₮</strong></td>
                         <td>
                             <button class="btn-sm btn-excel" onclick="openPayCreditModal('${s.id}')">Төлөх</button>
-                            <button class="btn-sm btn-primary" onclick="reprintA4Document('${s.id}')">A4</button>
+                            ${s.opening ? (currentUserRole === 'admin' && !(s.payments || []).length ? `<button class="btn-sm btn-danger" title="Буруу оруулсан бол устгах" onclick="deleteOpeningReceivable('${s.id}')"><i class="fa-solid fa-trash"></i></button>` : '') : `<button class="btn-sm btn-primary" onclick="reprintA4Document('${s.id}')">A4</button>`}
                             ${attachBtn('sale', s.id)}
                         </td>
                     </tr>
@@ -3400,12 +3403,44 @@
             if (activeCredits.length === 0) list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Зээлийн авлага байхгүй байна.</td></tr>';
         }
 
+        // ===== ЭХНИЙ АВЛАГА: өмнөх системээс шилжсэн өр. Орлогод тооцохгүй (total = 0), зөвхөн зээлийн үлдэгдэл =====
+        async function addOpeningReceivable() {
+            const c = profileCandidate;
+            if (currentUserRole !== 'admin' || !c || !c.registered) return;
+            const raw = prompt(`${c.name} — эхний авлагын дүн (₮):\n(Өмнөх бүртгэлээс шилжүүлж буй өр. Орлогод тооцогдохгүй.)`, '');
+            if (raw === null) return;
+            const amount = Math.round(Number(String(raw).replace(/[\s,₮]/g, '')));
+            if (!(amount > 0)) return alert('Дүнг зөв оруулна уу (0-ээс их).');
+            const note = (prompt('Тайлбар (жишээ нь: 2026/11/30-ны байдлаар, Google Drive Report):', '') || '').trim();
+            if (!confirm(`${c.name}: ${amount.toLocaleString()}₮ эхний авлага бүртгэх үү?`)) return;
+            const now = new Date();
+            try {
+                await db.collection('sales').add({
+                    opening: true, invoiceNum: 'OPEN-' + Date.now().toString().slice(-6), date: now.toLocaleString('mn-MN'), timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    paymentMethod: 'Эхний авлага', docType: 'OPENING', customer: c.name || '', customerId: c.id, phone: c.phone || '', carNo: c.carNo || '',
+                    items: [], subTotal: 0, discount: 0, total: 0, openingAmount: amount, isCredit: true, advancePaid: 0, creditRemaining: amount, dueDate: '',
+                    notes: note, status: 'credit_unpaid', soldBy: currentUserEmail
+                });
+                logAudit('opening_receivable', `Эхний авлага: ${c.name} ${amount.toLocaleString()}₮ ${note}`);
+                alert('Эхний авлага бүртгэгдлээ. «Зээл» хэсэгт харагдана.');
+                openCustomerProfile(c.id);
+            } catch (e) { alert('Хадгалж чадсангүй: ' + e.message); }
+        }
+        async function deleteOpeningReceivable(id) {
+            const s0 = salesData.find(x => x.id === id);
+            if (currentUserRole !== 'admin' || !s0 || !s0.opening) return;
+            if ((s0.payments || []).length) return alert('Төлөлт орсон эхний авлагыг устгах боломжгүй.');
+            if (!confirm(`${s0.customer}: ${(s0.openingAmount || 0).toLocaleString()}₮ эхний авлагыг устгах уу?`)) return;
+            try { await db.collection('sales').doc(id).delete(); logAudit('opening_receivable_delete', `Эхний авлага устгав: ${s0.customer} ${(s0.openingAmount || 0).toLocaleString()}₮`); }
+            catch (e) { alert('Устгаж чадсангүй: ' + e.message); }
+        }
+
         function openPayCreditModal(saleId) {
             const sale = salesData.find(s => s.id === saleId);
             if (!sale) return;
             document.getElementById('payCreditSaleId').value = saleId;
             document.getElementById('payCreditAmountInput').value = sale.creditRemaining;
-            document.getElementById('creditPaySummary').innerHTML = `${esc(sale.customer || '')} (${esc(sale.carNo || '')}) · ${esc(sale.invoiceNum || '')}<br>Нийт: ${(sale.total || 0).toLocaleString()}₮ · Төлсөн: ${(sale.advancePaid || 0).toLocaleString()}₮ · Үлдэгдэл авлага: <strong>${sale.creditRemaining.toLocaleString()}₮</strong>`;
+            document.getElementById('creditPaySummary').innerHTML = `${esc(sale.customer || '')} (${esc(sale.carNo || '')}) · ${esc(sale.invoiceNum || '')}<br>${sale.opening ? 'Эхний авлага' : 'Нийт'}: ${(sale.opening ? sale.openingAmount : sale.total || 0).toLocaleString()}₮ · Төлсөн: ${(sale.advancePaid || 0).toLocaleString()}₮ · Үлдэгдэл авлага: <strong>${sale.creditRemaining.toLocaleString()}₮</strong>`;
             document.getElementById('payCreditHistory').innerHTML = (sale.payments || []).length
                 ? 'Өмнөх төлөлтүүд:<br>' + sale.payments.map(p => `• ${esc(p.date)} — ${(Number(p.amount) || 0).toLocaleString()}₮ (${esc(p.method || '')})`).join('<br>') : '';
             document.getElementById('payCreditModal').style.display = 'flex';
@@ -3586,7 +3621,7 @@
             const labels = { today: 'Өнөөдөр', yesterday: 'Өчигдөр', month: 'Энэ сар', year: 'Энэ жил', all: 'Бүгд' };
             const [from, to] = ranges[type] || ranges.all;
             const vatF = (document.getElementById('salesVatFilter') || {}).value || 'all';
-            const inPeriod = salesData.filter(sale => {
+            const inPeriod = salesData.filter(sale => !sale.opening).filter(sale => {
                 const d = saleDate(sale);
                 return (!from || d >= from) && (!to || d < to);
             });
@@ -4647,7 +4682,7 @@
         }
 
         function salesBetween(from, to) {
-            return salesData.filter(sl => sl.status !== 'returned').filter(sl => { const d = saleDate(sl); return d >= from && (!to || d < to); });
+            return salesData.filter(sl => sl.status !== 'returned' && !sl.opening).filter(sl => { const d = saleDate(sl); return d >= from && (!to || d < to); });
         }
         const sumTotal = list => list.reduce((a, sl) => a + (Number(sl.total) || 0), 0);
 
@@ -4684,7 +4719,7 @@
                 <div class="mini-row"><div><strong>${esc(b.time)}</strong> — ${esc(b.car)}<small>${esc(b.name)} · ${esc(b.phone)}</small></div>${b.status === 'new' ? '<span class="vat-badge" style="color:var(--accent-blue); border-color:var(--accent-blue); background:rgba(59,130,246,0.12);">Шинэ</span>' : ''}</div>`).join('')
                 : '<div class="mini-empty">Өнөөдөр хүлээгдэж буй захиалга алга.</div>';
 
-            const recent = salesData.slice(0, 7);
+            const recent = salesData.filter(sl => !sl.opening).slice(0, 7);
             document.getElementById('dashRecentSales').innerHTML = recent.length ? recent.map(sl => `
                 <div class="mini-row"><div><strong>${esc(sl.carNo || '')}</strong> ${esc(sl.customer || '')}<small>${esc(sl.date || '')} · ${esc(sl.paymentMethod || '')}${sl.vat ? ' · НӨАТ' : ''}</small></div>
                 <strong style="${sl.status === 'returned' ? 'opacity:.5; text-decoration:line-through;' : ''}">${fmtMoney(sl.total)}</strong></div>`).join('')
@@ -4726,7 +4761,7 @@
                     buckets.push({ from, to: new Date(from.getFullYear(), from.getMonth() + 1, 1), label: `${from.getFullYear() % 100}/${from.getMonth() + 1}` });
                 }
             }
-            const valid = salesData.filter(sl => sl.status !== 'returned');
+            const valid = salesData.filter(sl => sl.status !== 'returned' && !sl.opening);
             buckets.forEach(b => { b.value = 0; b.count = 0; });
             valid.forEach(sl => {
                 const d = saleDate(sl);
